@@ -1,0 +1,56 @@
+
+#include <filesystem>
+#include <urdf_parser/urdf_parser.h>
+#include <mRobot.h>
+#include <OgreCodec.h>
+
+namespace mviz{
+
+    struct AssOptions
+    {
+        Ogre::String source;
+        Ogre::String dest;
+        Ogre::String logFile;
+
+        Ogre::BinaryOptionList options;
+
+        AssOptions() { logFile = "OgreAssimp.log"; };
+    };
+
+    class mGraphics
+    {
+    private:
+
+        std::string resource_group_name = "User";
+
+        urdf::ModelInterfaceSharedPtr urdf;
+        std::string name;
+        std::vector <std::map<std::string, mRobot>> robots;
+        std::vector <std::map<std::string, mObject>> objects;
+
+    public:
+    mGraphics(/* args */) {};
+        void readFile( std::string FilePath);
+        void urdf_to_ogre_converter(Ogre::SceneManager* scm);
+        ~mGraphics() {};
+
+        const std::string& getName();
+        urdf::ModelInterfaceSharedPtr getUrdfObject();
+        void createSphere(std::string name, double r);
+        void createBox(std::string name, double l, double b, double h);
+        void createCylinder(std::string name, double r, double h);
+        void creatMeshFromFile(std::string filePath);
+
+        
+    };
+
+
+    void createSphere(Ogre::SceneManager* scm, std::string name, Ogre::Vector3 c ,double r, Ogre::MeshPtr* m);
+    void createBox(std::string name, double l, double b, double h, Ogre::Mesh* m);
+    void createCylinder(std::string name, double r, double h, Ogre::Mesh* m);
+    void creatMeshFromFile(std::string filePath,Ogre::String& MeshName);
+
+    // testing.
+    void say_hello();
+
+} // namespace mviz;
