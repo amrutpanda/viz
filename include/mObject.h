@@ -55,11 +55,11 @@ namespace mviz
 
         void assign_mesh(Ogre::Mesh* m);
         const Ogre::Mesh* getMesh();
-        const mVector& getPosition();
-        const mMatrix& getRotation();
-        const mVector& getScale();
-        void setPosition(mVector &pos);
-        void setRotation(mMatrix &rot);
+        const Eigen::Vector3d & getPosition();
+        const Eigen::Matrix3d & getRotation();
+        const Eigen::Vector3d & getScale();
+        void setPosition(Eigen::Vector3d &pos);
+        void setRotation(Eigen::Matrix3d &rot);
         void setScale(Ogre::Vector3 &scale);
         
         Ogre::Mesh* mesh;
@@ -68,9 +68,9 @@ namespace mviz
         std::string mesh_file_name = NULL;
         std::string objectName = NULL;
         std::string name = NULL;
-        mVector position;
-        mMatrix rotation;
-        mVector scale;
+        Eigen::Vector3d position;
+        Eigen::Matrix3d rotation;
+        Eigen::Vector3d scale;
     };
 
 

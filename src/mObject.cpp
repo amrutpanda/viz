@@ -3,10 +3,10 @@
 namespace mviz
 {
      // method description for mObject. starting ...
-     mObject::mObject(std::string name, int type)
+     mObject::mObject(std::string _name, int _type)
      {
-          name = Name;
-          type = type;
+          name = _name;
+          type = _type;
      }
 
      mObject::~mObject()
@@ -23,28 +23,28 @@ namespace mviz
           mesh_assigned = true;
      }
 
-     const mVector& mObject::getPosition()
+     const Eigen::Vector3d& mObject::getPosition()
      {
           return position;
      }
 
-     const mMatrix& mObject::getRotation()
+     const Eigen::Matrix3d & mObject::getRotation()
      {
           return rotation;
      }
 
-     const mVector& mObject::getScale()
+     const Eigen::Vector3d& mObject::getScale()
      {
           return scale;
      }
 
-     void mObject::setPosition(mVector &pos)
+     void mObject::setPosition(Eigen::Vector3d &pos)
      {
           position = pos;
 
      }
 
-     void mObject::setRotation(mMatrix &rot)
+     void mObject::setRotation(Eigen::Matrix3d  &rot)
      {
           rotation = rot;
      }

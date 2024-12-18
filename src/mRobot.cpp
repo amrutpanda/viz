@@ -38,6 +38,7 @@ namespace mviz
         rlink->mesh_file_name = std::filesystem::canonical(m->filename).string();
         
         rlink->scale << m->scale.x , m->scale.y, m->scale.z;
+        
     }
 
 
