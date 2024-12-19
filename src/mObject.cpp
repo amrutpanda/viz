@@ -5,7 +5,7 @@ namespace mviz
      // method description for mObject. starting ...
      mObject::mObject(std::string _name, int _type)
      {
-          name = _name;
+          objectName = _name;
           type = _type;
      }
 
@@ -54,6 +54,20 @@ namespace mviz
           astd_Node->setScale(scale);
      }
 
+     void mObject::setEntityName(std::string& _entity_name)
+     {
+          entity_name = _entity_name;
+     }
+
+     void mObject::setMeshFileName(std::string& _file_name)
+     {
+          mesh_file_name = _file_name;
+     }
+
+     void mObject::setSceneNode(Ogre::SceneNode* _node)
+     {
+          astd_Node = _node;
+     }
      // method description for mObject, ends here .
 
      void convert_urdf_to_mvector(mVector& v_m, urdf::Vector3 v_u)

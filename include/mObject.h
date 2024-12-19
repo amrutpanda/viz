@@ -61,13 +61,16 @@ namespace mviz
         void setPosition(Eigen::Vector3d &pos);
         void setRotation(Eigen::Matrix3d &rot);
         void setScale(Ogre::Vector3 &scale);
+        void setMeshFileName(std::string& file_name);
+        void setEntityName(std::string& _entity_name);
+        void setSceneNode(Ogre::SceneNode* _node);
         
         Ogre::Mesh* mesh;
         int type = Type::MESH;
         
         std::string mesh_file_name = NULL;
         std::string objectName = NULL;
-        std::string name = NULL;
+        std::string entity_name = NULL;
         Eigen::Vector3d position;
         Eigen::Matrix3d rotation;
         Eigen::Vector3d scale;
