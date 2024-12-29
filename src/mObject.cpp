@@ -9,13 +9,13 @@ namespace mviz
           type = _type;
      }
 
-     mObject::~mObject()
-     {
-          if (mesh_assigned)
-          {
-               delete mesh;
-          }
-     }
+     // mObject::~mObject()
+     // {
+     //      if (mesh_assigned)
+     //      {
+     //           delete mesh;
+     //      }
+     // }
 
      void mObject::assign_mesh(Ogre::Mesh* m)
      {

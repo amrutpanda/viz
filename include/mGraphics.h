@@ -1,8 +1,15 @@
+#pragma once
 
-#include <filesystem>
-#include <urdf_parser/urdf_parser.h>
 #include <mRobot.h>
-#include <OgreCodec.h>
+
+// #include <filesystem>
+// #include <urdf_parser/urdf_parser.h>
+// #include <mRobot.h>
+// #include <OgreCodec.h>
+// #include <OgreApplicationContext.h>
+// #include <OgreInput.h>
+// #include <OgreRTShaderSystem.h>
+// #include <OgreCameraMan.h>
 
 namespace mviz{
 
@@ -17,7 +24,9 @@ namespace mviz{
         AssOptions() { logFile = "OgreAssimp.log"; };
     };
 
-    class mGraphics
+    class mGraphics 
+            :   public OgreBites::ApplicationContext, 
+                public OgreBites::InputListener
     {
     private:
 
@@ -28,29 +37,42 @@ namespace mviz{
         std::vector <std::map<std::string, mRobot>> robots;
         std::vector <std::map<std::string, mObject>> objects;
 
+        Ogre::SceneNode* camNode;
+        Ogre::SceneManager* scnMgr;
+        OgreBites::CameraMan* mCameraMan;
+        OgreBites::ApplicationContext ctx;
+        Ogre::Viewport* vp;
+
+        bool* flag;
+
     public:
     mGraphics(/* args */) {};
         void readFile( std::string FilePath);
         void urdf_to_ogre_converter(Ogre::SceneManager* scm);
+        void addEntity(std::string filePath, Ogre::Vector3& position); // only position at this moment, orientation later.
+        void attachFlagVariable(bool* _flag);
+        void setup();
+        bool RenderOneFrame();
+        bool keyPressed(const OgreBites::KeyboardEvent &evt);
+        void closeGraphics();
         ~mGraphics() {};
 
         const std::string& getName();
         urdf::ModelInterfaceSharedPtr getUrdfObject();
-        void createSphere(std::string name, double r);
-        void createBox(std::string name, double l, double b, double h);
-        void createCylinder(std::string name, double r, double h);
-        void creatMeshFromFile(std::string filePath);
+
+        void createScene();
+
 
         
     };
 
 
-    void createSphere(Ogre::SceneManager* scm, std::string name, Ogre::Vector3 c ,double r, Ogre::MeshPtr* m);
-    void createBox(std::string name, double l, double b, double h, Ogre::Mesh* m);
-    void createCylinder(std::string name, double r, double h, Ogre::Mesh* m);
-    void creatMeshFromFile(std::string filePath,Ogre::String& MeshName);
+    // void createSphere(Ogre::SceneManager* scm, std::string name, Ogre::Vector3 c ,double r, Ogre::MeshPtr* m);
+    // void createBox(std::string name, double l, double b, double h, Ogre::Mesh* m);
+    // void createCylinder(std::string name, double r, double h, Ogre::Mesh* m);
+    // void creatMeshFromFile(std::string filePath,Ogre::String& MeshName);
 
-    // testing.
-    void say_hello();
+    // // testing.
+    // void say_hello();
 
 } // namespace mviz;

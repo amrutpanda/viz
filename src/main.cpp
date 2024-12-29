@@ -133,14 +133,16 @@ void BasicTutorial1::setup()
     // addEntity(scnMgr);
     // addEntityFromFile(scnMgr,"/home/asp/Downloads/roadBike/roadBike.mesh");
     // addEntityFromImportedFile(scnMgr,"/home/asp/Files/cpp/projects/franka_ros/franka_description/meshes/visual/link0.dae");
-    Ogre::String ent_name;
-    mviz::creatMeshFromFile("/home/asp/Downloads/bearded-guy-obj/Bearded_guy.obj",
-                            ent_name);
-    Ogre::Entity* ogreEntity = scnMgr->createEntity(ent_name);
+    addEntityFromImportedFile(scnMgr,"/home/asp/Downloads/conference/conference.obj");
 
-    Ogre::SceneNode* ogreNode = scnMgr->getRootSceneNode()->createChildSceneNode();
-    ogreNode->attachObject(ogreEntity);
-    cNode = ogreNode;
+    Ogre::String ent_name;
+    // mviz::creatMeshFromFile("/home/asp/Downloads/6e48z1kc7r40-bugatti/bugatti/bugatti.obj",
+    //                         ent_name);
+    // Ogre::Entity* ogreEntity = scnMgr->createEntity(ent_name);
+
+    // Ogre::SceneNode* ogreNode = scnMgr->getRootSceneNode()->createChildSceneNode();
+    // ogreNode->attachObject(ogreEntity);
+    // cNode = ogreNode;
     
     std::cout << "exiting addEntity \n";
     // //! [entity1]

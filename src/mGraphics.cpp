@@ -33,6 +33,100 @@ namespace mviz
         return urdf->getName();
     }
 
+    void mGraphics::attachFlagVariable(bool* _flag)
+    {
+        flag = _flag;
+    }
+
+    void mGraphics::setup()
+    {
+        // do not forget to call the base.
+        OgreBites::ApplicationContext::setup();
+        addInputListener(this);
+
+        // get a pointer to the already created root
+        Ogre::Root* root = getRoot();
+        scnMgr = root->createSceneManager();
+
+        // register our scene with the RTSS
+        Ogre::RTShader::ShaderGenerator* shadergen = Ogre::RTShader::ShaderGenerator::getSingletonPtr();
+        shadergen->addSceneManager(scnMgr);
+
+        // set ambient light.
+        scnMgr->setAmbientLight(Ogre::ColourValue(1.0, 1.0, 1.0));
+
+        // set newlight.
+        Ogre::Light* light = scnMgr->createLight("MainLight1");
+        Ogre::SceneNode* lightNode = scnMgr->getRootSceneNode()->createChildSceneNode();
+        lightNode->attachObject(light);
+
+        //! [lightpos]
+        lightNode->setPosition(0, 0, 100);
+
+        //! [camera]
+        camNode = scnMgr->getRootSceneNode()->createChildSceneNode();
+
+        // create the camera
+        Ogre::Camera* cam = scnMgr->createCamera("myCam");
+        cam->setNearClipDistance(0.05); // specific to this sample
+        cam->setAutoAspectRatio(true);
+        // cam->setFOVy(Ogre::Radian(0.08));
+        camNode->attachObject(cam);
+        camNode->setPosition(0, 0, 10);
+
+        // create a new Cameraman object and attach it to this object.
+        mCameraMan = new OgreBites::CameraMan(camNode);
+        mCameraMan->setTopSpeed(10);
+        mCameraMan->setStyle(OgreBites::CameraStyle::CS_ORBIT);
+        addInputListener(mCameraMan);
+
+        // and tell it to render into the main window
+        Ogre::Viewport* vp = getRenderWindow()->addViewport(cam);
+        vp->setBackgroundColour(Ogre::ColourValue(0,0.2,0.2));
+        //! [camera]
+    }
+
+    bool mGraphics::RenderOneFrame()
+    {
+        if (*flag)
+        {
+            return getRoot()->renderOneFrame();
+        }
+        else
+        {
+            return true;
+        }
+        
+    }
+
+    void mGraphics::closeGraphics()
+    {
+        closeApp();
+    }
+
+    bool mGraphics::keyPressed(const OgreBites::KeyboardEvent &evt)
+    {
+        if (evt.keysym.sym == OgreBites::SDLK_ESCAPE)
+        {
+            std::cout << "Detected ESC key. Exiting...\n";
+            *flag = false;
+            getRoot()->queueEndRendering();
+        }
+        return true;
+    }
+
+    void mGraphics::addEntity(std::string _FilePath, Ogre::Vector3& pos)
+    {
+        Ogre::String mesh_name;
+        creatMeshFromFile(_FilePath,mesh_name);
+
+        // create Entity.
+        Ogre::Entity* ogreEntity = scnMgr->createEntity(mesh_name);
+        Ogre::SceneNode* ogreNode = scnMgr->getRootSceneNode()->createChildSceneNode();
+        ogreNode->attachObject(ogreEntity);
+        ogreNode->setPosition(pos);
+
+    }
     // ....................... functions not part of Graphics object........................ //
     void creatMeshFromFile(std::string filepath, Ogre::String& MeshName)
     {

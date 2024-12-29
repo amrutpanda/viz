@@ -16,7 +16,7 @@ namespace mviz
         urdf_root_link = _urdf->getRoot();
         _robot_name = _urdf->getName();
         
-        // convertRobotLinkToOgreNode(urdf_link, rootNode);
+    //    urdf::LinkSharedPtr& l = const_cast<urdf::LinkSharedPtr&>(_urdf->getRoot());
     }
 
     // void mRobot::convertRobotLinkToOgreNode(urdf::LinkSharedPtr link, Ogre::SceneNode* sNode)

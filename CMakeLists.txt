@@ -20,4 +20,7 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 
 add_executable(app src/main.cpp src/mGraphics.cpp src/mRobot.cpp
                     src/mObject.cpp)
+add_executable(test_app src/mainloop.cpp src/mGraphics.cpp src/mRobot.cpp
+                    src/mObject.cpp)
 target_link_libraries(app ${OGRE_LIBRARIES} ${urdfdom_LIBRARIES})
+target_link_libraries(test_app ${OGRE_LIBRARIES} ${urdfdom_LIBRARIES})
