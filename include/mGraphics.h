@@ -40,13 +40,14 @@ namespace mviz{
         Ogre::SceneNode* camNode;
         Ogre::SceneManager* scnMgr;
         OgreBites::CameraMan* mCameraMan;
-        OgreBites::ApplicationContext ctx;
+        OgreBites::ApplicationContextSDL ctx;
         Ogre::Viewport* vp;
 
         bool* flag;
 
     public:
-    mGraphics(/* args */) {};
+    // mGraphics(/* args */) {};
+        mGraphics(std::string _name);
         void readFile( std::string FilePath);
         void urdf_to_ogre_converter(Ogre::SceneManager* scm);
         void addEntity(std::string filePath, Ogre::Vector3& position); // only position at this moment, orientation later.

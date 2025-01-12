@@ -38,9 +38,16 @@ namespace mviz
         flag = _flag;
     }
 
+    mGraphics::mGraphics(std::string _name): OgreBites::ApplicationContext(_name)
+    {
+        
+    }
+
     void mGraphics::setup()
     {
+        // OgreBites::ApplicationContext _ctx("Ogreapp");
         // do not forget to call the base.
+        // _ctx.setup();
         OgreBites::ApplicationContext::setup();
         addInputListener(this);
 
@@ -53,7 +60,7 @@ namespace mviz
         shadergen->addSceneManager(scnMgr);
 
         // set ambient light.
-        scnMgr->setAmbientLight(Ogre::ColourValue(1.0, 1.0, 1.0));
+        scnMgr->setAmbientLight(Ogre::ColourValue(0.0, 0.0, 0.01));
 
         // set newlight.
         Ogre::Light* light = scnMgr->createLight("MainLight1");
@@ -62,6 +69,14 @@ namespace mviz
 
         //! [lightpos]
         lightNode->setPosition(0, 0, 100);
+
+        // another light node.
+        Ogre::Light* light2 = scnMgr->createLight("MainLight2");
+        Ogre::SceneNode* lightNode2 = scnMgr->getRootSceneNode()->createChildSceneNode();
+        lightNode2->attachObject(light2);
+
+        lightNode2->setPosition(-500, 100, 0);
+        // another light node end.
 
         //! [camera]
         camNode = scnMgr->getRootSceneNode()->createChildSceneNode();
@@ -82,8 +97,14 @@ namespace mviz
 
         // and tell it to render into the main window
         Ogre::Viewport* vp = getRenderWindow()->addViewport(cam);
-        vp->setBackgroundColour(Ogre::ColourValue(0,0.2,0.2));
+        vp->setBackgroundColour(Ogre::ColourValue(0.0,1.0,1.0));
         //! [camera]
+
+        // Ogre::String mesh_name;
+        // creatMeshFromFile("/home/asp/Downloads/6e48z1kc7r40-bugatti/bugatti/bugatti.obj",mesh_name);
+        // Ogre::Entity* ent = scnMgr->createEntity(mesh_name);
+        // Ogre::SceneNode* ogNode = scnMgr->getRootSceneNode()->createChildSceneNode();
+        // ogNode->attachObject(ent);
     }
 
     bool mGraphics::RenderOneFrame()
@@ -118,7 +139,16 @@ namespace mviz
     void mGraphics::addEntity(std::string _FilePath, Ogre::Vector3& pos)
     {
         Ogre::String mesh_name;
-        creatMeshFromFile(_FilePath,mesh_name);
+        std::filesystem::path path(_FilePath);
+        if ( path.extension() == ".mesh")
+        {
+            std::cout << "Path extension: " << path.extension() << std::endl;
+            mesh_name = path.filename();
+        }
+        else
+        {
+            creatMeshFromFile(_FilePath,mesh_name);
+        }
 
         // create Entity.
         Ogre::Entity* ogreEntity = scnMgr->createEntity(mesh_name);
@@ -130,9 +160,9 @@ namespace mviz
     // ....................... functions not part of Graphics object........................ //
     void creatMeshFromFile(std::string filepath, Ogre::String& MeshName)
     {
-        if (!Ogre::ResourceGroupManager::getSingleton().resourceGroupExists("User"))
+        if (!Ogre::ResourceGroupManager::getSingleton().resourceGroupExists("UserData"))
         {
-            Ogre::ResourceGroupManager::getSingleton().createResourceGroup("User");
+            Ogre::ResourceGroupManager::getSingleton().createResourceGroup("UserData");
         }
         std::filesystem::path path = std::filesystem::canonical(filepath);
         std::cout << path.parent_path() << std::endl;
@@ -140,20 +170,21 @@ namespace mviz
         std::filesystem::recursive_directory_iterator end;
 
         Ogre::ResourceGroupManager::getSingleton().addResourceLocation(path.parent_path().generic_string(),
-                                                                        "FileSystem","User");
+                                                                        "FileSystem","UserData");
         while (it != end)
         {
             if (it->is_directory())
             {
-                Ogre::ResourceGroupManager::getSingleton().addResourceLocation(it->path().string(),"FileSystem","User");
+                Ogre::ResourceGroupManager::getSingleton().addResourceLocation(it->path().string(),"FileSystem","UserData");
             }   
             ++it;
         }
 
         // std::cout << "Intilising resource group User" << std::endl;
-        Ogre::ResourceGroupManager::getSingleton().initialiseResourceGroup("User");
+        Ogre::ResourceGroupManager::getSingleton().initialiseResourceGroup("UserData");
         // std::cout << "loading resource group User " << std::endl;
-        Ogre::ResourceGroupManager::getSingleton().loadResourceGroup("User");
+        Ogre::ResourceGroupManager::getSingleton().loadResourceGroup("UserData");
+
 
         Ogre::String basename, ext, pathname;
         Ogre::StringUtil::splitFullFilename(filepath,basename,ext,pathname);
@@ -166,14 +197,15 @@ namespace mviz
         AssOptions opts;
         opts.source = basename + "." + ext ;
 
-        Ogre::MeshPtr m = Ogre::MeshManager::getSingleton().createManual(basename + "." + ext, "User");
+        Ogre::MeshPtr m = Ogre::MeshManager::getSingleton().createManual(basename + "." + ext, "UserData");
         m->getUserObjectBindings().setUserAny("_AssimpLoaderOptions", opts.options);
         // std::cout << "Decoding the obj file to mesh" << std::endl;
         codec->decode(Ogre::Root::openFileStream(opts.source), m.get());
 
         // std::cout << "decoding complete." << std::endl;
 
-        MeshName = basename + "." + ext;
+        // MeshName = basename + "." + ext;
+        MeshName = opts.source;
 
     }
 

@@ -133,7 +133,7 @@ void BasicTutorial1::setup()
     // addEntity(scnMgr);
     // addEntityFromFile(scnMgr,"/home/asp/Downloads/roadBike/roadBike.mesh");
     // addEntityFromImportedFile(scnMgr,"/home/asp/Files/cpp/projects/franka_ros/franka_description/meshes/visual/link0.dae");
-    addEntityFromImportedFile(scnMgr,"/home/asp/Downloads/conference/conference.obj");
+    addEntityFromImportedFile(scnMgr,"/home/asp/Downloads/motorbike-obj/Bike.obj");
 
     Ogre::String ent_name;
     // mviz::creatMeshFromFile("/home/asp/Downloads/6e48z1kc7r40-bugatti/bugatti/bugatti.obj",
@@ -269,6 +269,7 @@ void BasicTutorial1::addEntityFromImportedFile(Ogre::SceneManager* scm, Ogre::St
     std::cout << "created child scene node\n";
     ogreNode->attachObject(ogreEntity);
     std::cout << "Attached entity to node\n";
+
 }
 
 void BasicTutorial1::moveInCircle(Ogre::SceneNode* Node)
