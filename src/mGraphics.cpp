@@ -1,5 +1,7 @@
 
 #include "mGraphics.h"
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_syswm.h>
 
 // #include <Ogre.h>
 // #include <urdf_parser/urdf_parser.h>
@@ -28,6 +30,13 @@ namespace mviz
 
     }
 
+    void mGraphics::createRobotObject(Ogre::SceneNode* _rNode, std::string _robotName, std::string _robot_filename)
+    {
+
+    }
+
+    // Graphics related Methods.
+
     const std::string& mGraphics::getName()
     {
         return urdf->getName();
@@ -40,16 +49,24 @@ namespace mviz
 
     mGraphics::mGraphics(std::string _name): OgreBites::ApplicationContext(_name)
     {
-        
+        AppName = _name;
     }
 
     void mGraphics::setup()
     {
+        // Check if _flag pointer has been assigned.
+        if (!flag)
+        {
+            throw std::runtime_error("Loop flag variable not attached. Call 'attachFlagVariable' function before the render loop.\n");
+        }
+        
         // OgreBites::ApplicationContext _ctx("Ogreapp");
         // do not forget to call the base.
         // _ctx.setup();
         OgreBites::ApplicationContext::setup();
         addInputListener(this);
+        
+        
 
         // get a pointer to the already created root
         Ogre::Root* root = getRoot();
@@ -60,7 +77,7 @@ namespace mviz
         shadergen->addSceneManager(scnMgr);
 
         // set ambient light.
-        scnMgr->setAmbientLight(Ogre::ColourValue(0.0, 0.0, 0.01));
+        scnMgr->setAmbientLight(Ogre::ColourValue(1.0, 1.0, 1.00));
 
         // set newlight.
         Ogre::Light* light = scnMgr->createLight("MainLight1");
@@ -100,12 +117,11 @@ namespace mviz
         vp->setBackgroundColour(Ogre::ColourValue(0.0,1.0,1.0));
         //! [camera]
 
-        // Ogre::String mesh_name;
-        // creatMeshFromFile("/home/asp/Downloads/6e48z1kc7r40-bugatti/bugatti/bugatti.obj",mesh_name);
-        // Ogre::Entity* ent = scnMgr->createEntity(mesh_name);
-        // Ogre::SceneNode* ogNode = scnMgr->getRootSceneNode()->createChildSceneNode();
-        // ogNode->attachObject(ent);
+        // get RenderWindow;
+        mWin = getRenderWindow();
+
     }
+
 
     bool mGraphics::RenderOneFrame()
     {
@@ -115,9 +131,8 @@ namespace mviz
         }
         else
         {
-            return true;
-        }
-        
+            return false;
+        }  
     }
 
     void mGraphics::closeGraphics()
@@ -131,9 +146,24 @@ namespace mviz
         {
             std::cout << "Detected ESC key. Exiting...\n";
             *flag = false;
-            getRoot()->queueEndRendering();
         }
         return true;
+    }
+
+    void mGraphics::windowResized(Ogre::RenderWindow* rw)
+    {
+        // std::cout << "Window resized\n";
+    }
+
+    bool mGraphics::windowClosing(Ogre::RenderWindow* rw)
+    {
+        std::cout << "Window closing\n";
+        return false;
+    }
+
+    void mGraphics::windowClosed(Ogre::RenderWindow* rw)
+    {
+        std::cout << "Window closed\n";
     }
 
     void mGraphics::addEntity(std::string _FilePath, Ogre::Vector3& pos)
@@ -155,7 +185,7 @@ namespace mviz
         Ogre::SceneNode* ogreNode = scnMgr->getRootSceneNode()->createChildSceneNode();
         ogreNode->attachObject(ogreEntity);
         ogreNode->setPosition(pos);
-
+        
     }
     // ....................... functions not part of Graphics object........................ //
     void creatMeshFromFile(std::string filepath, Ogre::String& MeshName)

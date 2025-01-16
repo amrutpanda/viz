@@ -7,10 +7,15 @@
 #include <OgreInput.h>
 #include <OgreRTShaderSystem.h>
 #include <OgreCameraMan.h>
+#include <OgreWindowEventUtilities.h>
 
 
 #include <iostream>
 #include <filesystem>
+
+// C headers
+#include <signal.h>
+#include <unistd.h>
 
 namespace mviz
 {

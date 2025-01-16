@@ -42,8 +42,11 @@ namespace mviz{
         OgreBites::CameraMan* mCameraMan;
         OgreBites::ApplicationContextSDL ctx;
         Ogre::Viewport* vp;
+        Ogre::RenderWindow* mWin;
 
-        bool* flag;
+        bool* flag = nullptr;
+        
+        std::string AppName;
 
     public:
     // mGraphics(/* args */) {};
@@ -55,13 +58,20 @@ namespace mviz{
         void setup();
         bool RenderOneFrame();
         bool keyPressed(const OgreBites::KeyboardEvent &evt);
+        void windowResized(Ogre::RenderWindow* rw);
+        bool windowClosing(Ogre::RenderWindow* rw);
+        void windowClosed(Ogre::RenderWindow* rw);
         void closeGraphics();
         ~mGraphics() {};
 
         const std::string& getName();
         urdf::ModelInterfaceSharedPtr getUrdfObject();
+        void createRobotObject(Ogre::SceneNode* _rNode, std::string _robotName, std::string _robot_filename);
+        void creatNormalObject(Ogre::SceneNode* _rNode, std::string objName, std::string _obj_filename);
 
         void createScene();
+
+        // mRobot related functions.
 
 
         
