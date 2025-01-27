@@ -30,9 +30,31 @@ namespace mviz
 
     }
 
-    void mGraphics::createRobotObject(Ogre::SceneNode* _rNode, std::string _robotName, std::string _robot_filename)
+    void mGraphics::createRobotObject(std::string _robotName, std::string _robot_filename)
     {
+        // Check whether the filename extension is ".urdf".
+        std::filesystem::path path(_robot_filename);
 
+        // std::cout << "I am here\n";
+
+        assert(path.extension() == ".urdf");
+        // create a new SceneNode from root node and start building robot graphical object from it.
+        Ogre::SceneNode* robot_root_node = scnMgr->getRootSceneNode()->createChildSceneNode();
+        // create a new robot object.
+        mRobot* robot_object = new mRobot(_robotName,_robot_filename,scnMgr,robot_root_node);
+        // add robot info to the "robots" object.
+        // robots.push_back(std::map<std::string, mRobot*>(_robotName,robot_object));
+        robots[_robotName] = robot_object;
+        std::cout << robots.at(_robotName)->getName() << std::endl;
+        std::cout << "Robot Object created.\n";
+        
+    }
+
+    void mGraphics::updateRobotGraphics(std::string _robotName, Eigen::VectorXd robot_pos)
+    {
+        Eigen::VectorXd joint_pos;
+        joint_pos = robot_pos; 
+        robots.at(_robotName)->updateRobot(joint_pos);
     }
 
     // Graphics related Methods.
@@ -104,12 +126,14 @@ namespace mviz
         cam->setAutoAspectRatio(true);
         // cam->setFOVy(Ogre::Radian(0.08));
         camNode->attachObject(cam);
-        camNode->setPosition(0, 0, 10);
+        camNode->lookAt(Ogre::Vector3(0,0,0),Ogre::Node::TS_WORLD);
+        camNode->setPosition(10, 0, 10);
 
         // create a new Cameraman object and attach it to this object.
         mCameraMan = new OgreBites::CameraMan(camNode);
-        mCameraMan->setTopSpeed(10);
+        mCameraMan->setTopSpeed(1);
         mCameraMan->setStyle(OgreBites::CameraStyle::CS_ORBIT);
+        // mCameraMan->setFixedYaw(true);
         addInputListener(mCameraMan);
 
         // and tell it to render into the main window
@@ -198,17 +222,37 @@ namespace mviz
         std::cout << path.parent_path() << std::endl;
         std::filesystem::recursive_directory_iterator it(path.parent_path());
         std::filesystem::recursive_directory_iterator end;
-
-        Ogre::ResourceGroupManager::getSingleton().addResourceLocation(path.parent_path().generic_string(),
-                                                                        "FileSystem","UserData");
-        while (it != end)
+        bool res = Ogre::ResourceGroupManager::getSingleton().resourceLocationExists(path.parent_path().generic_string(),
+                                                                           "UserData" );
+        if (!res)
         {
-            if (it->is_directory())
+            Ogre::ResourceGroupManager::getSingleton().addResourceLocation(path.parent_path().generic_string(),
+                                                                        "FileSystem","UserData");
+            while (it != end)
             {
-                Ogre::ResourceGroupManager::getSingleton().addResourceLocation(it->path().string(),"FileSystem","UserData");
-            }   
-            ++it;
+                if (it->is_directory())
+                {
+                    Ogre::ResourceGroupManager::getSingleton().addResourceLocation(it->path().string(),"FileSystem","UserData");
+                }   
+                ++it;
+            }
         }
+        else
+        {
+            std::cout << "Resource location already exists. Skipping ..." << std::endl;
+        }
+        
+        
+        // Ogre::ResourceGroupManager::getSingleton().addResourceLocation(path.parent_path().generic_string(),
+        //                                                                 "FileSystem","UserData");
+        // while (it != end)
+        // {
+        //     if (it->is_directory())
+        //     {
+        //         Ogre::ResourceGroupManager::getSingleton().addResourceLocation(it->path().string(),"FileSystem","UserData");
+        //     }   
+        //     ++it;
+        // }
 
         // std::cout << "Intilising resource group User" << std::endl;
         Ogre::ResourceGroupManager::getSingleton().initialiseResourceGroup("UserData");
@@ -227,10 +271,18 @@ namespace mviz
         AssOptions opts;
         opts.source = basename + "." + ext ;
 
-        Ogre::MeshPtr m = Ogre::MeshManager::getSingleton().createManual(basename + "." + ext, "UserData");
-        m->getUserObjectBindings().setUserAny("_AssimpLoaderOptions", opts.options);
-        // std::cout << "Decoding the obj file to mesh" << std::endl;
-        codec->decode(Ogre::Root::openFileStream(opts.source), m.get());
+        if (!Ogre::ResourceGroupManager::getSingleton().resourceExists("UserData",basename + "." + ext))
+        {
+            Ogre::MeshPtr m = Ogre::MeshManager::getSingleton().createManual(basename + "." + ext, "UserData");
+            // std::cout << "Decoding the obj file to mesh" << std::endl;
+            m->getUserObjectBindings().setUserAny("_AssimpLoaderOptions", opts.options);
+            codec->decode(Ogre::Root::openFileStream(opts.source), m.get());
+        }
+        else
+        {
+            std::cout << "Resource " << opts.source << " already exists. Skipping ..." << std::endl;
+        }
+        
 
         // std::cout << "decoding complete." << std::endl;
 

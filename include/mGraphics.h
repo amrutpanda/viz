@@ -34,8 +34,10 @@ namespace mviz{
 
         urdf::ModelInterfaceSharedPtr urdf;
         std::string name;
-        std::vector <std::map<std::string, mRobot>> robots;
-        std::vector <std::map<std::string, mObject>> objects;
+        // std::vector <std::map<std::string, mRobot*>> robots;
+        std::map<std::string, mRobot*> robots;
+        std::map<std::string, mRobot*> objects;
+        // std::vector <std::map<std::string, mObject*>> objects;
 
         Ogre::SceneNode* camNode;
         Ogre::SceneManager* scnMgr;
@@ -66,8 +68,9 @@ namespace mviz{
 
         const std::string& getName();
         urdf::ModelInterfaceSharedPtr getUrdfObject();
-        void createRobotObject(Ogre::SceneNode* _rNode, std::string _robotName, std::string _robot_filename);
-        void creatNormalObject(Ogre::SceneNode* _rNode, std::string objName, std::string _obj_filename);
+        void createRobotObject(std::string _robotName, std::string _robot_filename);
+        void creatNormalObject(std::string objName, std::string _obj_filename);
+        void updateRobotGraphics(std::string _robotName, Eigen::VectorXd robot_pos);
 
         void createScene();
 

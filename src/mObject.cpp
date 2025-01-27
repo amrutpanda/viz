@@ -41,12 +41,27 @@ namespace mviz
      void mObject::setPosition(Eigen::Vector3d &pos)
      {
           position = pos;
-
+          //  std::cout << "I am here.\n";
+          // astd_Node->translate(pos.x(), pos.y(), pos.z(), Ogre::Node::TS_WORLD);         // need to be examined.
+          astd_Node->setPosition(pos.x(), pos.y(), pos.z());
      }
 
      void mObject::setRotation(Eigen::Matrix3d  &rot)
      {
           rotation = rot;
+          Eigen::Quaterniond Q(rot);
+          Ogre::Quaternion q(Q.w(),Q.x(),Q.y(),Q.x());
+          // astd_Node->rotate(q,Ogre::Node::TS_WORLD);            // Need to be examined.
+          astd_Node->setOrientation(q);
+          
+     }
+
+     void mObject::setRotation(double w, double x, double y, double z)
+     {
+          rotation = Eigen::Quaterniond(w,x,y,z).matrix();
+          Ogre::Quaternion q(w,x,y,z);
+          // astd_Node->rotate(q, Ogre::Node::TS_WORLD);            // Need to be examined.
+          astd_Node->setOrientation(q);
      }
 
      void mObject::setScale(Ogre::Vector3 &scale)
@@ -59,6 +74,13 @@ namespace mviz
           entity_name = _entity_name;
      }
 
+     void mObject::createEntity(Ogre::SceneManager* _scnMgr)
+     {
+          std::cout << "creating Entity from mObject : Name = " << objectName << std::endl;
+          Ogre::Entity* _entity = _scnMgr->createEntity(entity_name);
+          astd_Node->attachObject(_entity);
+     }
+
      void mObject::setMeshFileName(std::string& _file_name)
      {
           mesh_file_name = _file_name;
@@ -67,6 +89,8 @@ namespace mviz
      void mObject::setSceneNode(Ogre::SceneNode* _node)
      {
           astd_Node = _node;
+          astd_Node->setInheritOrientation(true);
+     
      }
      // method description for mObject, ends here .
 

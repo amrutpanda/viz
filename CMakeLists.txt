@@ -19,6 +19,7 @@ set(CUSTOM_RBDL_PATH  "/home/asp/Files/cpp/projects/rbdl/install" CACHE INTERNAL
 find_package(RBDL REQUIRED)
 include_directories(${RBDL_INCLUDE_DIR})
 
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
@@ -26,5 +27,10 @@ add_executable(app src/main.cpp src/mGraphics.cpp src/mRobot.cpp
                     src/mObject.cpp)
 add_executable(test_app src/mainloop.cpp src/mGraphics.cpp src/mRobot.cpp
                     src/mObject.cpp)
+add_executable(rbdl_test src/rbdl_test.cpp)
+
+message("STATUS ${RBDL_URDFREADER_LIBRARY}")
+
+target_link_libraries(rbdl_test ${RBDL_LIBRARY} ${RBDL_URDFREADER_LIBRARY})
 target_link_libraries(app ${OGRE_LIBRARIES} ${urdfdom_LIBRARIES} ${SDL2_LIBRARIES})
 target_link_libraries(test_app ${OGRE_LIBRARIES} ${urdfdom_LIBRARIES} ${SDL2_LIBRARIES})

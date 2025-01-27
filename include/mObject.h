@@ -4,6 +4,9 @@
 // #include "OgreMesh.h"
 #include <mCommon.h>
 #include "eigen3/Eigen/Dense"
+#include "Eigen/Dense"
+#include "Eigen/Core"
+#include "Eigen/Geometry"
 #include <urdf_parser/urdf_parser.h>
 
 namespace mviz
@@ -61,17 +64,20 @@ namespace mviz
         const Eigen::Vector3d & getScale();
         void setPosition(Eigen::Vector3d &pos);
         void setRotation(Eigen::Matrix3d &rot);
+        void setRotation(double w, double x, double y, double z);
         void setScale(Ogre::Vector3 &scale);
         void setMeshFileName(std::string& file_name);
         void setEntityName(std::string& _entity_name);
         void setSceneNode(Ogre::SceneNode* _node);
+
+        void createEntity(Ogre::SceneManager* _scnMgr);
         
         Ogre::Mesh* mesh;
         int type = Type::MESH;
         
-        std::string mesh_file_name = NULL;
-        std::string objectName = NULL;
-        std::string entity_name = NULL;
+        std::string mesh_file_name;
+        std::string objectName;
+        std::string entity_name;
         Eigen::Vector3d position;
         Eigen::Matrix3d rotation;
         Eigen::Vector3d scale;
@@ -84,6 +90,12 @@ namespace mviz
         /* data */
     public:
         mRobotLink(/* args */) {};
+        unsigned int type;
+        double joint_variable;
+        Eigen::Affine3d T_p_l;
+        Eigen::Affine3d T_visual;
+        Eigen::Vector3d axis;
+        // Eigen::Vector3d rpy;
         ~mRobotLink() {};
     };
 
