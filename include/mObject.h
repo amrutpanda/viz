@@ -52,6 +52,7 @@ namespace mviz
     private:
         bool mesh_assigned = false;
         Ogre::SceneNode* astd_Node = NULL;
+        Ogre::Entity* entityPtr;
     public:
         mObject(std::string name,int type);
         mObject() {};
@@ -69,6 +70,7 @@ namespace mviz
         void setMeshFileName(std::string& file_name);
         void setEntityName(std::string& _entity_name);
         void setSceneNode(Ogre::SceneNode* _node);
+        void setMaterialColor(Ogre::ColourValue _color);
 
         void createEntity(Ogre::SceneManager* _scnMgr);
         

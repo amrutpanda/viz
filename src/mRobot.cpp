@@ -11,7 +11,10 @@ namespace mviz
         scnMgr = _scnMgr;
         _urdf = urdf::parseURDFFile(_urdf_file);
 
+        // initialize transformations and co-ordinates.
         T_var.setIdentity();
+        base_pos.setZero();
+        base_rot.setIdentity();
 
         // urdf::LinkConstSharedPtr linkPtr = _urdf->getRoot();
         // urdf_link = linkP
@@ -176,13 +179,30 @@ namespace mviz
             // create a mRobotLink object.
             mRobotLink* rlink = new mRobotLink();
             object_ptrs.push_back(rlink);
-            // convert the urdf link object to mRobotLink object.
 
-            convertLinkPtrTomRobotLink(ulink,rlink);
-
-            ParseVisualInfo(rlink,ulink->visual);
-            
             rlink->setSceneNode(childNode);
+
+            if (ulink->visual.get() != nullptr)
+            {
+                // convert the urdf link object to mRobotLink object.
+                convertLinkPtrTomRobotLink(ulink,rlink);
+                ParseVisualInfo(rlink,ulink->visual);
+                creatMeshFromFile(rlink->mesh_file_name,rlink->entity_name);
+                rlink->createEntity(scnMgr);
+                // rlink->setMaterialColor(Ogre::ColourValue(1.0, 0.4, 0.1, 1.0));
+
+            }
+            else
+            {
+                rlink->T_visual.setIdentity();
+            }
+
+            // convert the urdf link object to mRobotLink object.
+            // convertLinkPtrTomRobotLink(ulink,rlink);
+
+            // ParseVisualInfo(rlink,ulink->visual);
+            
+            // rlink->setSceneNode(childNode);
 
             if (ulink->parent_joint != nullptr)
             {
@@ -190,9 +210,9 @@ namespace mviz
             }
             rlink->objectName = ulink->name;
 
-            std::cout << "Parsing link: " << ulink->name << std::endl;
-            creatMeshFromFile(rlink->mesh_file_name, rlink->entity_name);
-            rlink->createEntity(scnMgr);
+            std::cout << "Parsed link: " << ulink->name << std::endl;
+            // creatMeshFromFile(rlink->mesh_file_name, rlink->entity_name);
+            // rlink->createEntity(scnMgr);
         }
         else 
         {
@@ -206,35 +226,44 @@ namespace mviz
                 // create a mRobotLink object.
                 mRobotLink* rlink = new mRobotLink();
                 object_ptrs.push_back(rlink);
-                // convert the urdf link object to mRobotLink object.
-                convertLinkPtrTomRobotLink(ulink,rlink);
-                
-                ParseVisualInfo(rlink,ulink->visual);
-                
                 rlink->setSceneNode(childNode);
+
+                if (ulink->visual.get() != nullptr)
+                {
+                    // convert the urdf link object to mRobotLink object.
+                    convertLinkPtrTomRobotLink(ulink,rlink);
+                    ParseVisualInfo(rlink,ulink->visual);
+                    creatMeshFromFile(rlink->mesh_file_name,rlink->entity_name);
+                    rlink->createEntity(scnMgr);
+                    // rlink->setMaterialColor(Ogre::ColourValue(1.0, 1.0/(i+1), 0.1 + 0.01*i, 1.0));
+
+                }
+                else
+                {
+                    rlink->T_visual.setIdentity();
+                }
+                
+                // convertLinkPtrTomRobotLink(ulink,rlink);
+                
+                // ParseVisualInfo(rlink,ulink->visual);
+                
+                // rlink->setSceneNode(childNode);
                 if (ulink->parent_joint != nullptr)
                 {
                     ParseJoint(rlink,ulink->parent_joint);
                 }
                 else 
                 {
-                    Eigen::Vector3d v;
-                    v = v.Zero();
-                    // v(0) = 10;
-                    Eigen::Quaterniond q(1,0,0,0);
-                    rlink->T_p_l.translation() = v;
-                    rlink->T_p_l.linear() = q.matrix();
-                    rlink->setPosition(v);
-                    rlink->setRotation(q.w(),q.x(),q.y(),q.z());
-                    T_var = rlink->T_visual;
-                    rlink->type = urdf::Joint::FIXED;
+                    ParseBaseLink(rlink);
                 }
                 
                 rlink->objectName = ulink->name;
-                creatMeshFromFile(rlink->mesh_file_name,rlink->entity_name);
-                rlink->createEntity(scnMgr);
-                
-                std::cout << "Parsing link: " << ulink->name << std::endl;
+                // creatMeshFromFile(rlink->mesh_file_name,rlink->entity_name);
+                // rlink->createEntity(scnMgr);
+                // set material. EXPERIMENTAL
+                // rlink->setMaterialColor(Ogre::ColourValue(1.0, 0.4, 0.1, 1.0));
+
+                std::cout << "Parsed link: " << ulink->name << std::endl;
                 // recursive call to this function.
                 createOgreNodesFromLinkPtr(ulink->child_links[i].get(),childNode);
             }
@@ -305,6 +334,24 @@ namespace mviz
         _rlink->T_visual.translation() = t;
         _rlink->T_visual.linear() = Q.matrix();
 
+        // _vptr->material->color.
+
+    }
+
+    void mRobot::ParseBaseLink(mRobotLink* _rlink)
+    {
+        // std::cout << base_pos << std::endl;
+        // std::cout << base_rot.coeffs() << std::endl;
+
+        _rlink->T_p_l.translation() = base_pos;
+        _rlink->T_p_l.linear() = base_rot.matrix();
+
+        _rlink->setPosition(base_pos);
+        _rlink->setRotation(base_rot.w(), base_rot.x(), base_rot.y(), base_rot.z());
+
+        T_var = _rlink->T_visual;
+        _rlink->type = urdf::Joint::FIXED;
+
     }
 
     void mRobot::updateRobot(Eigen::VectorXd& robot_pos )
@@ -346,10 +393,16 @@ namespace mviz
                 mRobotLinkPtr->T_p_l.translation() = vTrans;
             }
 
-            else if (type == urdf::Joint::FIXED)
+            else if ((type == urdf::Joint::FIXED) && (i != 0))
             {
                 T_var = mRobotLinkPtr->T_visual;
                 // continue;
+            }
+            else if((type == urdf::Joint::FIXED) && (i == 0))
+            {
+                T_var = mRobotLinkPtr->T_visual;
+                mRobotLinkPtr->T_p_l.translation() = base_pos;
+                mRobotLinkPtr->T_p_l.linear() = base_rot.matrix();
             }
 
             T = T_var.inverse() * mRobotLinkPtr->T_p_l * mRobotLinkPtr->T_visual;
@@ -365,9 +418,17 @@ namespace mviz
 
             mRobotLinkPtr->setRotation(q.w(),q.x(), q.y(), q.z());
             // std::cout << mRobotLinkPtr->objectName << std::endl;
-        }
-        
-        
+        }     
+    }
+
+    void mRobot::setBasePose(Eigen::Vector3d _pose)
+    {
+        base_pos = _pose;
+    }
+
+    void mRobot::setBaseRotation(Eigen::Quaterniond _qRotation)
+    {
+        base_rot = _qRotation;
     }
 
 } // namespace mviz

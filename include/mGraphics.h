@@ -71,6 +71,9 @@ namespace mviz{
         void createRobotObject(std::string _robotName, std::string _robot_filename);
         void creatNormalObject(std::string objName, std::string _obj_filename);
         void updateRobotGraphics(std::string _robotName, Eigen::VectorXd robot_pos);
+        void updateRobotGraphics(std::string _robotName, Eigen::VectorXd robot_pos, Eigen::Vector3d base_pose,
+                                Eigen::Quaterniond base_rot);
+        void setBasePoseAndRotation(std::string _robotName, Eigen::Vector3d _pose,Eigen::Quaterniond _qRotation);
 
         void createScene();
 

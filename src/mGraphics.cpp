@@ -52,11 +52,60 @@ namespace mviz
 
     void mGraphics::updateRobotGraphics(std::string _robotName, Eigen::VectorXd robot_pos)
     {
-        Eigen::VectorXd joint_pos;
-        joint_pos = robot_pos; 
-        robots.at(_robotName)->updateRobot(joint_pos);
+        try
+        {
+            Eigen::VectorXd joint_pos;
+            joint_pos = robot_pos; 
+            robots.at(_robotName)->updateRobot(joint_pos);
+        }
+        catch(const std::exception& e)
+        {
+            std::cout << "updateRobotGraphics: Cannot find a robot with name in the robots list. Name: " 
+                      << _robotName << std::endl;
+            std::cerr << e.what() << '\n';
+            std::quick_exit(-1);
+        }
+        
     }
 
+    void mGraphics::updateRobotGraphics(std::string _robotName, Eigen::VectorXd robot_pos,
+                                        Eigen::Vector3d base_pose, Eigen::Quaterniond base_rot)
+    {
+        try
+        {
+            Eigen::VectorXd joint_pos;
+            joint_pos = robot_pos; 
+            mRobot* robot = robots.at(_robotName);
+            robot->setBasePose(base_pose);
+            robot->setBaseRotation(base_rot);
+            robot->updateRobot(robot_pos);
+        }
+        catch(const std::exception& e)
+        {
+            std::cout << "updateRobotGraphics: Cannot find a robot with name in the robots list . Name: " 
+                      << _robotName << std::endl;
+            std::cerr << e.what() << '\n';
+            std::quick_exit(-1);
+        }
+        
+    }
+
+    void mGraphics::setBasePoseAndRotation(std::string _robotName, Eigen::Vector3d _pose, Eigen::Quaterniond _qRotation)
+    {
+        try
+        {
+            robots.at(_robotName)->setBasePose(_pose);
+            robots.at(_robotName)->setBaseRotation(_qRotation);
+        }
+        catch(const std::exception& e)
+        {
+            std::cout << "setBasePoseAndRotation: Cannot find a robot with name in the robots list . Name: " 
+            << _robotName << std::endl;
+            std::cerr << e.what() << '\n';
+            std::quick_exit(-1);
+        }
+        
+    }
     // Graphics related Methods.
 
     const std::string& mGraphics::getName()
@@ -138,7 +187,8 @@ namespace mviz
 
         // and tell it to render into the main window
         Ogre::Viewport* vp = getRenderWindow()->addViewport(cam);
-        vp->setBackgroundColour(Ogre::ColourValue(0.0,1.0,1.0));
+        // vp->setBackgroundColour(Ogre::ColourValue(0.0,1.0,1.0));
+        vp->setBackgroundColour(Ogre::ColourValue(0.0, 0.0, 0.0));
         //! [camera]
 
         // get RenderWindow;

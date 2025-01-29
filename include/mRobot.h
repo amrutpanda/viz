@@ -26,6 +26,8 @@ namespace mviz
         Ogre::SceneNode* rootNode; 
 
         Eigen::Affine3d T_var;
+        Eigen::Vector3d base_pos;
+        Eigen::Quaterniond base_rot;
         // urdf::Link* urdf_link;
         urdf::LinkConstSharedPtr urdf_root_link;
 
@@ -39,12 +41,16 @@ namespace mviz
         // void createOgreNodeFromLinkConstSharedPtr(urdf::LinkConstSharedPtr, Ogre::SceneNode*);
         void ParseJoint(mRobotLink* _rlink, urdf::JointConstSharedPtr _jptr);
         void ParseVisualInfo(mRobotLink* _rlink, urdf::VisualSharedPtr _vptr);
+        void ParseBaseLink(mRobotLink* _rlink);
     public:
         mRobot(std::string robot_name, std::string urdf_file,Ogre::SceneManager* _scnMgr ,Ogre::SceneNode* root_node);
         // mRobot(std::string robot_name, std::string urdf_file): robot_name(robot_name),urdf_file(urdf_file) {};
         std::string getName();
 
         void updateRobot(Eigen::VectorXd& joint_pos);
+        void setBasePose(Eigen::Vector3d _pose);
+        void setBaseRotation(Eigen::Quaterniond _qRotation);
+
         ~mRobot() {};
 
         // void convertRobotLinkToOgreNode(urdf::LinkSharedPtr link, Ogre::SceneNode* sNode);

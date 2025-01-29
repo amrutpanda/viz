@@ -41,8 +41,6 @@ namespace mviz
      void mObject::setPosition(Eigen::Vector3d &pos)
      {
           position = pos;
-          //  std::cout << "I am here.\n";
-          // astd_Node->translate(pos.x(), pos.y(), pos.z(), Ogre::Node::TS_WORLD);         // need to be examined.
           astd_Node->setPosition(pos.x(), pos.y(), pos.z());
      }
 
@@ -78,6 +76,7 @@ namespace mviz
      {
           std::cout << "creating Entity from mObject : Name = " << objectName << std::endl;
           Ogre::Entity* _entity = _scnMgr->createEntity(entity_name);
+          entityPtr = _entity;
           astd_Node->attachObject(_entity);
      }
 
@@ -91,6 +90,20 @@ namespace mviz
           astd_Node = _node;
           astd_Node->setInheritOrientation(true);
      
+     }
+
+     void mObject::setMaterialColor(Ogre::ColourValue _color)
+     {
+          Ogre::MaterialPtr pmat = Ogre::MaterialManager::getSingleton().getByName("mat1");
+          if (pmat.isNull())
+          {
+               pmat = Ogre::MaterialManager::getSingleton().create("mat1","UserData");
+          }
+          pmat->getTechnique(0)->getPass(0)->setAmbient(_color);
+          pmat->getTechnique(0)->getPass(0)->setDiffuse(_color);
+          // pmat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTexture();
+          entityPtr->setMaterial(pmat);
+
      }
      // method description for mObject, ends here .
 

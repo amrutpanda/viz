@@ -1,6 +1,7 @@
 // #include <mCommon.h>
 
 #include <mGraphics.h>
+#include <chrono>
 
 bool runloop = true;
 
@@ -23,20 +24,29 @@ int main(int argc, char const *argv[])
     // graphics.addEntity(filePath,v);
     // graphics.addEntity(filePath1,v1);
     // graphics.addEntity(argv[1],v1);
-    graphics.createRobotObject("panda","/home/asp/Files/cpp/projects/viz/src/kuka.urdf");
+    // graphics.createRobotObject("panda1","/home/asp/Files/cpp/projects/viz/src/kuka.urdf");
+    graphics.createRobotObject("robot","/home/asp/Files/resources/icub-models-master/iCub/robots/iCubGazeboV2_5_KIT_007/model_test.urdf");
+    // graphics.createRobotObject("ut","/home/asp/Files/resources/icub-models-master/iCub/robots/iCubGenova02/model (copy).urdf");
+    // graphics.setBasePoseAndRotation("panda1",Eigen::Vector3d(1,0,0),Eigen::Quaterniond::Identity());
 
     bool ret;
     int count = 0;
     Eigen::VectorXd v2(7) ;
     v2.setZero();
+
+    Eigen::Vector3d v3;
+    v3.setZero();
+    
     // graphics.getRoot()->startRendering();
     while (runloop)
     {
         if (!graphics.RenderOneFrame())
             break;
-        graphics.updateRobotGraphics("panda",v2);
-        v2(0) = v2(0) + 0.01;
-        v2(3) = v2(3) + 0.03;
+        // graphics.updateRobotGraphics("panda",v2);
+        // graphics.updateRobotGraphics("panda1",v2,v3,Eigen::Quaterniond::Identity());
+        v3(2) = v3(2) + 0.001;
+        v2(0) = v2(0) + 0.001;
+        v2(3) = v2(3) + 0.001;
     }
     graphics.closeGraphics();
 
