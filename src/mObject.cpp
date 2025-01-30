@@ -95,7 +95,7 @@ namespace mviz
      void mObject::setMaterialColor(Ogre::ColourValue _color)
      {
           Ogre::MaterialPtr pmat = Ogre::MaterialManager::getSingleton().getByName("mat1");
-          if (pmat.isNull())
+          if (pmat == nullptr)
           {
                pmat = Ogre::MaterialManager::getSingleton().create("mat1","UserData");
           }

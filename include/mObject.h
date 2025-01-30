@@ -3,7 +3,7 @@
 // #include "Ogre.h"
 // #include "OgreMesh.h"
 #include <mCommon.h>
-#include "eigen3/Eigen/Dense"
+// #include "eigen3/Eigen/Dense"
 #include "Eigen/Dense"
 #include "Eigen/Core"
 #include "Eigen/Geometry"
@@ -73,6 +73,7 @@ namespace mviz
         void setMaterialColor(Ogre::ColourValue _color);
 
         void createEntity(Ogre::SceneManager* _scnMgr);
+        void attachChildMesh(std::string _meshName,Eigen::Vector3d pos, Eigen::Quaterniond rot);
         
         Ogre::Mesh* mesh;
         int type = Type::MESH;
@@ -83,6 +84,8 @@ namespace mviz
         Eigen::Vector3d position;
         Eigen::Matrix3d rotation;
         Eigen::Vector3d scale;
+
+        // std::map< std::string, std:: >
     };
 
 
