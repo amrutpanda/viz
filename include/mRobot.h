@@ -15,7 +15,7 @@ namespace mviz
         std::string robot_name; // Name of the robot assigned by the user.
         std::string _robot_name; // Name of the robot mentioned in URDF.
         std::string _urdf_file;
-        urdf::ModelInterfaceSharedPtr _urdf;
+        // urdf::ModelInterfaceSharedPtr _urdf;
         std::vector <std::string> link_names;
         std::vector <std::string> joint_name;
         std::vector <double*> joint_value_holder;   

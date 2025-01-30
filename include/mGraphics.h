@@ -36,7 +36,7 @@ namespace mviz{
         std::string name;
         // std::vector <std::map<std::string, mRobot*>> robots;
         std::map<std::string, mRobot*> robots;
-        std::map<std::string, mRobot*> objects;
+        std::map<std::string, mObject*> objects;
         // std::vector <std::map<std::string, mObject*>> objects;
 
         Ogre::SceneNode* camNode;
@@ -77,6 +77,8 @@ namespace mviz{
 
         void createScene();
 
+        void creatGraphicalObject(std::string _fileName, std::string objName,Ogre::Vector3 pos, Ogre::Quaternion qrot);
+        mObject* getGraphicalObject(std::string objName);
         // mRobot related functions.
 
 

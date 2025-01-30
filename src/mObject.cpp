@@ -9,19 +9,6 @@ namespace mviz
           type = _type;
      }
 
-     // mObject::~mObject()
-     // {
-     //      if (mesh_assigned)
-     //      {
-     //           delete mesh;
-     //      }
-     // }
-
-     void mObject::assign_mesh(Ogre::Mesh* m)
-     {
-          mesh = m;
-          mesh_assigned = true;
-     }
 
      const Eigen::Vector3d& mObject::getPosition()
      {
@@ -36,6 +23,11 @@ namespace mviz
      const Eigen::Vector3d& mObject::getScale()
      {
           return scale;
+     }
+
+     void mObject::setPosition(Ogre::Vector3 pos)
+     {
+          astd_Node->setPosition(pos);
      }
 
      void mObject::setPosition(Eigen::Vector3d &pos)
@@ -57,9 +49,15 @@ namespace mviz
      void mObject::setRotation(double w, double x, double y, double z)
      {
           rotation = Eigen::Quaterniond(w,x,y,z).matrix();
-          Ogre::Quaternion q(w,x,y,z);
+          // Ogre::Quaternion q(w,x,y,z);
           // astd_Node->rotate(q, Ogre::Node::TS_WORLD);            // Need to be examined.
-          astd_Node->setOrientation(q);
+          // astd_Node->setOrientation(q);
+          astd_Node->setOrientation(w,x,y,z);
+     }
+
+     void mObject::setRotation(Ogre::Quaternion qrot)
+     {
+          astd_Node->setOrientation(qrot);
      }
 
      void mObject::setScale(Ogre::Vector3 &scale)
@@ -105,11 +103,25 @@ namespace mviz
           entityPtr->setMaterial(pmat);
 
      }
-     // method description for mObject, ends here .
 
-     void convert_urdf_to_mvector(mVector& v_m, urdf::Vector3 v_u)
+     void mObject::attachChildMesh(Ogre::SceneManager* _scM, std::string _meshName, Ogre::Vector3 pos, Ogre::Quaternion qrot)
      {
-          v_m << v_u.x, v_u.y, v_u.z ;
+          Ogre::SceneNode* childNode = astd_Node->createChildSceneNode();
+          Ogre::Entity* _childEntity = _scM->createEntity(_meshName);
+          childNode->attachObject(_childEntity);
+          
+          childNode->setPosition(pos);
+          childNode->setOrientation(qrot);
+          // create a child struct and fill it.
+          mChild* childPtr = new mChild;
+          childPtr->childMeshName = _meshName;
+          childPtr->childEntityName = _meshName;        // at this moment entity name = meshname;
+          childPtr->_sNode = childNode;
+          childPtr->rel_pos = pos;
+          childPtr->rel_qrot = qrot;
+          // store 
+          children.push_back(childPtr);
      }
+     // method description for mObject, ends here .
 
 } // namespace mviz

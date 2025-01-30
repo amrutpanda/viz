@@ -106,6 +106,39 @@ namespace mviz
         }
         
     }
+
+    void mGraphics::creatGraphicalObject(std::string _fileName, std::string objName,Ogre::Vector3 pos, Ogre::Quaternion qrot)
+    {
+        std::string mesh_name;
+
+        std::filesystem::path path(_fileName);
+        if ( path.extension() == ".mesh")
+        {
+            std::cout << "Path extension: " << path.extension() << std::endl;
+            mesh_name = path.filename();
+        }
+        else
+        {
+            creatMeshFromFile(_fileName,mesh_name);
+        }
+
+        mObject* objPtr = new mObject;
+        objPtr->objectName = objName;
+
+        Ogre::SceneNode* objSceneNode = scnMgr->getRootSceneNode()->createChildSceneNode();
+        objPtr->setSceneNode(objSceneNode);
+        
+        objPtr->setPosition(pos);
+        objPtr->setRotation(qrot);
+        objPtr->attachChildMesh(scnMgr,mesh_name, Ogre::Vector3(0,0,0),Ogre::Quaternion(1,0,0,0));   // assuming entity name and mesh name as same at this momemt.
+        objects[objName] = objPtr;
+    }
+
+    mObject* mGraphics::getGraphicalObject(std::string objName)
+    {
+        return objects.at(objName);
+    }
+
     // Graphics related Methods.
 
     const std::string& mGraphics::getName()
@@ -136,8 +169,6 @@ namespace mviz
         // _ctx.setup();
         OgreBites::ApplicationContext::setup();
         addInputListener(this);
-        
-        
 
         // get a pointer to the already created root
         Ogre::Root* root = getRoot();
@@ -264,6 +295,7 @@ namespace mviz
     // ....................... functions not part of Graphics object........................ //
     void creatMeshFromFile(std::string filepath, Ogre::String& MeshName)
     {
+
         if (!Ogre::ResourceGroupManager::getSingleton().resourceGroupExists("UserData"))
         {
             Ogre::ResourceGroupManager::getSingleton().createResourceGroup("UserData");

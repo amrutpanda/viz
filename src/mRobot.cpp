@@ -9,19 +9,15 @@ namespace mviz
         _urdf_file = urdf_file;
         rootNode = root_node;
         scnMgr = _scnMgr;
-        _urdf = urdf::parseURDFFile(_urdf_file);
+        urdf::ModelInterfaceSharedPtr _urdf = urdf::parseURDFFile(_urdf_file);
 
         // initialize transformations and co-ordinates.
         T_var.setIdentity();
         base_pos.setZero();
         base_rot.setIdentity();
 
-        // urdf::LinkConstSharedPtr linkPtr = _urdf->getRoot();
-        // urdf_link = linkP
-
         urdf_root_link = _urdf->getRoot();
         _robot_name = _urdf->getName();
-
 
         urdf::Link* urdf_root_link_ptr = const_cast<urdf::Link*>(urdf_root_link.get());
 
@@ -42,46 +38,7 @@ namespace mviz
         return _name;
     }
    
-    // void mRobot::convertLinkConstSharedPtrTomRobotLink(urdf::LinkConstSharedPtr ulink, mRobotLink* rlink)
-    // {
-        
-    //     urdf::Mesh* m = dynamic_cast<urdf::Mesh*> (ulink->visual->geometry.get());
-    //     if (m == NULL)
-    //     {
-    //         std::cout << "At this moment only Mesh objects are supported." << std::endl;
-    //         throw std::runtime_error("cannot convert the link to Mesh type object. link name : " + ulink->name);
 
-    //     }
-
-    //     rlink->type = Type::MESH; // this is redundant.
-    //     // rlink->mesh_file_name = std::filesystem::canonical(m->filename).string();
-
-    //     rlink->mesh_file_name = std::filesystem::path(m->filename).string();
-
-    //     std::cout << ulink->name << " :: " << rlink->mesh_file_name << std::endl;
-    //     rlink->scale << m->scale.x , m->scale.y, m->scale.z;
-        
-    // }
-
-
-    // void mRobot::convertLinkSharedPtrTomRobotLink(urdf::LinkSharedPtr ulink, mRobotLink* rlink)
-    // {
-    //     urdf::Mesh* m = dynamic_cast<urdf::Mesh*> (ulink->visual->geometry.get());
-    //     if (m == NULL)
-    //     {
-    //         std::cout << "At this moment only Mesh objects are supported." << std::endl;
-    //         throw std::runtime_error("cannot convert the link to Mesh type object. link name : " + ulink->name);
-
-    //     }
-    //     rlink->type = Type::MESH; // this is redundant.
-    //     // rlink->mesh_file_name = std::filesystem::canonical(m->filename).string();
-
-    //     rlink->mesh_file_name = std::filesystem::path(m->filename).string();
-        
-    //     std::cout << ulink->name << " :: " << rlink->mesh_file_name << std::endl;
-    //     rlink->scale << m->scale.x , m->scale.y, m->scale.z;
-        
-    // }
 
     void mRobot::convertLinkPtrTomRobotLink(urdf::Link* ulink, mRobotLink* rlink)
     {
@@ -103,70 +60,6 @@ namespace mviz
         std::cout << ulink->name << " :: " << rlink->mesh_file_name << std::endl;
         rlink->scale << m->scale.x , m->scale.y, m->scale.z;
     }
-
-    // void mRobot::createOgreNodesFromLinkSharedPtr(urdf::LinkSharedPtr ulink, Ogre::SceneNode* ogNode)
-    // {
-    //     if (ulink->child_links.size() == 0)
-    //     {
-    //         Ogre::SceneNode* childNode = ogNode->createChildSceneNode();
-    //         link_names.push_back(ulink->name);
-    //         ogreNodes.push_back(childNode);
-    //         // create a mRobotLink object.
-    //         mRobotLink* rlink = new mRobotLink();
-    //         object_ptrs.push_back(rlink);
-    //         // convert the urdf link object to mRobotLink object.
-
-    //         if (ulink->getParent() == nullptr)
-    //         {
-    //             std::cout << ulink->name << "is the root link." << std::endl;
-    //             convertLinkConstSharedPtrTomRobotLink(ulink,rlink);
-    //         }
-    //         else
-    //         {
-    //             convertLinkSharedPtrTomRobotLink(ulink,rlink);
-    //         }
-            
-    //         rlink->setSceneNode(childNode);
-    //         std::cout << "Parsing link: " << ulink->name << std::endl;
-    //         creatMeshFromFile(rlink->mesh_file_name, rlink->entity_name);
-    //     }
-    //     else 
-    //     {
-    //         std::cout << "=====================================" << std::endl;
-    //         for (size_t i = 0; i < ulink->child_links.size(); i++)
-    //         {
-    //             Ogre::SceneNode* childNode = ogNode->createChildSceneNode();
-    //             link_names.push_back(ulink->name);
-    //             ogreNodes.push_back(childNode);
-    //             // create a mRobotLink object.
-    //             mRobotLink* rlink = new mRobotLink();
-    //             object_ptrs.push_back(rlink);
-    //             // convert the urdf link object to mRobotLink object.
-
-    //             if (ulink->getParent() == nullptr)
-    //             {
-    //                 std::cout << ulink->name << "is the root link." << std::endl;
-    //                 convertLinkConstSharedPtrTomRobotLink(ulink,rlink);
-    //             }
-    //             else
-    //             {
-    //                 convertLinkSharedPtrTomRobotLink(ulink,rlink);
-    //             }
-
-    //             // convertLinkSharedPtrTomRobotLink(ulink,rlink);
-
-    //             creatMeshFromFile(rlink->mesh_file_name,rlink->entity_name);
-
-    //             std::cout << "Parsing link: " << ulink->name << std::endl;
-    //             // recursive call to this function.
-    //             createOgreNodesFromLinkSharedPtr(ulink->child_links[i],childNode);
-    //         }
-
-    //         std::cout << "---------------------------------------" << std::endl;
-            
-    //     }
-        
-    // }
 
     void mRobot::createOgreNodesFromLinkPtr(urdf::Link* ulink,Ogre::SceneNode* ogNode)
     {
@@ -235,6 +128,8 @@ namespace mviz
                     ParseVisualInfo(rlink,ulink->visual);
                     creatMeshFromFile(rlink->mesh_file_name,rlink->entity_name);
                     rlink->createEntity(scnMgr);
+                    rlink->T
+                    // rlink->attachChildMesh(scnMgr,rlink->entity_name,Ogre::Vector3())
                     // rlink->setMaterialColor(Ogre::ColourValue(1.0, 1.0/(i+1), 0.1 + 0.01*i, 1.0));
 
                 }
@@ -330,6 +225,10 @@ namespace mviz
 
         Eigen::Vector3d t(x,y,z);
         Eigen::Quaterniond Q(qw,qx,qy,qz);
+
+        // std::string entity_name;
+        // creatMeshFromFile(_rlink->mesh_file_name,entity_name);
+        // _rlink->attachChildMesh(scnMgr, entity_name,Ogre::Vector3(x,y,z), Ogre::Quaternion(qw,qx,qy,qz));
         
         _rlink->T_visual.translation() = t;
         _rlink->T_visual.linear() = Q.matrix();

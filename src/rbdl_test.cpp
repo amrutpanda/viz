@@ -23,24 +23,30 @@
 //     return 0;
 // }
 
+# include <iostream>
 
-#include <iostream>
-#include <Eigen/Dense>
-#include <Eigen/Core>
+class boom
+{
+private:
+    double pos = 1.2;
+public:
+    boom(/* args */) {};
+    void setpos(double* _x) { pos = *_x;}
+    ~boom(){};
+};
 
 int main(int argc, char const *argv[])
 {
-    Eigen::Affine3d A;
-    A.setIdentity();
+    boom* b = new boom;
+    double t = 1.3;
+    b->setpos(&t);
 
-    std::cout << "A\n " << A.matrix() << std::endl;
+    for (int i = 0; i < 5; i++)
+    {
+        t = t + i;
+        std::cout << t << std::endl;
+    }
+    
 
-    Eigen::Matrix3d m;
-    m = Eigen::AngleAxisd(0,Eigen::Vector3d::UnitX())
-        * Eigen::AngleAxisd(0, Eigen::Vector3d::UnitY())
-        * Eigen::AngleAxisd(1.57, Eigen::Vector3d::UnitZ());
-    std::cout << "M1: \n" << m << std::endl;
-    m = Eigen::AngleAxisd(1.57, Eigen::Vector3d(0,0,1));
-    std::cout << "M2: \n" << m.matrix() << std::endl;
     return 0;
 }
