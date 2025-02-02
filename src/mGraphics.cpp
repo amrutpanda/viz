@@ -10,17 +10,17 @@ namespace mviz
 {
     void mGraphics::readFile(std::string FilePath)
     {
-        urdf = urdf::parseURDFFile(FilePath);
+        urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDFFile(FilePath);
         
         urdf::LinkConstSharedPtr root = urdf->getRoot();
         
         
     }
 
-    urdf::ModelInterfaceSharedPtr mGraphics::getUrdfObject()
-    {
-        return urdf;
-    }
+    // urdf::ModelInterfaceSharedPtr mGraphics::getUrdfObject()
+    // {
+    //     return urdf;
+    // }
 
 
     void mGraphics::urdf_to_ogre_converter(Ogre::SceneManager* scm)
@@ -132,6 +132,10 @@ namespace mviz
         objPtr->setRotation(qrot);
         objPtr->attachChildMesh(scnMgr,mesh_name, Ogre::Vector3(0,0,0),Ogre::Quaternion(1,0,0,0));   // assuming entity name and mesh name as same at this momemt.
         objects[objName] = objPtr;
+        // experimental
+
+        axis* ax = new axis(objPtr);
+        
     }
 
     mObject* mGraphics::getGraphicalObject(std::string objName)
@@ -143,7 +147,7 @@ namespace mviz
 
     const std::string& mGraphics::getName()
     {
-        return urdf->getName();
+        return name;
     }
 
     void mGraphics::attachFlagVariable(bool* _flag)
@@ -173,7 +177,7 @@ namespace mviz
         // get a pointer to the already created root
         Ogre::Root* root = getRoot();
         scnMgr = root->createSceneManager();
-
+        
         // register our scene with the RTSS
         Ogre::RTShader::ShaderGenerator* shadergen = Ogre::RTShader::ShaderGenerator::getSingletonPtr();
         shadergen->addSceneManager(scnMgr);
@@ -187,14 +191,14 @@ namespace mviz
         lightNode->attachObject(light);
 
         //! [lightpos]
-        lightNode->setPosition(0, 0, 100);
+        lightNode->setPosition(0, 0, 1000);
 
         // another light node.
         Ogre::Light* light2 = scnMgr->createLight("MainLight2");
         Ogre::SceneNode* lightNode2 = scnMgr->getRootSceneNode()->createChildSceneNode();
         lightNode2->attachObject(light2);
 
-        lightNode2->setPosition(-500, 100, 0);
+        lightNode2->setPosition(1000, 100, 500);
         // another light node end.
 
         //! [camera]
@@ -218,12 +222,15 @@ namespace mviz
 
         // and tell it to render into the main window
         Ogre::Viewport* vp = getRenderWindow()->addViewport(cam);
-        // vp->setBackgroundColour(Ogre::ColourValue(0.0,1.0,1.0));
-        vp->setBackgroundColour(Ogre::ColourValue(0.0, 0.0, 0.0));
+        vp->setBackgroundColour(Ogre::ColourValue(0.0,1.0,1.0));
+        // vp->setBackgroundColour(Ogre::ColourValue(0.0, 0.0, 0.0));
         //! [camera]
 
         // get RenderWindow;
         mWin = getRenderWindow();
+
+        // create a new resource group.
+        Ogre::ResourceGroupManager::getSingleton().createResourceGroup("UserData");
 
     }
 
@@ -373,6 +380,14 @@ namespace mviz
 
     }
 
+    void creatAxisMesh(Ogre::SceneManager* _scnMgr, std::string& _name)
+    {
+        Ogre::ManualObject* pAxis = _scnMgr->createManualObject("axis");
+        pAxis->begin("BaseWhiteNoLighting",Ogre::RenderOperation::OT_LINE_STRIP);
+        
+        
+        
+    }
 
     void say_hello()
     {

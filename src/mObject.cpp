@@ -6,7 +6,6 @@ namespace mviz
      mObject::mObject(std::string _name, int _type)
      {
           objectName = _name;
-          type = _type;
      }
 
 
@@ -65,6 +64,17 @@ namespace mviz
           astd_Node->setScale(scale);
      }
 
+     void mObject::setScale(double _sx, double _sy, double _sz)
+     {
+          astd_Node->setScale(_sx, _sy, _sz);
+     }
+
+     void mObject::setVisible(bool _flag)
+     {
+          std::cout << "turning visibility of mObject, Name " << objectName << " to " << _flag << std::endl;
+          astd_Node->setVisible(_flag);
+     }
+
      void mObject::setEntityName(std::string& _entity_name)
      {
           entity_name = _entity_name;
@@ -78,10 +88,10 @@ namespace mviz
           astd_Node->attachObject(_entity);
      }
 
-     void mObject::setMeshFileName(std::string& _file_name)
-     {
-          mesh_file_name = _file_name;
-     }
+     // void mObject::setMeshFileName(std::string& _file_name)
+     // {
+     //      mesh_file_name = _file_name;
+     // }
 
      void mObject::setSceneNode(Ogre::SceneNode* _node)
      {
@@ -92,23 +102,31 @@ namespace mviz
 
      void mObject::setMaterialColor(Ogre::ColourValue _color)
      {
-          Ogre::MaterialPtr pmat = Ogre::MaterialManager::getSingleton().getByName("mat1");
+          Ogre::MaterialPtr pmat = Ogre::MaterialManager::getSingleton().getByName("Default_mat");
+          Ogre::MaterialPtr cmat;
           if (pmat == nullptr)
           {
-               pmat = Ogre::MaterialManager::getSingleton().create("mat1","UserData");
+               cmat = Ogre::MaterialManager::getSingleton().create("Default_mat","UserData");
           }
-          pmat->getTechnique(0)->getPass(0)->setAmbient(_color);
-          pmat->getTechnique(0)->getPass(0)->setDiffuse(_color);
+          else
+          {
+               cmat = pmat->clone(objectName);
+          }
+          
+          cmat->getTechnique(0)->getPass(0)->setAmbient(_color);
+          cmat->getTechnique(0)->getPass(0)->setDiffuse(_color);
           // pmat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTexture();
-          entityPtr->setMaterial(pmat);
+          entityPtr->setMaterial(cmat);
 
      }
 
-     void mObject::attachChildMesh(Ogre::SceneManager* _scM, std::string _meshName, Ogre::Vector3 pos, Ogre::Quaternion qrot)
+     void mObject::attachChildMesh(Ogre::SceneManager* _scM, std::string _meshName, Ogre::Vector3 pos,
+                                    Ogre::Quaternion qrot, Ogre::Vector3 scale = Ogre::Vector3(1.0))
      {
           Ogre::SceneNode* childNode = astd_Node->createChildSceneNode();
           Ogre::Entity* _childEntity = _scM->createEntity(_meshName);
           childNode->attachObject(_childEntity);
+          childNode->setScale(scale);
           
           childNode->setPosition(pos);
           childNode->setOrientation(qrot);
@@ -122,6 +140,118 @@ namespace mviz
           // store 
           children.push_back(childPtr);
      }
-     // method description for mObject, ends here .
+
+     bool mObject::IsChildMeshExists(std::string& _chName)
+     {
+          mChild* ch;
+          for (int i = 0; i < children.size(); i++)
+          {
+               ch = children[i];
+               if (ch->IsNameMatching(_chName))
+               {
+                    return true;
+               }
+               
+          }
+          return false;
+          
+     }
+     void mObject::attachNode(Ogre::SceneNode* _sNode, Ogre::Vector3 rel_pos, Ogre::Quaternion rel_qrot)
+     {
+          astd_Node->addChild(_sNode);
+          _sNode->setPosition(rel_pos);
+          _sNode->setOrientation(rel_qrot);
+     }
+
+     void mObject::attachObject(mObject* _Object)
+     {
+          // detaching the _Object from its parent node.
+          _Object->setSceneNode(astd_Node->createChildSceneNode());
+          if (child_objects[_Object->objectName] == nullptr)
+               child_objects[_Object->objectName] = _Object;
+          else
+               throw std::runtime_error("Cannot attach mObject: " + _Object->objectName + " to " 
+                                        + objectName + "as it already exists");
+          // _Object->getSceneNode()->getParentSceneNode()->removeChild(_Object->getSceneNode());
+          // astd_Node->addChild(_Object->getSceneNode());
+                  
+     }
+
+     bool mObject::IsChildObjectExists(std::string _chObjName)
+     {
+          // if (child_objects.at(_chObjName))
+          // {
+          //      return true;
+          // }
+          // else
+          // {
+          //      return false;
+          // }
+
+          try
+          {
+               child_objects.at(_chObjName);
+               return true;
+
+          }
+          catch(const std::exception& e)
+          {
+               // std::cerr << e.what() << '\n';
+               return false;
+          }
+          
+          
+     }
+
+     void mObject::setChildMeshVisible(std::string& _chName, bool _flag)
+     {
+          mChild* ch;
+          for (int i = 0; i < children.size(); i++)
+          {
+               ch = children[i];
+               if (ch->IsNameMatching(_chName))
+               {
+                    ch->setVisible(_flag);
+                    return;
+               }
+               
+          }
+          throw std::runtime_error("No Child Mesh present with name: " + _chName + " in mObject: " + objectName);
+          
+     }
+     void mObject::setChildObjectVisible(std::string& _chObjName, bool _flag)
+     {
+          mObject* chObj = child_objects.at(_chObjName);
+          if (chObj != nullptr)
+          {
+               chObj->getSceneNode()->setVisible(_flag,false);
+          }
+          else
+          {
+               throw std::runtime_error("No Child mObject present with name: " + _chObjName + " in mObject: " + objectName);
+          }     
+          
+     }
+
+     void mObject::setAxis()
+     {
+          if (astd_Node == nullptr)
+               std::runtime_error("mObject Not part of scenegraph. Run setSceneNode command to proceed. Name: " + objectName);
+          if (objectName != "AXIS" && !IsChildObjectExists("AXIS"))
+               axis* ax =  new axis(this);
+          else
+               std::cout << "This object is an 'axis' mObject. Cannot set axis. Ignoring command." << std::endl;
+     }
+
+     void mObject::setAxisVisible(bool _flag)
+     {
+          std::cout << "setting axis visible. Name: " << objectName << std::endl;
+          std::string axis_object_name = "AXIS";
+          if (objectName != axis_object_name || IsChildObjectExists(axis_object_name))
+               setChildObjectVisible(axis_object_name,_flag);
+          else
+               std::cout << "This is an 'axis' mObject. Ignoring setvisible command." << std::endl;
+     }
+     // method description for mObject, ends here.
 
 } // namespace mviz

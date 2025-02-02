@@ -2,15 +2,6 @@
 
 #include <mRobot.h>
 
-// #include <filesystem>
-// #include <urdf_parser/urdf_parser.h>
-// #include <mRobot.h>
-// #include <OgreCodec.h>
-// #include <OgreApplicationContext.h>
-// #include <OgreInput.h>
-// #include <OgreRTShaderSystem.h>
-// #include <OgreCameraMan.h>
-
 namespace mviz{
 
     struct AssOptions
@@ -32,7 +23,7 @@ namespace mviz{
 
         std::string resource_group_name = "User";
 
-        urdf::ModelInterfaceSharedPtr urdf;
+        // urdf::ModelInterfaceSharedPtr urdf;
         std::string name;
         // std::vector <std::map<std::string, mRobot*>> robots;
         std::map<std::string, mRobot*> robots;
@@ -67,7 +58,7 @@ namespace mviz{
         ~mGraphics() {};
 
         const std::string& getName();
-        urdf::ModelInterfaceSharedPtr getUrdfObject();
+        // urdf::ModelInterfaceSharedPtr getUrdfObject();
         void createRobotObject(std::string _robotName, std::string _robot_filename);
         void creatNormalObject(std::string objName, std::string _obj_filename);
         void updateRobotGraphics(std::string _robotName, Eigen::VectorXd robot_pos);

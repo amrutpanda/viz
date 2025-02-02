@@ -24,9 +24,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 add_executable(app src/main.cpp src/mGraphics.cpp src/mRobot.cpp
-                    src/mObject.cpp)
+                    src/mObject.cpp src/axis.cpp)
 add_executable(test_app src/mainloop.cpp src/mGraphics.cpp src/mRobot.cpp
-                    src/mObject.cpp)
+                    src/mObject.cpp src/axis.cpp)
 add_executable(rbdl_test src/rbdl_test.cpp)
 
 message("STATUS ${RBDL_URDFREADER_LIBRARY}")

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "mObject.h"
+// #include "axis.h"
 // #include "mGraphics.h"
 #include <urdf_parser/urdf_parser.h>
 #include <urdf_model/link.h>
@@ -50,6 +51,7 @@ namespace mviz
         void updateRobot(Eigen::VectorXd& joint_pos);
         void setBasePose(Eigen::Vector3d _pose);
         void setBaseRotation(Eigen::Quaterniond _qRotation);
+        void setRobotAxisVisible(bool _flag);
 
         ~mRobot() {};
 

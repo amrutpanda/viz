@@ -23,6 +23,7 @@ namespace mviz
     void createBox(std::string name, double l, double b, double h, Ogre::Mesh* m);
     void createCylinder(std::string name, double r, double h, Ogre::Mesh* m);
     void creatMeshFromFile(std::string filePath,Ogre::String& MeshName);
+    void createAxisMesh(Ogre::SceneManager* _scnMgr, std::string& _name);
 
     // testing.
     void say_hello();

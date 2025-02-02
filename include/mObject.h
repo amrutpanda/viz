@@ -4,11 +4,13 @@
 // #include "OgreMesh.h"
 #include <mCommon.h>
 // #include "eigen3/Eigen/Dense"
-#include "Eigen/Dense"
-#include "Eigen/Core"
-#include "Eigen/Geometry"
+#include "eigen3/Eigen/Dense"
+#include "eigen3/Eigen/Core"
+#include "eigen3/Eigen/Geometry"
 #include <urdf_parser/urdf_parser.h>
 // #include "Eigen/Dense"
+
+// #include "axis.h"
 
 namespace mviz
 {   
@@ -26,7 +28,18 @@ namespace mviz
         Ogre::SceneNode* _sNode;
         Ogre::Vector3 rel_pos;
         Ogre::Quaternion rel_qrot;
+        Ogre::Vector3 scale = Ogre::Vector3(1.0);
         bool visible = true;
+        void setVisible(bool _flag) {visible = _flag;_sNode->setVisible(_flag,false);}
+        bool IsVisible() {return visible;}
+        bool IsNameMatching(std::string _chName)
+        {
+            if (childMeshName == _chName)
+            {
+                return true;
+            }
+            return false;
+        } 
     };
     
 
@@ -51,21 +64,32 @@ namespace mviz
         void setRotation(double w, double x, double y, double z);
         void setRotation(Ogre::Quaternion qrot);
         void setScale(Ogre::Vector3 &scale);
-        void setMeshFileName(std::string& file_name);
+        void setScale(double _sx, double _sy, double _sz);
+        void setVisible(bool _flag);
+        // void setMeshFileName(std::string& file_name);
         void setEntityName(std::string& _entity_name);
         void setSceneNode(Ogre::SceneNode* _node);
         void setMaterialColor(Ogre::ColourValue _color);
+        void setAxis();
 
         void createEntity(Ogre::SceneManager* _scnMgr);
-        void attachChildMesh(Ogre::SceneManager* _scM, std::string _meshName,Ogre::Vector3 pos, Ogre::Quaternion qrot);
-        void hookPosition(Ogre::Vector3* _pos);
+        void attachChildMesh(Ogre::SceneManager* _scM, std::string _meshName,Ogre::Vector3 pos,
+                             Ogre::Quaternion qrot, Ogre::Vector3 scale = Ogre::Vector3(1.0));
+        bool IsChildMeshExists(std::string &_chName);
+        void attachNode(Ogre::SceneNode* _sNode, Ogre::Vector3 pos, Ogre::Quaternion qrot);
+        void attachObject(mObject* _Object);
+        bool IsChildObjectExists(std::string _chObjName);
+        mObject* getChildObject(std::string name);
+        void setChildMeshVisible(std::string& _chName, bool _flag);
+        void setChildObjectVisible(std::string& _chObjName, bool _flag);
+        void setAxisVisible(bool _flag);
+
         
-        int type = Type::MESH;
-        
-        std::string mesh_file_name;
+        // std::string mesh_file_name;
         std::string objectName;
         std::string entity_name;
         std::vector<mChild*> children;
+        std::map<std::string,mObject*> child_objects;
         Eigen::Vector3d position;
         Eigen::Matrix3d rotation;
         Eigen::Vector3d scale;
@@ -77,14 +101,15 @@ namespace mviz
     class mRobotLink : public mObject
     {
     private:
-        /* data */
     public:
+        std::string mesh_file_name;
         mRobotLink(/* args */) {};
         unsigned int type;
         double joint_variable;
         Eigen::Affine3d T_p_l;
         Eigen::Affine3d T_visual;
         Eigen::Vector3d axis;
+        Ogre::Vector3 _axis;
         // Eigen::Vector3d rpy;
         ~mRobotLink() {};
     };
@@ -107,6 +132,19 @@ namespace mviz
     public:
         mStaticObject();
         ~mStaticObject();
+    };
+
+    class  axis : public mObject
+    {
+    private:
+        Ogre::SceneNode* x_node;
+        Ogre::SceneNode* y_node;
+        Ogre::SceneNode* z_node;
+        void setAxisMaterial(Ogre::Entity* _ent, std::string matName);
+    public:
+        axis(mObject* _rObject);
+        // void setScale(double _sx, double _sy, double _sz);
+        ~ axis() {};
     };
     
  // functions.

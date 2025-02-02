@@ -24,28 +24,40 @@
 // }
 
 # include <iostream>
-
-class boom
+class A
 {
 private:
-    double pos = 1.2;
+
+protected:
+    int a = 1;
 public:
-    boom(/* args */) {};
-    void setpos(double* _x) { pos = *_x;}
-    ~boom(){};
+    A(/* args */) {};
+    ~A() {};
+    virtual void foo() {};
 };
+
+class B : public A
+{
+private:
+    /* data */
+public:
+    int b = 2;
+    B(/* args */) {a = b;};
+    ~B() {};
+};
+
 
 int main(int argc, char const *argv[])
 {
-    boom* b = new boom;
-    double t = 1.3;
-    b->setpos(&t);
+    A a1;
+    B b1;
+    A* ap1,ap2;
+    ap1 = &a1;
+    B* bp1,bp2;
+    bp1 = &b1;
 
-    for (int i = 0; i < 5; i++)
-    {
-        t = t + i;
-        std::cout << t << std::endl;
-    }
+    bp1 = dynamic_cast<B*>(ap1);
+    // ap2 = ap1;
     
 
     return 0;

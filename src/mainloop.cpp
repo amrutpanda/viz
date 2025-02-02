@@ -25,11 +25,11 @@ int main(int argc, char const *argv[])
     // graphics.addEntity(filePath1,v1);
     // graphics.addEntity(argv[1],v1);
     graphics.createRobotObject("panda1","/home/asp/Files/cpp/projects/viz/src/kuka.urdf");
-    // graphics.createRobotObject("robot","/home/asp/Files/resources/icub-models-master/iCub/robots/iCubGazeboV2_5_KIT_007/model_test.urdf");
-    // graphics.createRobotObject("ut","/home/asp/Files/resources/icub-models-master/iCub/robots/iCubGenova02/model (copy).urdf");
-    // graphics.setBasePoseAndRotation("panda1",Eigen::Vector3d(1,0,0),Eigen::Quaterniond::Identity());
 
-    graphics.creatGraphicalObject("ogrehead.mesh","head",Ogre::Vector3(10,0,-100), Ogre::Quaternion(1,0,0,0));
+    // graphics.createRobotObject("robot","/home/asp/Files/resources/icub-models-master/iCub/robots/iCubGazeboV2_5_KIT_007/model_test.urdf");
+    // graphics.createRobotObject("ut","/home/asp/Files/resources/jaxon_description/urdf/jaxon_jvrc_test.urdf");
+    // graphics.setBasePoseAndRotation("panda1",Eigen::Vector3d(1,0,0),Eigen::Quaterniond::Identity());
+    // graphics.creatGraphicalObject("ninja.mesh","head",Ogre::Vector3(0,0,-1), Ogre::Quaternion(1,0,0,0));
 
     bool ret;
     int count = 0;
@@ -38,17 +38,22 @@ int main(int argc, char const *argv[])
 
     Eigen::Vector3d v3;
     v3.setZero();
-
+    Ogre::Vector3 s = Ogre::Vector3(0.5);
+    std::cout << s << std::endl;
     // graphics.getRoot()->startRendering();
     while (runloop)
     {
         if (!graphics.RenderOneFrame())
             break;
-        graphics.updateRobotGraphics("panda1",v2);
+        // auto t1 = std::chrono::high_resolution_clock::now();
+        // graphics.updateRobotGraphics("panda1",v2);
         // graphics.updateRobotGraphics("panda1",v2,v3,Eigen::Quaterniond::Identity());
+        // auto t2 = std::chrono::high_resolution_clock::now();
+        // auto t = std::chrono::duration_cast<std::chrono::microseconds>(t2-t1);
+        // std::cout << t.count() << std::endl;
         v3(2) = v3(2) + 0.001;
-        v2(0) = v2(0) + 0.001;
-        v2(3) = v2(3) + 0.001;
+        v2(0) = v2(0) + 0.01;
+        v2(3) = v2(3) + 0.01;
     }
     graphics.closeGraphics();
 
