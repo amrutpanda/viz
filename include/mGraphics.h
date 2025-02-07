@@ -1,6 +1,7 @@
 #pragma once
 
 #include <mRobot.h>
+#include <dmObject.h>
 
 namespace mviz{
 
@@ -60,7 +61,10 @@ namespace mviz{
         const std::string& getName();
         // urdf::ModelInterfaceSharedPtr getUrdfObject();
         void createRobotObject(std::string _robotName, std::string _robot_filename);
-        void creatNormalObject(std::string objName, std::string _obj_filename);
+        void createDynamicMeshObject(std::string objName, Eigen::Vector3d pos, Eigen::Quaterniond qrot);
+        void creatGraphicalObject(std::string _fileName, std::string objName,Eigen::Vector3d pos, Eigen::Quaterniond qrot,
+                                    std::string parent_frame ="");
+        
         void updateRobotGraphics(std::string _robotName, Eigen::VectorXd robot_pos);
         void updateRobotGraphics(std::string _robotName, Eigen::VectorXd robot_pos, Eigen::Vector3d base_pose,
                                 Eigen::Quaterniond base_rot);
@@ -68,8 +72,8 @@ namespace mviz{
 
         void createScene();
 
-        void creatGraphicalObject(std::string _fileName, std::string objName,Ogre::Vector3 pos, Ogre::Quaternion qrot);
         mObject* getGraphicalObject(std::string objName);
+        mRobot* getRobotObject(std::string _rname);
         // mRobot related functions.
 
 

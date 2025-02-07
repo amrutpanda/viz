@@ -1,8 +1,7 @@
 
 #include "mGraphics.h"
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_syswm.h>
-
+#include "OgreWindowEventUtilities.h"
+#include "OgreLogManager.h"
 // #include <Ogre.h>
 // #include <urdf_parser/urdf_parser.h>
 
@@ -107,9 +106,14 @@ namespace mviz
         
     }
 
-    void mGraphics::creatGraphicalObject(std::string _fileName, std::string objName,Ogre::Vector3 pos, Ogre::Quaternion qrot)
+    void mGraphics::creatGraphicalObject(std::string _fileName, std::string objName, Eigen::Vector3d _pos, Eigen::Quaterniond _qrot, std::string parent_frame)
     {
         std::string mesh_name;
+        Ogre::Vector3 pos;
+        Ogre::Quaternion qrot;
+
+        convertEigenVecToOgre(_pos,pos);
+        convertEigenQuatToOgre(_qrot,qrot);
 
         std::filesystem::path path(_fileName);
         if ( path.extension() == ".mesh")
@@ -124,6 +128,9 @@ namespace mviz
 
         mObject* objPtr = new mObject;
         objPtr->objectName = objName;
+        // find parent frame.
+        // TO-DO: will implement.
+        
 
         Ogre::SceneNode* objSceneNode = scnMgr->getRootSceneNode()->createChildSceneNode();
         objPtr->setSceneNode(objSceneNode);
@@ -138,9 +145,37 @@ namespace mviz
         
     }
 
+    void mGraphics::createDynamicMeshObject(std::string objName, Eigen::Vector3d _pos, Eigen::Quaterniond _qrot)
+    {
+        Ogre::Vector3 pos;
+        Ogre::Quaternion qrot;
+
+        convertEigenVecToOgre(_pos, pos);
+        convertEigenQuatToOgre(_qrot,qrot);
+
+        dmObject* objPtr = new dmObject();
+        objects[objName] = objPtr;
+
+        Ogre::SceneNode* objSceneNode = scnMgr->getRootSceneNode()->createChildSceneNode();
+        objPtr->setSceneNode(objSceneNode);
+
+        objPtr->setPosition(pos);
+        objPtr->setRotation(qrot);
+
+        objPtr->createManualObject("pc");
+
+        // attach Manual object mesh.
+
+    }
+
     mObject* mGraphics::getGraphicalObject(std::string objName)
     {
         return objects.at(objName);
+    }
+
+    mRobot* mGraphics::getRobotObject(std::string _rname)
+    {
+        return robots.at(_rname);
     }
 
     // Graphics related Methods.
@@ -168,6 +203,9 @@ namespace mviz
             throw std::runtime_error("Loop flag variable not attached. Call 'attachFlagVariable' function before the render loop.\n");
         }
         
+        Ogre::LogManager* logMgr = Ogre::LogManager::getSingletonPtr();
+        logMgr->createLog("Mylog",true, true, false);
+
         // OgreBites::ApplicationContext _ctx("Ogreapp");
         // do not forget to call the base.
         // _ctx.setup();
@@ -211,7 +249,7 @@ namespace mviz
         // cam->setFOVy(Ogre::Radian(0.08));
         camNode->attachObject(cam);
         camNode->lookAt(Ogre::Vector3(0,0,0),Ogre::Node::TS_WORLD);
-        camNode->setPosition(10, 0, 10);
+        camNode->setPosition(10, 0, 100);
 
         // create a new Cameraman object and attach it to this object.
         mCameraMan = new OgreBites::CameraMan(camNode);
@@ -228,9 +266,15 @@ namespace mviz
 
         // get RenderWindow;
         mWin = getRenderWindow();
-
+                
+        
         // create a new resource group.
         Ogre::ResourceGroupManager::getSingleton().createResourceGroup("UserData");
+        // adding the resource folder to Ogre "FileSystem".
+        Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/home/asp/Files/cpp/projects/viz/resources",
+                                                                        "FileSystem","UserData",true);
+        // now initialise the resourcegroup.
+        Ogre::ResourceGroupManager::getSingleton().initialiseResourceGroup("UserData");
 
     }
 
@@ -303,10 +347,11 @@ namespace mviz
     void creatMeshFromFile(std::string filepath, Ogre::String& MeshName)
     {
 
-        if (!Ogre::ResourceGroupManager::getSingleton().resourceGroupExists("UserData"))
-        {
-            Ogre::ResourceGroupManager::getSingleton().createResourceGroup("UserData");
-        }
+        // if (!Ogre::ResourceGroupManager::getSingleton().resourceGroupExists("UserData"))
+        // {
+        //     Ogre::ResourceGroupManager::getSingleton().createResourceGroup("UserData");
+        // }
+
         std::filesystem::path path = std::filesystem::canonical(filepath);
         std::cout << path.parent_path() << std::endl;
         std::filesystem::recursive_directory_iterator it(path.parent_path());
@@ -331,20 +376,9 @@ namespace mviz
             std::cout << "Resource location already exists. Skipping ..." << std::endl;
         }
         
-        
-        // Ogre::ResourceGroupManager::getSingleton().addResourceLocation(path.parent_path().generic_string(),
-        //                                                                 "FileSystem","UserData");
-        // while (it != end)
-        // {
-        //     if (it->is_directory())
-        //     {
-        //         Ogre::ResourceGroupManager::getSingleton().addResourceLocation(it->path().string(),"FileSystem","UserData");
-        //     }   
-        //     ++it;
-        // }
 
         // std::cout << "Intilising resource group User" << std::endl;
-        Ogre::ResourceGroupManager::getSingleton().initialiseResourceGroup("UserData");
+        // Ogre::ResourceGroupManager::getSingleton().initialiseResourceGroup("UserData");
         // std::cout << "loading resource group User " << std::endl;
         Ogre::ResourceGroupManager::getSingleton().loadResourceGroup("UserData");
 
@@ -388,6 +422,23 @@ namespace mviz
         
         
     }
+
+    void convertEigenVecToOgre(Eigen::Vector3d& _eV, Ogre::Vector3& _ogV)
+    {
+        _ogV.x = _eV.x();
+        _ogV.y = _eV.y();
+        _ogV.z = _eV.z();
+    }
+
+    void convertEigenQuatToOgre(Eigen::Quaterniond &_eQuat, Ogre::Quaternion& _ogQuat)
+    {
+        _ogQuat.w = _eQuat.w();
+        _ogQuat.x = _eQuat.x();
+        _ogQuat.y = _eQuat.y();
+        _ogQuat.z = _eQuat.z();
+    }
+
+
 
     void say_hello()
     {

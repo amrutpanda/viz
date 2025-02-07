@@ -1,16 +1,6 @@
 #pragma once
-// #include <iostream>
-// #include "Ogre.h"
-// #include "OgreMesh.h"
-#include <mCommon.h>
-// #include "eigen3/Eigen/Dense"
-#include "eigen3/Eigen/Dense"
-#include "eigen3/Eigen/Core"
-#include "eigen3/Eigen/Geometry"
-#include <urdf_parser/urdf_parser.h>
-// #include "Eigen/Dense"
 
-// #include "axis.h"
+#include <mCommon.h>
 
 namespace mviz
 {   
@@ -47,8 +37,11 @@ namespace mviz
     {
     private:
         bool mesh_assigned = false;
-        Ogre::SceneNode* astd_Node = NULL;
+        Ogre::SceneNode* astd_Node = nullptr;
+        Ogre::SceneNode* dummy_Node = nullptr;
         Ogre::Entity* entityPtr;
+    protected:
+        Ogre::SceneManager* mScnMgr;
     public:
         mObject(std::string name,int type);
         mObject() {};
@@ -60,9 +53,15 @@ namespace mviz
         const Eigen::Vector3d & getScale();
         void setPosition(Ogre::Vector3 pos);
         void setPosition(Eigen::Vector3d &pos);
+        void setPositionLocal(Ogre::Vector3 pos);
+
+
         void setRotation(Eigen::Matrix3d &rot);
         void setRotation(double w, double x, double y, double z);
         void setRotation(Ogre::Quaternion qrot);
+
+        void setRotationLocal(double w, double x, double y, double z);
+        void setRotationLocal(Ogre::Quaternion qrot);
         void setScale(Ogre::Vector3 &scale);
         void setScale(double _sx, double _sy, double _sz);
         void setVisible(bool _flag);
@@ -75,6 +74,7 @@ namespace mviz
         void createEntity(Ogre::SceneManager* _scnMgr);
         void attachChildMesh(Ogre::SceneManager* _scM, std::string _meshName,Ogre::Vector3 pos,
                              Ogre::Quaternion qrot, Ogre::Vector3 scale = Ogre::Vector3(1.0));
+        Ogre::SceneNode* getChildMeshNode(std::string _chMshName);
         bool IsChildMeshExists(std::string &_chName);
         void attachNode(Ogre::SceneNode* _sNode, Ogre::Vector3 pos, Ogre::Quaternion qrot);
         void attachObject(mObject* _Object);

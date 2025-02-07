@@ -26,13 +26,20 @@ namespace mviz
 
      void mObject::setPosition(Ogre::Vector3 pos)
      {
-          astd_Node->setPosition(pos);
+         dummy_Node->setPosition(pos);
      }
 
      void mObject::setPosition(Eigen::Vector3d &pos)
      {
           position = pos;
-          astd_Node->setPosition(pos.x(), pos.y(), pos.z());
+          dummy_Node->setPosition(pos.x(), pos.y(), pos.z());
+          // astd_Node->setPosition(pos.x(), pos.y(), pos.z());
+          // astd_Node->setInheritOrientation()
+     }
+
+     void mObject::setPositionLocal(Ogre::Vector3 pos)
+     {
+          astd_Node->setPosition(pos);
      }
 
      void mObject::setRotation(Eigen::Matrix3d  &rot)
@@ -47,16 +54,23 @@ namespace mviz
 
      void mObject::setRotation(double w, double x, double y, double z)
      {
-          rotation = Eigen::Quaterniond(w,x,y,z).matrix();
-          // Ogre::Quaternion q(w,x,y,z);
-          // astd_Node->rotate(q, Ogre::Node::TS_WORLD);            // Need to be examined.
-          // astd_Node->setOrientation(q);
-          astd_Node->setOrientation(w,x,y,z);
+         
+          dummy_Node->setOrientation(w,x,y,z);
      }
 
      void mObject::setRotation(Ogre::Quaternion qrot)
      {
+          dummy_Node->setOrientation(qrot);
+     }
+
+     void mObject::setRotationLocal(Ogre::Quaternion qrot)
+     {
           astd_Node->setOrientation(qrot);
+     }
+
+     void mObject::setRotationLocal(double w, double x, double y, double z)
+     {
+          astd_Node->setOrientation(w,x,y,z);
      }
 
      void mObject::setScale(Ogre::Vector3 &scale)
@@ -95,8 +109,18 @@ namespace mviz
 
      void mObject::setSceneNode(Ogre::SceneNode* _node)
      {
-          astd_Node = _node;
+          //test.
+          dummy_Node = _node;
+          astd_Node = dummy_Node->createChildSceneNode();
+
+          astd_Node->setPosition(Ogre::Vector3(0));
+          astd_Node->setOrientation(Ogre::Quaternion(1,0,0,0));
+          //test
+          // astd_Node = _node;
           astd_Node->setInheritOrientation(true);
+
+          // set sceneManager.
+          mScnMgr = _node->getCreator();
      
      }
 
@@ -121,7 +145,7 @@ namespace mviz
      }
 
      void mObject::attachChildMesh(Ogre::SceneManager* _scM, std::string _meshName, Ogre::Vector3 pos,
-                                    Ogre::Quaternion qrot, Ogre::Vector3 scale = Ogre::Vector3(1.0))
+                                    Ogre::Quaternion qrot, Ogre::Vector3 scale)
      {
           Ogre::SceneNode* childNode = astd_Node->createChildSceneNode();
           Ogre::Entity* _childEntity = _scM->createEntity(_meshName);
@@ -139,6 +163,22 @@ namespace mviz
           childPtr->rel_qrot = qrot;
           // store 
           children.push_back(childPtr);
+     }
+
+     Ogre::SceneNode* mObject::getChildMeshNode(std::string _chMshName)
+     {
+          mChild* ch;
+          for (int i = 0; i < children.size(); i++)
+          {
+               ch = children[i];
+               if (ch->IsNameMatching(_chMshName))
+               {
+                    return ch->_sNode;
+               }
+               
+          }
+          throw std::runtime_error("Child Mesh doesn't exist. Mesh name: " + _chMshName + " mObject name: " + objectName);
+          
      }
 
      bool mObject::IsChildMeshExists(std::string& _chName)
@@ -165,10 +205,12 @@ namespace mviz
 
      void mObject::attachObject(mObject* _Object)
      {
-          // detaching the _Object from its parent node.
-          _Object->setSceneNode(astd_Node->createChildSceneNode());
+          // TO-DO: detaching the _Object from its parent node and include it in if statement.
           if (child_objects[_Object->objectName] == nullptr)
+          {
                child_objects[_Object->objectName] = _Object;
+               _Object->setSceneNode(astd_Node->createChildSceneNode());
+          }
           else
                throw std::runtime_error("Cannot attach mObject: " + _Object->objectName + " to " 
                                         + objectName + "as it already exists");
@@ -179,14 +221,6 @@ namespace mviz
 
      bool mObject::IsChildObjectExists(std::string _chObjName)
      {
-          // if (child_objects.at(_chObjName))
-          // {
-          //      return true;
-          // }
-          // else
-          // {
-          //      return false;
-          // }
 
           try
           {

@@ -43,6 +43,7 @@ namespace mviz
         void ParseJoint(mRobotLink* _rlink, urdf::JointConstSharedPtr _jptr);
         void ParseVisualInfo(mRobotLink* _rlink, urdf::VisualSharedPtr _vptr);
         void ParseBaseLink(mRobotLink* _rlink);
+        unsigned int getUrdfGeometryType(urdf::GeometrySharedPtr _gptr);
     public:
         mRobot(std::string robot_name, std::string urdf_file,Ogre::SceneManager* _scnMgr ,Ogre::SceneNode* root_node);
         // mRobot(std::string robot_name, std::string urdf_file): robot_name(robot_name),urdf_file(urdf_file) {};
@@ -52,6 +53,7 @@ namespace mviz
         void setBasePose(Eigen::Vector3d _pose);
         void setBaseRotation(Eigen::Quaterniond _qRotation);
         void setRobotAxisVisible(bool _flag);
+        int getRobotNumJoints();
 
         ~mRobot() {};
 

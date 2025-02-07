@@ -13,6 +13,12 @@
 #include <iostream>
 #include <filesystem>
 
+// Eigen headers
+#include "eigen3/Eigen/Dense"
+#include "eigen3/Eigen/Core"
+#include "eigen3/Eigen/Geometry"
+#include <urdf_parser/urdf_parser.h>
+
 // C headers
 #include <signal.h>
 #include <unistd.h>
@@ -24,6 +30,10 @@ namespace mviz
     void createCylinder(std::string name, double r, double h, Ogre::Mesh* m);
     void creatMeshFromFile(std::string filePath,Ogre::String& MeshName);
     void createAxisMesh(Ogre::SceneManager* _scnMgr, std::string& _name);
+
+    void convertEigenVecToOgre(Eigen::Vector3d& _eV, Ogre::Vector3& _ogV);
+    void convertEigenQuatToOgre(Eigen::Quaterniond &eQuat, Ogre::Quaternion& _ogQuat);
+
 
     // testing.
     void say_hello();

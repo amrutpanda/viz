@@ -22,7 +22,7 @@ namespace mviz
         Ogre::Entity* y_entity = _scnMgr->createEntity("mCylinder.mesh"); 
         setAxisMaterial(y_entity,"GREEN");
         Ogre::Entity* z_entity = _scnMgr->createEntity("mCylinder.mesh");
-        setAxisMaterial(y_entity,"BLUE");
+        setAxisMaterial(z_entity,"BLUE");
 
         x_node->attachObject(x_entity);
         y_node->attachObject(y_entity);
@@ -42,37 +42,27 @@ namespace mviz
     
     void axis::setAxisMaterial(Ogre::Entity* _ent, std::string matName = "")
     {
-        // Ogre::ColourValue _color;
-        // if (matName == "RED")
-        //     _color = Ogre::ColourValue(1,0, 0.0, 0.0);
-        // else if(matName == "GREEN")
-        //     _color = Ogre::ColourValue(0,0, 1.0, 0.0);
-        // else if(matName == "BLUE")
-        //     _color = Ogre::ColourValue(0,0, 0.0, 1.0);
-        // else
-        //     _color = Ogre::ColourValue(1,0, 1.0, 1.0);
         std::cout << "checking for selected material in Ogre scenegraph\n";
         // check whether the material exists otherwise create new material.
         Ogre::MaterialPtr pmat = Ogre::MaterialManager::getSingleton().getByName(matName,"UserData");
         if ( pmat == nullptr)
         {
             std::cout << "Creating new material. " << matName << std::endl;
-             Ogre::ColourValue _color;
+            Ogre::ColourValue _color;
 
             if (matName == "RED")
-                _color = Ogre::ColourValue(1,0, 0.0, 0.0);
+                _color = Ogre::ColourValue::Red;
             else if(matName == "GREEN")
-                _color = Ogre::ColourValue(0.0, 1.0, 0.0);
+                _color = Ogre::ColourValue::Green;
             else if(matName == "BLUE")
-                _color = Ogre::ColourValue(0,0, 0.0, 0.9);
+                _color = Ogre::ColourValue::Blue;
             // else
                 // _color = Ogre::ColourValue(1,0, 1.0, 1.0);
 
             pmat = Ogre::MaterialManager::getSingleton().create(matName,"UserData");
-
             pmat->getTechnique(0)->getPass(0)->setAmbient(_color);
             // pmat->getTechnique(0)->getPass(0)->setDiffuse(Ogre::ColourValue(1,1,1));
-            pmat->getTechnique(0)->getPass(0)->setDiffuse(_color);
+            pmat->getTechnique(0)->getPass(0)->setDiffuse(0,0,0,1);
             // pmat->getTechnique(0)->getPass(0)->setSpecular(_color);
         }
 
