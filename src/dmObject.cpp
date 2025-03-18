@@ -23,7 +23,7 @@ namespace mviz
         man->begin(mat,Ogre::RenderOperation::OT_POINT_LIST);
         std::cout << mat->getName() << std::endl;
         
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < 1000000; i++)
         {
             man->position(10, 10 , i);
             man->colour(0.1,0.1,0.01*i);

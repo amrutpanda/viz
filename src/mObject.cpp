@@ -149,9 +149,9 @@ namespace mviz
      {
           Ogre::SceneNode* childNode = astd_Node->createChildSceneNode();
           Ogre::Entity* _childEntity = _scM->createEntity(_meshName);
+          
           childNode->attachObject(_childEntity);
           childNode->setScale(scale);
-          
           childNode->setPosition(pos);
           childNode->setOrientation(qrot);
           // create a child struct and fill it.
@@ -198,6 +198,13 @@ namespace mviz
      }
      void mObject::attachNode(Ogre::SceneNode* _sNode, Ogre::Vector3 rel_pos, Ogre::Quaternion rel_qrot)
      {
+          Ogre::SceneNode* _pNode = _sNode->getParentSceneNode();
+          if (_pNode == nullptr)
+          {
+               std::cout << "The node does have a parent node. Detaching it and attaching it." << std::endl;
+               _pNode->removeChild(_sNode);
+          }
+          
           astd_Node->addChild(_sNode);
           _sNode->setPosition(rel_pos);
           _sNode->setOrientation(rel_qrot);
@@ -258,7 +265,7 @@ namespace mviz
           mObject* chObj = child_objects.at(_chObjName);
           if (chObj != nullptr)
           {
-               chObj->getSceneNode()->setVisible(_flag,false);
+               chObj->getSceneNode()->setVisible(_flag,true);
           }
           else
           {

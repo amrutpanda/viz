@@ -10,6 +10,13 @@
 
 namespace mviz
 {
+    enum AXIS
+    {
+        X = 0,
+        Y,
+        Z
+    };
+
     class mRobot
     {
     private:
@@ -32,6 +39,9 @@ namespace mviz
         // urdf::Link* urdf_link;
         urdf::LinkConstSharedPtr urdf_root_link;
 
+        double mfAngle = 90;          // mesh rotation angle. Applicable for some DAE meshes.
+        Ogre::Vector3 mfAxis = Ogre::Vector3::UNIT_X;    // mesh rotation axis. Applicable for some DAE meshes
+
         // void convertLinkConstSharedPtrTomRobotLink(urdf::LinkConstSharedPtr, mRobotLink*);
         // void convertLinkSharedPtrTomRobotLink(urdf::LinkSharedPtr, mRobotLink*);
         // void createOgreNodesFromLinkSharedPtr(urdf::LinkSharedPtr,Ogre::SceneNode* );
@@ -45,7 +55,9 @@ namespace mviz
         void ParseBaseLink(mRobotLink* _rlink);
         unsigned int getUrdfGeometryType(urdf::GeometrySharedPtr _gptr);
     public:
-        mRobot(std::string robot_name, std::string urdf_file,Ogre::SceneManager* _scnMgr ,Ogre::SceneNode* root_node);
+        // mRobot(std::string robot_name, std::string urdf_file,Ogre::SceneManager* _scnMgr ,Ogre::SceneNode* root_node);
+        mRobot(std::string robot_name, std::string urdf_file,Ogre::SceneManager* _scnMgr ,Ogre::SceneNode* root_node, Eigen::Vector3d _bpos = Eigen::Vector3d::Zero(), Eigen::Quaterniond _brot = Eigen::Quaterniond::Identity() );
+
         // mRobot(std::string robot_name, std::string urdf_file): robot_name(robot_name),urdf_file(urdf_file) {};
         std::string getName();
 
@@ -54,6 +66,8 @@ namespace mviz
         void setBaseRotation(Eigen::Quaterniond _qRotation);
         void setRobotAxisVisible(bool _flag);
         int getRobotNumJoints();
+        void flipDAEMeshes(double& angle, int axis); // Angle is in Degree
+        mRobotLink* getRobotLinkFromFrameName(std::string& _fName);
 
         ~mRobot() {};
 

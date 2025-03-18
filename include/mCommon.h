@@ -23,6 +23,8 @@
 #include <signal.h>
 #include <unistd.h>
 
+// #include <Logger.h>
+
 namespace mviz
 {
     void createSphere(Ogre::SceneManager* scm, std::string name, Ogre::Vector3 c ,double r, Ogre::MeshPtr* m);

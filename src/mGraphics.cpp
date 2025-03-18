@@ -5,6 +5,7 @@
 // #include <Ogre.h>
 // #include <urdf_parser/urdf_parser.h>
 
+
 namespace mviz
 {
     void mGraphics::readFile(std::string FilePath)
@@ -12,6 +13,20 @@ namespace mviz
         urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDFFile(FilePath);
         
         urdf::LinkConstSharedPtr root = urdf->getRoot();
+
+        // check for correct file extension.
+
+        std::filesystem::path _path = std::filesystem::canonical(FilePath);
+        if (_path.extension() != ".world")
+            throw std::runtime_error("Loading failed. Please load a file with extension '.world'...");
+        // tinyxml2 parsing
+
+        // tinyxml2::XMLDocument doc;
+        // doc.LoadFile(_path.c_str());
+        
+        // doc.Print();
+        
+
         
         
     }
@@ -29,18 +44,21 @@ namespace mviz
 
     }
 
-    void mGraphics::createRobotObject(std::string _robotName, std::string _robot_filename)
+    void mGraphics::createRobotObject(std::string _robotName, std::string _robot_filename, 
+                                      Eigen::Vector3d _bpos ,Eigen::Quaterniond _brot)
     {
         // Check whether the filename extension is ".urdf".
         std::filesystem::path path(_robot_filename);
 
         // std::cout << "I am here\n";
 
+        // assign base_pos and orientation.
+
         assert(path.extension() == ".urdf");
         // create a new SceneNode from root node and start building robot graphical object from it.
         Ogre::SceneNode* robot_root_node = scnMgr->getRootSceneNode()->createChildSceneNode();
         // create a new robot object.
-        mRobot* robot_object = new mRobot(_robotName,_robot_filename,scnMgr,robot_root_node);
+        mRobot* robot_object = new mRobot(_robotName,_robot_filename,scnMgr,robot_root_node, _bpos, _brot);
         // add robot info to the "robots" object.
         // robots.push_back(std::map<std::string, mRobot*>(_robotName,robot_object));
         robots[_robotName] = robot_object;
@@ -128,11 +146,16 @@ namespace mviz
 
         mObject* objPtr = new mObject;
         objPtr->objectName = objName;
-        // find parent frame.
-        // TO-DO: will implement.
-        
 
-        Ogre::SceneNode* objSceneNode = scnMgr->getRootSceneNode()->createChildSceneNode();
+        Ogre::SceneNode* objSceneNode;
+        mObject* optr = nullptr;
+        if (!parent_frame.empty())
+            optr = findFrameObjectPtr(parent_frame);
+        
+        if (optr == nullptr)
+            objSceneNode = scnMgr->getRootSceneNode()->createChildSceneNode();
+        else
+            objSceneNode = optr->getSceneNode()->createChildSceneNode();
         objPtr->setSceneNode(objSceneNode);
         
         objPtr->setPosition(pos);
@@ -145,7 +168,7 @@ namespace mviz
         
     }
 
-    void mGraphics::createDynamicMeshObject(std::string objName, Eigen::Vector3d _pos, Eigen::Quaterniond _qrot)
+    void mGraphics::createDynamicMeshObject(std::string objName, Eigen::Vector3d _pos, Eigen::Quaterniond _qrot, std::string parent_frame)
     {
         Ogre::Vector3 pos;
         Ogre::Quaternion qrot;
@@ -156,7 +179,16 @@ namespace mviz
         dmObject* objPtr = new dmObject();
         objects[objName] = objPtr;
 
-        Ogre::SceneNode* objSceneNode = scnMgr->getRootSceneNode()->createChildSceneNode();
+        Ogre::SceneNode* objSceneNode;
+        mObject* optr = nullptr;
+        if (!parent_frame.empty())
+            optr = findFrameObjectPtr(parent_frame);
+        
+        if (optr == nullptr)
+            objSceneNode = scnMgr->getRootSceneNode()->createChildSceneNode();
+        else
+            objSceneNode = optr->getSceneNode()->createChildSceneNode();
+        
         objPtr->setSceneNode(objSceneNode);
 
         objPtr->setPosition(pos);
@@ -166,6 +198,23 @@ namespace mviz
 
         // attach Manual object mesh.
 
+    }
+
+    mObject* mGraphics::findFrameObjectPtr(std::string& _fname)
+    {
+        // first search among robots.
+        for (auto it = robots.begin(); it != robots.end(); ++it)
+        {
+            mRobotLink* rl_ptr = it->second->getRobotLinkFromFrameName(_fname);
+            if(rl_ptr != nullptr)
+                return dynamic_cast<mObject*>(rl_ptr);
+        }
+        for (auto it = objects.begin(); it != objects.end(); ++it)
+        {
+            if (it->first == _fname)
+                return it->second;
+        }
+        return nullptr;
     }
 
     mObject* mGraphics::getGraphicalObject(std::string objName)
@@ -178,6 +227,22 @@ namespace mviz
         return robots.at(_rname);
     }
 
+    void mGraphics::setRobotMeshOrientation(std::string& _robotName, double angle, int axis)
+    {
+        mRobot* robot;
+        try
+        {
+            robot = robots.at(_robotName);
+        }
+        catch(const std::exception& e)
+        {
+            throw std::runtime_error("Inside setRobotMeshOrientation: Could not find the robot with given name: " + _robotName);
+        }
+        
+        robot->flipDAEMeshes(angle,axis);
+    }
+
+    // ********** +++++++++++++ ***************
     // Graphics related Methods.
 
     const std::string& mGraphics::getName()
@@ -200,21 +265,32 @@ namespace mviz
         // Check if _flag pointer has been assigned.
         if (!flag)
         {
-            throw std::runtime_error("Loop flag variable not attached. Call 'attachFlagVariable' function before the render loop.\n");
+            throw std::runtime_error("Loop flag variable not attached. Call 'attachFlagVariable' function InitApp.\n");
         }
         
+        
         Ogre::LogManager* logMgr = Ogre::LogManager::getSingletonPtr();
-        logMgr->createLog("Mylog",true, true, false);
+        logMgr->createLog("Mylog",true, false, false);
+        // get a pointer to the already created root
+        Ogre::Root* root = getRoot();
+        scnMgr = root->createSceneManager();
+        //
+        root->initialise(false);
+        Ogre::NameValuePairList options;
+        // options["vsync"] = true;   // to deal with FPS being stuck to refresh rate of monitor.
+        OgreBites::NativeWindowPair p = createWindow(AppName,860,640,options);
+        locateResources();
+        initialiseRTShaderSystem();
+        loadResources();
+        root->addFrameListener(this);
+        //
 
         // OgreBites::ApplicationContext _ctx("Ogreapp");
         // do not forget to call the base.
         // _ctx.setup();
-        OgreBites::ApplicationContext::setup();
-        addInputListener(this);
+        // OgreBites::ApplicationContext::setup();
 
-        // get a pointer to the already created root
-        Ogre::Root* root = getRoot();
-        scnMgr = root->createSceneManager();
+        addInputListener(this);
         
         // register our scene with the RTSS
         Ogre::RTShader::ShaderGenerator* shadergen = Ogre::RTShader::ShaderGenerator::getSingletonPtr();
@@ -239,6 +315,9 @@ namespace mviz
         lightNode2->setPosition(1000, 100, 500);
         // another light node end.
 
+        // Ogre setup skydome;
+        // scnMgr->setSkyDome(true,"Examples/CloudySky", 5, 8);
+
         //! [camera]
         camNode = scnMgr->getRootSceneNode()->createChildSceneNode();
 
@@ -249,14 +328,18 @@ namespace mviz
         // cam->setFOVy(Ogre::Radian(0.08));
         camNode->attachObject(cam);
         camNode->lookAt(Ogre::Vector3(0,0,0),Ogre::Node::TS_WORLD);
-        camNode->setPosition(10, 0, 100);
+        camNode->setPosition(0, 0, 10);
 
         // create a new Cameraman object and attach it to this object.
         mCameraMan = new OgreBites::CameraMan(camNode);
         mCameraMan->setTopSpeed(1);
         mCameraMan->setStyle(OgreBites::CameraStyle::CS_ORBIT);
-        // mCameraMan->setFixedYaw(true);
         addInputListener(mCameraMan);
+
+        // adding custom camera
+        // mCamera* Camera = new mCamera(camNode);
+        // addInputListener(Camera);
+        
 
         // and tell it to render into the main window
         Ogre::Viewport* vp = getRenderWindow()->addViewport(cam);
@@ -265,7 +348,8 @@ namespace mviz
         //! [camera]
 
         // get RenderWindow;
-        mWin = getRenderWindow();
+        // mWin = getRenderWindow();
+        
                 
         
         // create a new resource group.
@@ -283,6 +367,7 @@ namespace mviz
     {
         if (*flag)
         {
+            pollWindowEvents();
             return getRoot()->renderOneFrame();
         }
         else
@@ -294,6 +379,52 @@ namespace mviz
     void mGraphics::closeGraphics()
     {
         closeApp();
+    }
+
+    void mGraphics::pollWindowEvents()
+    {
+        if (mWindows.empty())
+            return;
+        
+        SDL_Event event;
+        while (SDL_PollEvent(&event))
+        {
+            switch (event.type)
+            {
+            case SDL_QUIT:
+            {
+                for (auto & window : mWindows)
+                {
+                    if(event.window.windowID != SDL_GetWindowID(window.native))
+                        continue;
+                    Ogre::RenderWindow* win = window.render;
+                    mRoot->queueEndRendering();
+                    windowClosed(win);
+                }
+                break;
+            }
+            case SDL_WINDOWEVENT:
+            {
+                if(event.window.event != SDL_WINDOWEVENT_RESIZED)
+                    continue;
+                for(auto & window : mWindows)
+                {
+                    if(event.window.windowID != SDL_GetWindowID(window.native))
+                        continue;
+    
+                    Ogre::RenderWindow* win = window.render;
+                    win->resize(event.window.data1, event.window.data2);
+                    windowResized(win);
+                }
+                break;
+            }
+            
+            default:
+                _fireInputEvent(convert(event), event.window.windowID);
+                break;
+            }
+        }
+        
     }
 
     bool mGraphics::keyPressed(const OgreBites::KeyboardEvent &evt)
@@ -319,7 +450,9 @@ namespace mviz
 
     void mGraphics::windowClosed(Ogre::RenderWindow* rw)
     {
-        std::cout << "Window closed\n";
+        std::cout << "Application closed\n";
+        destroyWindow(AppName);
+        *flag = false;
     }
 
     void mGraphics::addEntity(std::string _FilePath, Ogre::Vector3& pos)
@@ -445,6 +578,67 @@ namespace mviz
         std::cout << "Hello. " << std::endl;
     }
 } // namespace mviz
+
+// mGui implementation
+namespace mviz
+{
+    mVisualizer::mVisualizer(std::string _name) : mGraphics(_name)
+    {
+        std::cout << "Created visualizer instance." << std::endl;
+        gui_name = _name;
+    }
+
+    void mVisualizer::loadFont()
+    {
+        scnMgr->addRenderQueueListener(mOverlaySystem);
+        float vpScale = getDisplayDPI()/96;
+        Ogre::OverlayManager::getSingleton().setPixelRatio(vpScale);
+        overlay = initialiseImGui();
+        ImGui::GetIO().FontGlobalScale = std::round(vpScale);
+        ImGui::GetIO().FontGlobalScale = 0.27;
+        // ImGui::ShowDemoWindow();
+        
+        overlay->addFont("Roboto-Medium", "UserData");
+        overlay->show();
+        addInputListener(getImGuiInputListener());
+        std::cout << "Adding font" << std::endl;
+
+    }
+    
+    bool mVisualizer::ImguiRenderOneFrame()
+    {
+        auto flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove
+                        | ImGuiWindowFlags_NoTitleBar;
+        overlay->NewFrame();
+        // std::cout << "I am here" << std::endl;
+        ImGui::SetNextWindowSize(ImVec2(400,100));
+        ImGui::SetNextWindowBgAlpha(0.1);
+        ImGui::Begin("Frame Rate ",NULL,flags);
+        ImGui::Text("Frame Rate: %f",frame_rate);
+        if (ImGui::BeginMainMenuBar()) {
+            if (ImGui::BeginMenu("Options")) {
+                if (ImGui::MenuItem("Show Axis")) { 
+                    std::cout << "Clicked Show Axis" << std::endl;
+                }
+                if (ImGui::MenuItem("Show Joint value")) { 
+                }
+                ImGui::EndMenu();
+            }
+            ImGui::EndMainMenuBar();
+        }
+        ImGui::End();
+        frame_rate = 1000/(timer.getMilliseconds() - prev_time);
+        // std::cout << "time: " << frame_rate << std::endl;
+        prev_time = timer.getMilliseconds();
+        return RenderOneFrame();
+    }
+
+    // bool mVisualizer::frameStarted(const Ogre::FrameEvent& evt)
+    // {
+        
+    // }
+} // namespace mviz
+
 
 
 

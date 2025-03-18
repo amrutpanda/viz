@@ -42,6 +42,12 @@ namespace mviz
         Ogre::Entity* entityPtr;
     protected:
         Ogre::SceneManager* mScnMgr;
+        std::string entity_name;
+        std::vector<mChild*> children;
+        std::map<std::string,mObject*> child_objects;
+        Eigen::Vector3d position;
+        Eigen::Matrix3d rotation;
+        Eigen::Vector3d scale;
     public:
         mObject(std::string name,int type);
         mObject() {};
@@ -87,12 +93,12 @@ namespace mviz
         
         // std::string mesh_file_name;
         std::string objectName;
-        std::string entity_name;
-        std::vector<mChild*> children;
-        std::map<std::string,mObject*> child_objects;
-        Eigen::Vector3d position;
-        Eigen::Matrix3d rotation;
-        Eigen::Vector3d scale;
+        // std::string entity_name;
+        // std::vector<mChild*> children;
+        // std::map<std::string,mObject*> child_objects;
+        // Eigen::Vector3d position;
+        // Eigen::Matrix3d rotation;
+        // Eigen::Vector3d scale;
 
         // std::map< std::string, std:: >
     };
@@ -102,13 +108,14 @@ namespace mviz
     {
     private:
     public:
+        std::vector<std::string> meshes;
         std::string mesh_file_name;
         mRobotLink(/* args */) {};
         unsigned int type;
         double joint_variable;
-        Eigen::Affine3d T_p_l;
-        Eigen::Affine3d T_visual;
-        Eigen::Vector3d axis;
+        // Eigen::Affine3d T_p_l;
+        // Eigen::Affine3d T_visual;
+        // Eigen::Vector3d axis;
         Ogre::Vector3 _axis;
         // Eigen::Vector3d rpy;
         ~mRobotLink() {};

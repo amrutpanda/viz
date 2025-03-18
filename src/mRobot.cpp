@@ -3,29 +3,38 @@
 
 namespace mviz
 {
-    mRobot::mRobot(std::string robotname, std::string urdf_file, Ogre::SceneManager* _scnMgr, Ogre::SceneNode* root_node)
+    // mRobot::mRobot(std::string robotname, std::string urdf_file, Ogre::SceneManager* _scnMgr, Ogre::SceneNode* root_node)
+    mRobot::mRobot(std::string robotname, std::string urdf_file,Ogre::SceneManager* _scnMgr ,Ogre::SceneNode* root_node, 
+        Eigen::Vector3d _bpos, Eigen::Quaterniond _brot)
     {
         robot_name = robotname;
         _urdf_file = urdf_file;
         rootNode = root_node;
         scnMgr = _scnMgr;
         urdf::ModelInterfaceSharedPtr _urdf = urdf::parseURDFFile(_urdf_file);
+        std::cout << "Hello\n";
 
         // initialize transformations and co-ordinates.
         T_var.setIdentity();
-        base_pos.setZero();
-        base_rot.setIdentity();
+        // base_pos.setZero();
+        // base_rot.setIdentity();
+
+        base_pos = _bpos;
+        base_rot = _brot;
 
         urdf_root_link = _urdf->getRoot();
         _robot_name = _urdf->getName();
 
         urdf::Link* urdf_root_link_ptr = const_cast<urdf::Link*>(urdf_root_link.get());
+        
 
         std::cout << "Attempting to convert the urdf object to tree of mRobotLinks." << std::endl;
 
         createOgreNodesFromLinkPtr(urdf_root_link_ptr,rootNode);
 
         std::cout << "Total joints: " << joint_name.size() << std::endl;
+
+        // setRobotAxisVisible(false);
         
     }
 
@@ -36,28 +45,6 @@ namespace mviz
         return _name;
     }
    
-
-
-    // void mRobot::convertLinkPtrTomRobotLink(urdf::Link* ulink, mRobotLink* rlink)
-    // {
-    //     urdf::Mesh* m = dynamic_cast<urdf::Mesh*> (ulink->visual->geometry.get());
-    //     if (m == NULL)
-    //     {
-    //         std::cout << "At this moment only Mesh objects are supported." << std::endl;
-    //         throw std::runtime_error("cannot convert the link to Mesh type object. link name : " + ulink->name);
-
-    //     }
-    //     // rlink->mesh_file_name = std::filesystem::canonical(m->filename).string();
-
-    //     std::filesystem::path dir_path(_urdf_file);
-
-    //     // rlink->mesh_file_name = dir_path.parent_path(). + std::filesystem::path(m->filename);
-    //     rlink->mesh_file_name = dir_path.parent_path().append(std::filesystem::path(m->filename).string());
-        
-    //     std::cout << ulink->name << " :: " << rlink->mesh_file_name << std::endl;
-    //     rlink->scale << m->scale.x , m->scale.y, m->scale.z;
-        
-    // }
 
     void mRobot::convertLinkPtrTomRobotLink(urdf::Link* ulink, mRobotLink* rlink)
     {
@@ -139,14 +126,15 @@ namespace mviz
 
 
                         rlink->attachChildMesh(scnMgr,mesh_name,Ogre::Vector3(x,y,z),Ogre::Quaternion(qw,qx,qy,qz),
-                                                Ogre::Vector3(m_ptr->scale.x,m_ptr->scale.y, m_ptr->scale.z));
+                                                Ogre::Vector3(m_ptr->scale.x, m_ptr->scale.y, m_ptr->scale.z));
 
                         if (filepath.extension() == ".dae" || filepath.extension() == ".DAE")
                         {
                             // A patch to handle orientatin mismatch issue with Collada files.
                             // Change the angle and axes if you see mesh pose discrepancy.
                             std::cout << "Found a Collada file." << std::endl;
-                            rlink->getChildMeshNode(mesh_name)->rotate(Ogre::Quaternion(Ogre::Degree(90),Ogre::Vector3::UNIT_X));
+                            // rlink->getChildMeshNode(mesh_name)->rotate(Ogre::Quaternion(Ogre::Degree(90),Ogre::Vector3::UNIT_X));
+                            rlink->getChildMeshNode(mesh_name)->rotate(Ogre::Quaternion(Ogre::Degree(mfAngle),mfAxis));
                         }
                         break;
                     }
@@ -176,6 +164,7 @@ namespace mviz
                                                                 vptr->material->color.b);
                     pmat->getTechnique(0)->getPass(0)->setAmbient(_color);
                     pmat->getTechnique(0)->getPass(0)->setDiffuse(_color);
+                    
 
                     if (!vptr->material->texture_filename.empty())
                     {
@@ -193,6 +182,9 @@ namespace mviz
                 }
                 else
                     std::cout << "No material required \n";
+                // store the mesh names.
+
+                rlink->meshes.push_back(mesh_name);
             }
         }   
         
@@ -277,7 +269,7 @@ namespace mviz
         std::cout << _jptr->name << std::endl;
         // get joint type and joint axis.
         _rlink->type = _jptr->type;
-        _rlink->axis = Eigen::Vector3d(_jptr->axis.x, _jptr->axis.y, _jptr->axis.z);
+        // _rlink->axis = Eigen::Vector3d(_jptr->axis.x, _jptr->axis.y, _jptr->axis.z);
         _rlink->_axis = Ogre::Vector3(_jptr->axis.x, _jptr->axis.y, _jptr->axis.z);
         // get the position values from JointSharedPtr
         double x = _jptr->parent_to_joint_origin_transform.position.x;
@@ -368,7 +360,6 @@ namespace mviz
                 mRobotLinkPtr->setPosition(Ogre::Vector3(base_pos.x(), base_pos.y(), base_pos.z()));
                 mRobotLinkPtr->setRotation(base_rot.w(), base_rot.x(), base_rot.y(), base_rot.z());
             }
-
         }     
     }
 
@@ -409,6 +400,56 @@ namespace mviz
     int mRobot::getRobotNumJoints()
     {
         return joint_name.size();
+    }
+
+    mRobotLink* mRobot::getRobotLinkFromFrameName(std::string& _fName)
+    {
+        for (int i = 0; i < link_names.size(); i++)
+        {
+            if (link_names[i] == _fName)
+            {
+                return object_ptrs[i];
+            }
+        }
+        return nullptr;
+        
+    }
+
+    void mRobot::flipDAEMeshes(double& angle, int axis)
+    {
+        mfAngle = angle;
+        if (axis == X)
+        {
+            mfAxis = Ogre::Vector3::UNIT_X;
+            std::cout << "Fliping the X axis" << std::endl;
+        }
+        else if (axis == Y)
+        {
+            mfAxis = Ogre::Vector3::UNIT_Y;
+            std::cout << "Fliping the Y axis" << std::endl;
+        }
+        else if (axis == Z)
+        {
+            mfAxis = Ogre::Vector3::UNIT_Z;
+            std::cout << "Fliping the Z axis" << std::endl;
+        }
+        else
+        {
+            throw std::runtime_error("Invalid axis assignment");
+        }
+        std::cout << "Angle: " << angle << " mfAngle: " << mfAngle << std::endl; 
+        for (int i = 0; i < object_ptrs.size(); i++)
+        {
+            mRobotLink* rlink = object_ptrs[i];
+           for (int j = 0; j < rlink->meshes.size(); j++)
+           {
+                // std::filesystem::path Path(rlink->meshes[i]);
+                Ogre::SceneNode* _tNode = rlink->getChildMeshNode(rlink->meshes[j]);
+                _tNode->rotate(Ogre::Quaternion(Ogre::Degree(angle),mfAxis));
+           }
+           
+        }
+
     }
 
 } // namespace mviz
