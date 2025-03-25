@@ -124,6 +124,7 @@ namespace mviz
      
      }
 
+     
      void mObject::setMaterialColor(Ogre::ColourValue _color)
      {
           Ogre::MaterialPtr pmat = Ogre::MaterialManager::getSingleton().getByName("Default_mat");
@@ -144,11 +145,14 @@ namespace mviz
 
      }
 
+     
+
      void mObject::attachChildMesh(Ogre::SceneManager* _scM, std::string _meshName, Ogre::Vector3 pos,
                                     Ogre::Quaternion qrot, Ogre::Vector3 scale)
      {
           Ogre::SceneNode* childNode = astd_Node->createChildSceneNode();
           Ogre::Entity* _childEntity = _scM->createEntity(_meshName);
+          // _childEntity->setCastShadows(true);
           
           childNode->attachObject(_childEntity);
           childNode->setScale(scale);

@@ -1,0 +1,14 @@
+
+material mCylinder.stlDefaultMaterial
+{
+	technique
+	{
+		pass 
+		{
+			ambient 0.05 0.05 0.05 1
+			specular 1 1 1 1 0
+		}
+
+	}
+
+}

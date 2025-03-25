@@ -23,9 +23,24 @@ private:
     char timestamp[50];
 public:
     /**
-        Logger constructor.
+     *   Logger constructor.
+     *  args:
+     *      _logFile: log filename;
+     *      bool debug : whether to show debug logs to stdout 
+     *      bool error : whether to show error logs to stdout
+     *      bool show : whether to show logs to stdout or just save to file;
     */
-    Logger(std::string _logFile,bool debug = true, bool error = true, bool show = true);
+    Logger(std::string _logFile = "Mylog.log",bool debug = true, bool error = true, bool show = true);
+
+    /**
+     * Logger constructor;
+    */
+    Logger();
+
+    /**
+     * Change logfile name;
+    */
+    void changeLogFilename(std::string _filename);
     /**
         Log level info.
     */
@@ -58,14 +73,14 @@ public:
     ~Logger();
 };
 
-Logger::Logger(std::string _logFileName,bool _debug, bool _error, bool _show ):
-                debug_flag(_debug),error_flag(_error),show_flag(_show)
-{
-    logfile.open(_logFileName.append(".log"));
-    if (!logfile.is_open())
-        std::cerr << "Error in Opening logfile" << std::endl;
+// Logger::Logger(std::string _logFileName,bool _debug, bool _error, bool _show ):
+//                 debug_flag(_debug),error_flag(_error),show_flag(_show)
+// {
+//     logfile.open(_logFileName.append(".log"));
+//     if (!logfile.is_open())
+//         std::cerr << "Error in Opening logfile" << std::endl;
     
-}
+// }
 
 /**
         Log level info.
@@ -233,11 +248,11 @@ void Logger::fatal(Args &&...args)
      logstream.str("");
 }
 
-Logger::~Logger()
-{
-    if (logfile.is_open())
-        logfile.close();
-    logfile.flush();
-}
+// Logger::~Logger()
+// {
+//     if (logfile.is_open())
+//         logfile.close();
+//     logfile.flush();
+// }
 
 #endif /* _FOO_H */

@@ -72,8 +72,14 @@ namespace mviz
         void setScale(double _sx, double _sy, double _sz);
         void setVisible(bool _flag);
         // void setMeshFileName(std::string& file_name);
+        /**
+         * SetEntityName is not required. Will be removed.
+        */
         void setEntityName(std::string& _entity_name);
         void setSceneNode(Ogre::SceneNode* _node);
+        /**
+         * setMaterialColor is not required will be removed.
+        */
         void setMaterialColor(Ogre::ColourValue _color);
         void setAxis();
 
@@ -89,6 +95,7 @@ namespace mviz
         void setChildMeshVisible(std::string& _chName, bool _flag);
         void setChildObjectVisible(std::string& _chObjName, bool _flag);
         void setAxisVisible(bool _flag);
+        void setMaterial(std::string _material_name);
 
         
         // std::string mesh_file_name;

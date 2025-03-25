@@ -9,9 +9,10 @@
 #include <OgreImGuiInputListener.h>
 #include <OgreOverlayManager.h>
 #include <OgreOverlaySystem.h>
+#include <OgreStringConverter.h>
 
 // tinyXml2 libraries.
-#include <tinyxml2.h>
+#include <pugixml.hpp>
 
 // SDL Libraries;
 #include <SDL.h>
@@ -87,7 +88,7 @@ namespace mviz{
                                Eigen::Vector3d _bpos = Eigen::Vector3d::Zero(),
                                 Eigen::Quaterniond _brot = Eigen::Quaterniond::Identity());
         void createDynamicMeshObject(std::string objName, Eigen::Vector3d pos, Eigen::Quaterniond qrot, std::string parent_frame = "");
-        void creatGraphicalObject(std::string _fileName, std::string objName,Eigen::Vector3d pos, Eigen::Quaterniond qrot,
+        void createGraphicalObject(std::string _fileName, std::string objName,Eigen::Vector3d pos, Eigen::Quaterniond qrot,
                                     std::string parent_frame ="");
         
         void updateRobotGraphics(std::string _robotName, Eigen::VectorXd robot_pos);
@@ -96,7 +97,12 @@ namespace mviz{
         void setBasePoseAndRotation(std::string _robotName, Eigen::Vector3d _pose,Eigen::Quaterniond _qRotation);
         void setRobotMeshOrientation(std::string& _robotName, double angle, int axis); // angle is in Degree, axis has to be from enum AXIS;
 
+        void setObjectPoseAndRotation(std::string _Name, Eigen::Vector3d _pose,Eigen::Quaterniond _qRotation);
+        void createBox(std::string _name, float l, float b, float h, std::string _parent = "");
+        void createSphere(std::string _name, float r, std::string parent="");
+        void createCylinder(std::string _name, float r, float h, std::string parent="");
         void createScene();
+        void createLine();
 
         mObject* getGraphicalObject(std::string objName);
         mRobot* getRobotObject(std::string _rname);

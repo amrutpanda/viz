@@ -18,9 +18,10 @@ namespace mviz
         camNode = _cameraNode;
         camNode->lookAt(targetNode->getPosition(),Ogre::Node::TS_PARENT);
         // create a light that will move along with the camera.
-        Ogre::Light* light = _scnMgr->createLight("CameraLight");
-        Ogre::SceneNode* lightNode = camNode->createChildSceneNode();
-        lightNode->attachObject(light);
+        
+        // Ogre::Light* light = _scnMgr->createLight("CameraLight");
+        // Ogre::SceneNode* lightNode = camNode->createChildSceneNode();
+        // lightNode->attachObject(light);
         
     }
 

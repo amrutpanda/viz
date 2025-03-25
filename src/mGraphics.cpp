@@ -10,23 +10,117 @@ namespace mviz
 {
     void mGraphics::readFile(std::string FilePath)
     {
-        urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDFFile(FilePath);
+        // urdf::ModelInterfaceSharedPtr urdf = urdf::parseURDFFile(FilePath);
         
-        urdf::LinkConstSharedPtr root = urdf->getRoot();
+        // urdf::LinkConstSharedPtr root = urdf->getRoot();
 
         // check for correct file extension.
 
         std::filesystem::path _path = std::filesystem::canonical(FilePath);
         if (_path.extension() != ".world")
             throw std::runtime_error("Loading failed. Please load a file with extension '.world'...");
-        // tinyxml2 parsing
-
-        // tinyxml2::XMLDocument doc;
-        // doc.LoadFile(_path.c_str());
+        // pugixml parsing
+        pugi::xml_document doc;
+        pugi::xml_parse_result result = doc.load_file(FilePath.c_str());
+        if (!result)
+            throw std::runtime_error("Error while reading the URDF file.\n");
+        pugi::xml_node root_node = doc.root().child("world");
+        // std::cout << "pugi node name: " << root_node.child("world").name() << std::endl;
         
-        // doc.Print();
         
+        for (const pugi::xml_node _node : root_node)
+        {
+            pugi::xml_node tNode;
+            std::string name, type, filename, tval;
+            Ogre::Vector3 _xyz, _rpyV;
+            Ogre::Quaternion _rpy;
+            Eigen::Vector3d xyz;
+            Eigen::Quaterniond rpy;
+            double l,b,h,r;
+            // std::cout << _node.name() << std::endl;
+            std::string _node_name = _node.name();
+            if (_node_name == "robot")
+            {
+                // extract name,filename, xyz and rpy from the node.
+                name = _node.attribute("name").value();
+                std::cout << "robot name : " << name << std::endl;
+                filename = _node.child("path").first_attribute().value();
+                
+                Ogre::StringConverter::parse(_node.child("origin").attribute("xyz").value(),_xyz);
+                Ogre::StringConverter::parse(_node.child("origin").attribute("rpy").value(), _rpyV); 
+                
+                convertOgreVecToEigen(_xyz, xyz);
+                _rpy = _rpy * Ogre::Quaternion(Ogre::Radian(_rpyV.x),Ogre::Vector3::UNIT_X);
+                _rpy = _rpy * Ogre::Quaternion(Ogre::Radian(_rpyV.y),Ogre::Vector3::UNIT_Y);
+                _rpy = _rpy * Ogre::Quaternion(Ogre::Radian(_rpyV.z),Ogre::Vector3::UNIT_Z);
+                convertOgreQuatToEigen(_rpy,rpy);
 
+                std::cout << "xyz: " << xyz << std::endl;
+                std::cout << "rpy: " << rpy << std::endl;
+
+                createRobotObject(name,filename,xyz,rpy);
+                // setRobotMeshOrientation(name,-90,mviz::AXIS::X);
+                
+            }
+            else if (_node_name == "object")
+            {
+                name = _node.attribute("name").value();
+                type = _node.attribute("type").value();
+
+                Ogre::StringConverter::parse(_node.child("origin").attribute("xyz").value(),_xyz);
+                Ogre::StringConverter::parse(_node.child("origin").attribute("rpy").value(), _rpy); 
+                
+                convertOgreVecToEigen(_xyz, xyz);
+                _rpy = _rpy * Ogre::Quaternion(Ogre::Radian(_rpyV.x),Ogre::Vector3::UNIT_X);
+                _rpy = _rpy * Ogre::Quaternion(Ogre::Radian(_rpyV.y),Ogre::Vector3::UNIT_Y);
+                _rpy = _rpy * Ogre::Quaternion(Ogre::Radian(_rpyV.z),Ogre::Vector3::UNIT_Z);
+                convertOgreQuatToEigen(_rpy,rpy);
+
+                if (type == "mesh")
+                {
+                    filename = _node.child("mesh").attribute("filename").value();
+                    createGraphicalObject(filename,name,xyz,rpy);
+                    
+                }
+                else if(type == "box")
+                {
+                    l = _node.child("dim").attribute("l").as_double();
+                    b = _node.child("dim").attribute("b").as_double();
+                    h = _node.child("dim").attribute("h").as_double();
+                    std::cout << "creating box\n";
+                    createBox(name,l,b,h);
+                    setObjectPoseAndRotation(name,xyz,rpy);
+                }
+                else if(type == "cylinder")
+                {
+                    r = _node.child("dim").attribute("radius").as_double();
+                    h = _node.child("dim").attribute("height").as_double();
+                    std::cout << "creating cylinder\n";
+                    createCylinder(name,r,h);
+                    setObjectPoseAndRotation(name,xyz,rpy);
+                }
+                else if(type == "sphere")
+                {
+                    r = _node.child("dim").attribute("radius").as_double();
+                    std::cout << "creating sphere\n";
+                    createSphere(name,r);
+                    setObjectPoseAndRotation(name,xyz,rpy);
+                }       
+                else
+                {
+                    
+                }
+                
+            }
+            else
+            {
+                /* code */
+            }
+            
+            
+
+        }
+        
         
         
     }
@@ -124,7 +218,23 @@ namespace mviz
         
     }
 
-    void mGraphics::creatGraphicalObject(std::string _fileName, std::string objName, Eigen::Vector3d _pos, Eigen::Quaterniond _qrot, std::string parent_frame)
+    void mGraphics::setObjectPoseAndRotation(std::string _objName, Eigen::Vector3d _pose, Eigen::Quaterniond _qRot)
+    {
+        try
+        {
+            objects.at(_objName)->setPosition(Ogre::Vector3(_pose.x(),_pose.y(), _pose.z()));
+            objects.at(_objName)->setRotation(Ogre::Quaternion(_qRot.w(),_qRot.x(),_qRot.y(),_qRot.z()));
+        }
+        catch(const std::exception& e)
+        {
+            std::cout << "SetObjectPoseAndRotation: No mObject with given name. Name: " << _objName << std::endl;
+            std::cerr << e.what() << '\n';
+            std::quick_exit(-1);
+        }
+        
+    }
+
+    void mGraphics::createGraphicalObject(std::string _fileName, std::string objName, Eigen::Vector3d _pos, Eigen::Quaterniond _qrot, std::string parent_frame)
     {
         std::string mesh_name;
         Ogre::Vector3 pos;
@@ -141,7 +251,7 @@ namespace mviz
         }
         else
         {
-            creatMeshFromFile(_fileName,mesh_name);
+            createMeshFromFile(_fileName,mesh_name);
         }
 
         mObject* objPtr = new mObject;
@@ -242,6 +352,91 @@ namespace mviz
         robot->flipDAEMeshes(angle,axis);
     }
 
+    void mGraphics::createBox(std::string _name, float l, float b, float h, std::string parent)
+    {
+        std::string mesh_file = "mCube.mesh";
+        mObject* object = new mObject();
+        Ogre::SceneNode* _node;
+
+        if (parent == "")
+        {
+            object->setSceneNode(scnMgr->getRootSceneNode()->createChildSceneNode());
+        }
+        else
+        {
+            try
+            {
+                object->setSceneNode(objects.at(parent)->getSceneNode()->createChildSceneNode());
+            }
+            catch(const std::exception& e)
+            {
+               std::cerr << e.what() << std::endl;
+               throw std::runtime_error("Error while creating box. Invalid parent name\n");
+            }
+            
+        }
+        // push the object to list.
+        objects[_name] = object;
+        object->attachChildMesh(scnMgr,mesh_file,Ogre::Vector3(0),Ogre::Quaternion(1,0,0,0),Ogre::Vector3(l,b,h));
+        
+    }
+
+    void mGraphics::createCylinder(std::string _name, float r, float h, std::string parent)
+    {
+        std::string mesh_file = "mCylinder.mesh";
+        mObject* object = new mObject();
+        Ogre::SceneNode* _node;
+
+        if (parent == "")
+        {
+            object->setSceneNode(scnMgr->getRootSceneNode()->createChildSceneNode());
+        }
+        else
+        {
+            try
+            {
+                object->setSceneNode(objects.at(parent)->getSceneNode()->createChildSceneNode());
+            }
+            catch(const std::exception& e)
+            {
+               std::cerr << e.what() << std::endl;
+               throw std::runtime_error("Error while creating box. Invalid parent name\n");
+            }
+            
+        }
+        // push the object to list.
+        objects[_name] = object;
+        object->attachChildMesh(scnMgr,mesh_file,Ogre::Vector3(0),Ogre::Quaternion(1,0,0,0),Ogre::Vector3(r,r,h/10));
+    }
+
+    void mGraphics::createSphere(std::string _name, float r, std::string parent)
+    {
+        std::string mesh_file = "mSphere.mesh";
+        mObject* object = new mObject();
+        Ogre::SceneNode* _node;
+
+        if (parent == "")
+        {
+            object->setSceneNode(scnMgr->getRootSceneNode()->createChildSceneNode());
+        }
+        else
+        {
+            try
+            {
+                object->setSceneNode(objects.at(parent)->getSceneNode()->createChildSceneNode());
+            }
+            catch(const std::exception& e)
+            {
+               std::cerr << e.what() << std::endl;
+               throw std::runtime_error("Error while creating box. Invalid parent name\n");
+            }
+            
+        }
+        // push the object to list.
+        objects[_name] = object;
+        object->attachChildMesh(scnMgr,mesh_file,Ogre::Vector3(0),Ogre::Quaternion(1,0,0,0),Ogre::Vector3(r,r,r));
+    }
+
     // ********** +++++++++++++ ***************
     // Graphics related Methods.
 
@@ -270,7 +465,7 @@ namespace mviz
         
         
         Ogre::LogManager* logMgr = Ogre::LogManager::getSingletonPtr();
-        logMgr->createLog("Mylog",true, false, false);
+        logMgr->createLog("Mylog",true, true, false);
         // get a pointer to the already created root
         Ogre::Root* root = getRoot();
         scnMgr = root->createSceneManager();
@@ -297,26 +492,25 @@ namespace mviz
         shadergen->addSceneManager(scnMgr);
 
         // set ambient light.
-        scnMgr->setAmbientLight(Ogre::ColourValue(1.0, 1.0, 1.00));
+        scnMgr->setAmbientLight(Ogre::ColourValue(0.9, 1.0, 1.00));
 
         // set newlight.
-        Ogre::Light* light = scnMgr->createLight("MainLight1");
+
+        Ogre::Light* light = scnMgr->createLight("MainLight1", Ogre::Light::LightTypes::LT_POINT);
         Ogre::SceneNode* lightNode = scnMgr->getRootSceneNode()->createChildSceneNode();
         lightNode->attachObject(light);
-
-        //! [lightpos]
         lightNode->setPosition(0, 0, 1000);
 
         // another light node.
-        Ogre::Light* light2 = scnMgr->createLight("MainLight2");
-        Ogre::SceneNode* lightNode2 = scnMgr->getRootSceneNode()->createChildSceneNode();
-        lightNode2->attachObject(light2);
+        // Ogre::Light* light2 = scnMgr->createLight("MainLight2");
+        // Ogre::SceneNode* lightNode2 = scnMgr->getRootSceneNode()->createChildSceneNode();
+        // lightNode2->attachObject(light2);
 
-        lightNode2->setPosition(1000, 100, 500);
+        // lightNode2->setPosition(1000, 100, 500);
         // another light node end.
 
         // Ogre setup skydome;
-        // scnMgr->setSkyDome(true,"Examples/CloudySky", 5, 8);
+        scnMgr->setSkyDome(true,"Examples/CloudySky", 5, 8);
 
         //! [camera]
         camNode = scnMgr->getRootSceneNode()->createChildSceneNode();
@@ -331,14 +525,14 @@ namespace mviz
         camNode->setPosition(0, 0, 10);
 
         // create a new Cameraman object and attach it to this object.
-        mCameraMan = new OgreBites::CameraMan(camNode);
-        mCameraMan->setTopSpeed(1);
-        mCameraMan->setStyle(OgreBites::CameraStyle::CS_ORBIT);
-        addInputListener(mCameraMan);
+        // mCameraMan = new OgreBites::CameraMan(camNode);
+        // mCameraMan->setTopSpeed(1);
+        // mCameraMan->setStyle(OgreBites::CameraStyle::CS_ORBIT);
+        // addInputListener(mCameraMan);
 
         // adding custom camera
-        // mCamera* Camera = new mCamera(camNode);
-        // addInputListener(Camera);
+        mCamera* Camera = new mCamera(camNode);
+        addInputListener(Camera);
         
 
         // and tell it to render into the main window
@@ -357,8 +551,11 @@ namespace mviz
         // adding the resource folder to Ogre "FileSystem".
         Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/home/asp/Files/cpp/projects/viz/resources",
                                                                         "FileSystem","UserData",true);
+        Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/home/asp/Files/cpp/projects/viz/resources/meshes",
+                                                                        "FileSystem","UserData",true);
         // now initialise the resourcegroup.
         Ogre::ResourceGroupManager::getSingleton().initialiseResourceGroup("UserData");
+        std::cout << "Finished setup" << std::endl;
 
     }
 
@@ -466,7 +663,7 @@ namespace mviz
         }
         else
         {
-            creatMeshFromFile(_FilePath,mesh_name);
+            createMeshFromFile(_FilePath,mesh_name);
         }
 
         // create Entity.
@@ -477,7 +674,7 @@ namespace mviz
         
     }
     // ....................... functions not part of Graphics object........................ //
-    void creatMeshFromFile(std::string filepath, Ogre::String& MeshName)
+    void createMeshFromFile(std::string filepath, Ogre::String& MeshName)
     {
 
         // if (!Ogre::ResourceGroupManager::getSingleton().resourceGroupExists("UserData"))
@@ -571,7 +768,20 @@ namespace mviz
         _ogQuat.z = _eQuat.z();
     }
 
+    void convertOgreVecToEigen(Ogre::Vector3& _ogV, Eigen::Vector3d& _eV)
+    {
+        _eV[0] = _ogV.x;
+        _eV[1] = _ogV.y;
+        _eV[2] = _ogV.z;
+    }
 
+    void convertOgreQuatToEigen(Ogre::Quaternion& _ogQuat, Eigen::Quaterniond& _eQuat)
+    {
+        _eQuat.w() = _ogQuat.w;
+        _eQuat.x() = _ogQuat.x;
+        _eQuat.y() = _ogQuat.y;
+        _eQuat.z() = _ogQuat.z;
+    }
 
     void say_hello()
     {

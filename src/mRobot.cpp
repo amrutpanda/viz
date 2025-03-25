@@ -12,10 +12,8 @@ namespace mviz
         rootNode = root_node;
         scnMgr = _scnMgr;
         urdf::ModelInterfaceSharedPtr _urdf = urdf::parseURDFFile(_urdf_file);
-        std::cout << "Hello\n";
 
         // initialize transformations and co-ordinates.
-        T_var.setIdentity();
         // base_pos.setZero();
         // base_rot.setIdentity();
 
@@ -33,6 +31,7 @@ namespace mviz
         createOgreNodesFromLinkPtr(urdf_root_link_ptr,rootNode);
 
         std::cout << "Total joints: " << joint_name.size() << std::endl;
+
 
         // setRobotAxisVisible(false);
         
@@ -116,7 +115,7 @@ namespace mviz
                         
                         std::filesystem::path dir_path(_urdf_file), filepath(m_ptr->filename);
                         mesh_file_name = dir_path.parent_path().append(filepath.string());
-                        creatMeshFromFile(mesh_file_name,mesh_name);
+                        createMeshFromFile(mesh_file_name,mesh_name);
 
                         // check whether the file extension is stl and set material loading flag true;
                         if (filepath.extension() == ".stl" )
@@ -165,7 +164,7 @@ namespace mviz
                     pmat->getTechnique(0)->getPass(0)->setAmbient(_color);
                     pmat->getTechnique(0)->getPass(0)->setDiffuse(_color);
                     
-
+        
                     if (!vptr->material->texture_filename.empty())
                     {
                         pmat->getTechnique(0)->getPass(0)->createTextureUnitState(vptr->material->texture_filename);
@@ -316,7 +315,7 @@ namespace mviz
 
         // creating mesh from the given file name;
         std::string entity_name;
-        creatMeshFromFile(_rlink->mesh_file_name,entity_name);
+        createMeshFromFile(_rlink->mesh_file_name,entity_name);
         _rlink->attachChildMesh(scnMgr, entity_name,Ogre::Vector3(x,y,z), Ogre::Quaternion(qw,qx,qy,qz));
         
 
