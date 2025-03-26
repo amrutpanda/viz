@@ -71,25 +71,24 @@ link_directories(${BULLET_LIB})
 
 set(LIBRARIES ${OGRE_LIBRARIES} ${urdfdom_LIBRARIES} ${SDL2_LIBRARIES} pugixml)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
+                 
 
-# add_library(graphics src/mGraphics.cpp src/mRobot.cpp src/dmObject.cpp src/mObject.cpp
-#                         src/axis.cpp src/mCamera.cpp)                   
+# add_executable(test_app src/mainloop.cpp src/mGraphics.cpp src/mRobot.cpp 
+#                     src/dmObject.cpp src/mObject.cpp src/axis.cpp src/mCamera.cpp)
+# add_executable(Imgui_test src/ImguiTest.cpp src/mGraphics.cpp src/mRobot.cpp 
+#                     src/dmObject.cpp src/mObject.cpp src/axis.cpp src/mCamera.cpp)
 
-# add_executable(test_app src/mainloop.cpp)
-# add_executable(Imgui_test src/ImguiTest.cpp)
 
-add_executable(test_app src/mainloop.cpp src/mGraphics.cpp src/mRobot.cpp 
-                    src/dmObject.cpp src/mObject.cpp src/axis.cpp src/mCamera.cpp)
-add_executable(Imgui_test src/ImguiTest.cpp src/mGraphics.cpp src/mRobot.cpp 
-                    src/dmObject.cpp src/mObject.cpp src/axis.cpp src/mCamera.cpp)
+
+
 # add_executable(rbdl_test src/rbdl_test.cpp)
-
 # target_link_libraries(rbdl_test ${RBDL_LIBRARY} ${RBDL_URDFREADER_LIBRARY})
 
-target_link_libraries(test_app ${LIBRARIES})
-target_link_libraries(Imgui_test ${LIBRARIES})
-# target_link_libraries(sim ${LIBRAREIS})
+# target_link_libraries(test_app ${LIBRARIES})
+# target_link_libraries(Imgui_test ${LIBRARIES})
 
-# add_subdirectory(simulation)
-# add_subdirectory(examples)
+
+add_subdirectory(src)
+add_subdirectory(simulation)
+add_subdirectory(examples)
 
