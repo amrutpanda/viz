@@ -34,8 +34,10 @@ namespace mviz
             std::string name, type, filename, tval;
             Ogre::Vector3 _xyz, _rpyV;
             Ogre::Quaternion _rpy;
+            Ogre::Vector3 _scale;
             Eigen::Vector3d xyz;
             Eigen::Quaterniond rpy;
+            Eigen::Vector3d scale;
             double l,b,h,r;
             // std::cout << _node.name() << std::endl;
             std::string _node_name = _node.name();
@@ -55,10 +57,13 @@ namespace mviz
                 _rpy = _rpy * Ogre::Quaternion(Ogre::Radian(_rpyV.z),Ogre::Vector3::UNIT_Z);
                 convertOgreQuatToEigen(_rpy,rpy);
 
+                // TO-DO: scale to be set in xml file later.
+                scale = scale.Ones();
+
                 std::cout << "xyz: " << xyz << std::endl;
                 std::cout << "rpy: " << rpy << std::endl;
 
-                createRobotObject(name,filename,xyz,rpy);
+                createRobotObject(name,filename,false,xyz,rpy);
                 // setRobotMeshOrientation(name,-90,mviz::AXIS::X);
                 
             }
@@ -79,8 +84,7 @@ namespace mviz
                 if (type == "mesh")
                 {
                     filename = _node.child("mesh").attribute("filename").value();
-                    createGraphicalObject(filename,name,xyz,rpy);
-                    
+                    createGraphicalObject(filename,name,xyz,rpy,scale);
                 }
                 else if(type == "box")
                 {
@@ -138,13 +142,15 @@ namespace mviz
 
     }
 
-    void mGraphics::createRobotObject(std::string _robotName, std::string _robot_filename, 
+    void mGraphics::createRobotObject(std::string _robotName, std::string _robot_filename, bool _show_collision,
                                       Eigen::Vector3d _bpos ,Eigen::Quaterniond _brot)
     {
         // Check whether the filename extension is ".urdf".
         std::filesystem::path path(_robot_filename);
 
         // std::cout << "I am here\n";
+        // _show_collision = true;
+        // _show_collision = false;
 
         // assign base_pos and orientation.
 
@@ -152,7 +158,7 @@ namespace mviz
         // create a new SceneNode from root node and start building robot graphical object from it.
         Ogre::SceneNode* robot_root_node = scnMgr->getRootSceneNode()->createChildSceneNode();
         // create a new robot object.
-        mRobot* robot_object = new mRobot(_robotName,_robot_filename,scnMgr,robot_root_node, _bpos, _brot);
+        mRobot* robot_object = new mRobot(_robotName,_robot_filename,scnMgr,robot_root_node, _bpos, _brot,_show_collision);
         // add robot info to the "robots" object.
         // robots.push_back(std::map<std::string, mRobot*>(_robotName,robot_object));
         robots[_robotName] = robot_object;
@@ -234,7 +240,8 @@ namespace mviz
         
     }
 
-    void mGraphics::createGraphicalObject(std::string _fileName, std::string objName, Eigen::Vector3d _pos, Eigen::Quaterniond _qrot, std::string parent_frame)
+    void mGraphics::createGraphicalObject(std::string _fileName, std::string objName, Eigen::Vector3d _pos, Eigen::Quaterniond _qrot,
+                                          Eigen::Vector3d _scale, std::string parent_frame)
     {
         std::string mesh_name;
         Ogre::Vector3 pos;
@@ -270,7 +277,13 @@ namespace mviz
         
         objPtr->setPosition(pos);
         objPtr->setRotation(qrot);
-        objPtr->attachChildMesh(scnMgr,mesh_name, Ogre::Vector3(0,0,0),Ogre::Quaternion(1,0,0,0));   // assuming entity name and mesh name as same at this momemt.
+        
+        objPtr->attachChildMesh(scnMgr,mesh_name, Ogre::Vector3(0,0,0),Ogre::Quaternion(1,0,0,0),
+                                            Ogre::Vector3(_scale.x(), _scale.y(), _scale.z()));   // assuming entity name and mesh name as same at this momemt.
+        // set position and orientation.
+        objSceneNode->setPosition(Ogre::Vector3(_pos.x(), _pos.y(), _pos.z()));
+        objPtr->setPosition(_pos);
+        objPtr->setRotation(_qrot.w(), _qrot.x(), _qrot.y(), _qrot.z());
         objects[objName] = objPtr;
         // experimental
 
@@ -455,6 +468,21 @@ namespace mviz
         AppName = _name;
     }
 
+    mGraphics::~mGraphics()
+    {
+        for ( auto robot: robots)
+        {
+            delete robot.second;
+        }
+        std::cout << "Deleted all mRobot objects" << std::endl;
+        
+        for (auto _object: objects)
+        {
+            delete _object.second;
+        }
+        std::cout << "Deleted all mObject objects" << std::endl;
+    }
+
     void mGraphics::setup()
     {
         // Check if _flag pointer has been assigned.
@@ -465,7 +493,7 @@ namespace mviz
         
         
         Ogre::LogManager* logMgr = Ogre::LogManager::getSingletonPtr();
-        logMgr->createLog("Mylog",true, true, false);
+        logMgr->createLog("Mylog",true, false, false);
         // get a pointer to the already created root
         Ogre::Root* root = getRoot();
         scnMgr = root->createSceneManager();
@@ -492,7 +520,8 @@ namespace mviz
         shadergen->addSceneManager(scnMgr);
 
         // set ambient light.
-        scnMgr->setAmbientLight(Ogre::ColourValue(0.9, 1.0, 1.00));
+        scnMgr->setAmbientLight(Ogre::ColourValue(0.9, 0.5, 0.5));
+        // scnMgr->setAmbientLight(Ogre::ColourValue(1.0, 1.0, 1.0));
 
         // set newlight.
 
@@ -525,14 +554,14 @@ namespace mviz
         camNode->setPosition(0, 0, 10);
 
         // create a new Cameraman object and attach it to this object.
-        // mCameraMan = new OgreBites::CameraMan(camNode);
-        // mCameraMan->setTopSpeed(1);
-        // mCameraMan->setStyle(OgreBites::CameraStyle::CS_ORBIT);
-        // addInputListener(mCameraMan);
+        mCameraMan = new OgreBites::CameraMan(camNode);
+        mCameraMan->setTopSpeed(1);
+        mCameraMan->setStyle(OgreBites::CameraStyle::CS_ORBIT);
+        addInputListener(mCameraMan);
 
         // adding custom camera
-        mCamera* Camera = new mCamera(camNode);
-        addInputListener(Camera);
+        // mCamera* Camera = new mCamera(camNode);
+        // addInputListener(Camera);
         
 
         // and tell it to render into the main window
@@ -668,11 +697,104 @@ namespace mviz
 
         // create Entity.
         Ogre::Entity* ogreEntity = scnMgr->createEntity(mesh_name);
+        // Ogre::MeshPtr mptr = ogreEntity->getMesh();
+        
         Ogre::SceneNode* ogreNode = scnMgr->getRootSceneNode()->createChildSceneNode();
         ogreNode->attachObject(ogreEntity);
         ogreNode->setPosition(pos);
         
     }
+
+    void mGraphics::createLine(std::vector<Eigen::Vector3d> _points,Eigen::Vector3d _color, float _lineWidth,
+                            bool _connected,std::string _frameObject)
+    {
+        Ogre::SceneNode* _node;
+        if (_frameObject == "")
+        {
+            _node  = scnMgr->getRootSceneNode();
+        }
+        else
+        {
+            try
+            {
+                _node = objects.at(_frameObject)->getSceneNode();
+            }
+            catch(const std::exception& e)
+            {
+                std::cerr << e.what() << '\n';
+                throw std::runtime_error("CreateLine: Unable to find frameobject with give name: " + _frameObject );
+            }
+        
+        }
+        _count++;
+        Ogre::ManualObject* man = scnMgr->createManualObject("line"+std::to_string(_count));
+
+        Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().getByName("Line","UserData");
+        mat->getTechnique(0)->getPass(0)->setLineWidth(_lineWidth);
+        mat->getTechnique(0)->getPass(0)->setAmbient(_color.x(),_color.y(),_color.z());
+        mat->getTechnique(0)->getPass(0)->setDiffuse(Ogre::ColourValue(_color.x(),_color.y(),_color.z()));
+
+        if (_connected)
+            man->begin(mat,Ogre::RenderOperation::OT_LINE_STRIP);
+        else
+            man->begin(mat, Ogre::RenderOperation::OT_LINE_LIST);
+
+        assert(("CreateLine: _points vector must have at least 2 Eigen vectors to draw a line",_points.size() >=2));
+        for (unsigned int i = 0; i < _points.size(); i++)
+        {
+            man->position(_points[i].x(),_points[i].y(),_points[i].z());
+            man->colour(_color.x(),_color.y(),_color.z());
+        }
+        man->end();
+        // attach the manual object to the scenenode.
+        _node->attachObject(man);
+        std::cout << "Lines created" << std::endl;    
+       
+    }
+
+    void mGraphics::createPoints(std::vector<Eigen::Vector3d>& _points, Eigen::Vector3d _color, float _pointSize,
+        std::string _frameObject)
+    {
+        Ogre::SceneNode* _node;
+        if (_frameObject == "")
+        {
+            _node  = scnMgr->getRootSceneNode();
+        }
+        else
+        {
+            try
+            {
+                _node = objects.at(_frameObject)->getSceneNode();
+            }
+            catch(const std::exception& e)
+            {
+                std::cerr << e.what() << '\n';
+                throw std::runtime_error("CreatePoints: Unable to find frameobject with give name: " + _frameObject );
+            }
+        }
+        _count++;
+        Ogre::ManualObject* man = scnMgr->createManualObject("points_"+std::to_string(_count));
+
+        Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().getByName("points","UserData");
+        if (mat.get() == nullptr)
+            throw std::runtime_error("Material could not be found. Inside createPoints function.");
+        mat->getTechnique(0)->getPass(0)->setPointSpritesEnabled(false);
+        mat->getTechnique(0)->getPass(0)->setPointSize(_pointSize);
+        mat->getTechnique(0)->getPass(0)->setAmbient(_color.x(),_color.y(),_color.z());
+        mat->getTechnique(0)->getPass(0)->setDiffuse(Ogre::ColourValue(_color.x(),_color.y(),_color.z()));
+
+        man->begin(mat,Ogre::RenderOperation::OT_POINT_LIST);
+        for (unsigned int i = 0; i < _points.size(); i++)
+        {
+            man->position(_points[i].x(),_points[i].y(),_points[i].z());
+            man->colour(_color.x(),_color.y(),_color.z());
+        }
+        man->end();
+        // attach the manual object to the scenenode.
+        _node->attachObject(man);
+        std::cout << "Points created" << std::endl;  
+    }
+
     // ....................... functions not part of Graphics object........................ //
     void createMeshFromFile(std::string filepath, Ogre::String& MeshName)
     {
@@ -730,6 +852,7 @@ namespace mviz
             // std::cout << "Decoding the obj file to mesh" << std::endl;
             m->getUserObjectBindings().setUserAny("_AssimpLoaderOptions", opts.options);
             codec->decode(Ogre::Root::openFileStream(opts.source), m.get());
+            
         }
         else
         {
@@ -752,6 +875,7 @@ namespace mviz
         
         
     }
+
 
     void convertEigenVecToOgre(Eigen::Vector3d& _eV, Ogre::Vector3& _ogV)
     {
@@ -819,9 +943,9 @@ namespace mviz
     {
         auto flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove
                         | ImGuiWindowFlags_NoTitleBar;
+
         overlay->NewFrame();
-        // std::cout << "I am here" << std::endl;
-        ImGui::SetNextWindowSize(ImVec2(400,100));
+        ImGui::SetNextWindowSize(ImVec2(300,10));
         ImGui::SetNextWindowBgAlpha(0.1);
         ImGui::Begin("Frame Rate ",NULL,flags);
         ImGui::Text("Frame Rate: %f",frame_rate);

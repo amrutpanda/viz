@@ -67,7 +67,7 @@ int main(int argc, char const *argv[])
         for (size_t j = 0; j < 10; j++)
         {
             robot_name = "robot_"+std::to_string(i)+std::to_string(j);
-            graphics.createRobotObject(robot_name, "/home/asp/Files/cpp/projects/viz/src/kuka.urdf",v3,Q);
+            graphics.createRobotObject(robot_name, "/home/asp/Files/cpp/projects/viz/src/kuka.urdf",false,v3,Q);
             // graphics.createRobotObject(robot_name,"/home/asp/Files/resources/jaxon_description/urdf/jaxon_jvrc_test.urdf", v3, Q);
             // graphics.setRobotMeshOrientation(robot_name,-90,mviz::AXIS::X);
             // graphics.setBasePoseAndRotation(robot_name,v3,Q);

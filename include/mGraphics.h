@@ -23,8 +23,11 @@
 
 
 namespace mviz{
+    /**
+     * This variable is a global counter and can be used for creating new names.
+    */
+    static int _count = 0;
 
-    
     struct AssOptions
     {
         Ogre::String source;
@@ -47,8 +50,8 @@ namespace mviz{
         // urdf::ModelInterfaceSharedPtr urdf;
         std::string name;
         // std::vector <std::map<std::string, mRobot*>> robots;
-        std::map<std::string, mRobot*> robots;
-        std::map<std::string, mObject*> objects;
+        std::unordered_map<std::string, mRobot*> robots;
+        std::unordered_map<std::string, mObject*> objects;
         // std::vector <std::map<std::string, mObject*>> objects;
 
         Ogre::SceneNode* camNode;
@@ -80,16 +83,16 @@ namespace mviz{
         bool windowClosing(Ogre::RenderWindow* rw);
         void windowClosed(Ogre::RenderWindow* rw);
         void closeGraphics();
-        ~mGraphics() {};
+        ~mGraphics();
 
         const std::string& getName();
         // urdf::ModelInterfaceSharedPtr getUrdfObject();
-        void createRobotObject(std::string _robotName, std::string _robot_filename, 
+        void createRobotObject(std::string _robotName, std::string _robot_filename, bool _show_collision = false,
                                Eigen::Vector3d _bpos = Eigen::Vector3d::Zero(),
                                 Eigen::Quaterniond _brot = Eigen::Quaterniond::Identity());
         void createDynamicMeshObject(std::string objName, Eigen::Vector3d pos, Eigen::Quaterniond qrot, std::string parent_frame = "");
         void createGraphicalObject(std::string _fileName, std::string objName,Eigen::Vector3d pos, Eigen::Quaterniond qrot,
-                                    std::string parent_frame ="");
+                                    Eigen::Vector3d scale = Eigen::Vector3d(1,1,1),std::string parent_frame ="");
         
         void updateRobotGraphics(std::string _robotName, Eigen::VectorXd robot_pos);
         void updateRobotGraphics(std::string _robotName, Eigen::VectorXd robot_pos, Eigen::Vector3d base_pose,
@@ -102,7 +105,30 @@ namespace mviz{
         void createSphere(std::string _name, float r, std::string parent="");
         void createCylinder(std::string _name, float r, float h, std::string parent="");
         void createScene();
-        void createLine();
+        /**
+         * CreateLine:
+         * input args: 
+         *          _points: Reference to the Eigen vector containing points. 
+         *          _color : One Eigen Vector contain color values;
+         *          _lineWidth: width of the line, default value is 1.
+         *          _connected: Whether the lines are connected. If false, separate lines will be drawn taking a pair of points;
+         *          _frameObject: Name of the frame (Graphical Object name).
+         *                         Default value is blank which means frame is global frame.
+        */
+        void createLine(std::vector<Eigen::Vector3d> _points, Eigen::Vector3d _color, float _lineWidth = 1.0, 
+                            bool _connected = true,std::string _frameObject="");
+        /**
+         * createPoints:
+         *  similar to createline function.
+         * _points: reference to vector containing points.
+         * _pointSize: size of the points to be drawn.
+         * _frameObject: Name of the graphical mObject to which it will attached. If nothing mention it will 
+         *              attached to the world frame or global frame.
+        */
+        void createPoints(std::vector<Eigen::Vector3d>& _points, Eigen::Vector3d _color, float _pointSize = 1,
+                            std::string _frameObject="" );
+        void drawPointsList(std::vector<Eigen::Vector3d> _points, Eigen::Vector3d _color, float _point_size = 1.0,
+                            std::string _frameObject="");
 
         mObject* getGraphicalObject(std::string objName);
         mRobot* getRobotObject(std::string _rname);

@@ -1,18 +1,22 @@
-#include "mRobot.h"
 
+#include "mRobot.h"
 
 namespace mviz
 {
     // mRobot::mRobot(std::string robotname, std::string urdf_file, Ogre::SceneManager* _scnMgr, Ogre::SceneNode* root_node)
     mRobot::mRobot(std::string robotname, std::string urdf_file,Ogre::SceneManager* _scnMgr ,Ogre::SceneNode* root_node, 
-        Eigen::Vector3d _bpos, Eigen::Quaterniond _brot)
+        Eigen::Vector3d _bpos, Eigen::Quaterniond _brot, bool show_collision)
     {
         robot_name = robotname;
         _urdf_file = urdf_file;
         rootNode = root_node;
         scnMgr = _scnMgr;
         urdf::ModelInterfaceSharedPtr _urdf = urdf::parseURDFFile(_urdf_file);
-
+        std::filesystem::path path = std::filesystem::path(_urdf_file);
+        URDF_PATH = path;
+        std::cout << "urdf root path : " << URDF_PATH << std::endl;
+        _collision_flag = show_collision;
+        // _collision_flag = true;
         // initialize transformations and co-ordinates.
         // base_pos.setZero();
         // base_rot.setIdentity();
@@ -31,7 +35,7 @@ namespace mviz
         createOgreNodesFromLinkPtr(urdf_root_link_ptr,rootNode);
 
         std::cout << "Total joints: " << joint_name.size() << std::endl;
-
+        std::cout << "Total joints num in urdf: " << _urdf->joints_.size() << std::endl;
 
         // setRobotAxisVisible(false);
         
@@ -45,7 +49,7 @@ namespace mviz
     }
    
 
-    void mRobot::convertLinkPtrTomRobotLink(urdf::Link* ulink, mRobotLink* rlink)
+    void mRobot::convertVisualLinkPtrTomRobotLink(urdf::Link* ulink, mRobotLink* rlink)
     {
         std::cout << "Visual array size: " << ulink->visual_array.size() << std::endl;
         for (int i = 0; i < ulink->visual_array.size(); ++i)
@@ -114,7 +118,8 @@ namespace mviz
                         urdf::Mesh* m_ptr = dynamic_cast<urdf::Mesh*>(vptr->geometry.get());
                         
                         std::filesystem::path dir_path(_urdf_file), filepath(m_ptr->filename);
-                        mesh_file_name = dir_path.parent_path().append(filepath.string());
+                        // mesh_file_name = dir_path.parent_path().append(filepath.string());
+                        mesh_file_name = resolvePath(m_ptr->filename);
                         createMeshFromFile(mesh_file_name,mesh_name);
 
                         // check whether the file extension is stl and set material loading flag true;
@@ -141,7 +146,7 @@ namespace mviz
                 default:
                     {
                         rqd_mat_loading = false;
-                        // std::cout << "oops \n";
+                        std::cout << "No Visual Info found\n";
                         break;
                     }
                 }
@@ -162,8 +167,14 @@ namespace mviz
                                                                 vptr->material->color.g,
                                                                 vptr->material->color.b);
                     pmat->getTechnique(0)->getPass(0)->setAmbient(_color);
-                    pmat->getTechnique(0)->getPass(0)->setDiffuse(_color);
-                    
+                    pmat->getTechnique(0)->getPass(0)->setDiffuse(vptr->material->color.r,
+                                                                   vptr->material->color.g,
+                                                                vptr->material->color.b,0.9);
+                    // pmat->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SceneBlendType::SBT_TRANSPARENT_COLOUR);
+                    // pmat->getTechnique(0)->getPass(0)->setSceneBlendingOperation(Ogre::SceneBlendOperation::SBO_ADD);
+                    pmat->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBF_SOURCE_ALPHA,Ogre::SBF_ONE_MINUS_SOURCE_ALPHA);
+                    pmat->getTechnique(0)->getPass(0)->setDepthWriteEnabled(false);
+                   
         
                     if (!vptr->material->texture_filename.empty())
                     {
@@ -176,8 +187,8 @@ namespace mviz
                 else if (rqd_mat_loading)
                 {
                     // std::cout << "Loading default material." << std::endl;
-                    // Ogre::Entity* ent = static_cast<Ogre::Entity*>(rlink->getChildMeshNode(mesh_name)->getAttachedObject(0));
-                    // ent->setMaterialName("BaseWhiteNoLighting");
+                    Ogre::Entity* ent = static_cast<Ogre::Entity*>(rlink->getChildMeshNode(mesh_name)->getAttachedObject(0));
+                    ent->setMaterialName("Collision");
                 }
                 else
                     std::cout << "No material required \n";
@@ -188,6 +199,129 @@ namespace mviz
         }   
         
     }
+
+    /**
+     * Converts a collision information of urdf link to mRobotLink for visualization.
+    */
+
+    void mRobot::convertCollisionLinkPtrTomRobotLink(urdf::Link* ulink, mRobotLink* rlink)
+    {
+        std::cout << "Collision array size: " << ulink->collision_array.size() << std::endl;
+        for (int i = 0; i < ulink->collision_array.size(); ++i)
+        {
+            urdf::CollisionSharedPtr cptr = ulink->collision_array[i];
+            // if not Collision component exists.
+            if (cptr.get() != nullptr)
+            {
+                // std::cout <<   << std::endl;
+                bool rqd_mat_loading = true;
+                std::string mesh_name;
+                double x,y,z,qw,qx,qy,qz;
+                x = cptr->origin.position.x;
+                y = cptr->origin.position.y;
+                z = cptr->origin.position.z;
+                cptr->origin.rotation.getQuaternion(qx,qy,qz,qw);
+                unsigned int type = getUrdfGeometryType(cptr->geometry);
+
+                switch (type)
+                {
+                case urdf::Geometry::BOX :
+                    {
+                        double l,b,h;
+                        mesh_name = "mCube.mesh";
+                        
+                        urdf::Box* box_ptr = dynamic_cast<urdf::Box*>(cptr->geometry.get());
+                        l = box_ptr->dim.x;
+                        b = box_ptr->dim.y;
+                        h = box_ptr->dim.z;
+
+                        rlink->attachChildMesh(scnMgr,mesh_name,Ogre::Vector3(x,y,z),Ogre::Quaternion(qw,qx,qy,qz),
+                                                Ogre::Vector3(l,b,h));
+                        break;
+                    } 
+                case urdf::Geometry::CYLINDER :
+                    {
+                        double r,h;
+                        mesh_name = "mCylinder.mesh";
+                        
+                        urdf::Cylinder* c_ptr = dynamic_cast<urdf::Cylinder*>(cptr->geometry.get());
+
+                        r = c_ptr->radius;
+                        h = c_ptr->length;
+                        rlink->attachChildMesh(scnMgr,mesh_name,Ogre::Vector3(x,y,z),Ogre::Quaternion(qw,qx,qy,qz),
+                                                Ogre::Vector3(r,r,h/10));
+                        
+                        break;
+                    }
+                case urdf::Geometry::SPHERE :
+                    {
+                        double r;
+                        mesh_name = "mSphere.mesh";
+                        urdf::Sphere* s_ptr = dynamic_cast<urdf::Sphere*>(cptr->geometry.get());
+
+                        r = s_ptr->radius;
+
+                        rlink->attachChildMesh(scnMgr,mesh_name,Ogre::Vector3(x,y,z),Ogre::Quaternion(qw,qx,qy,qz),
+                                                Ogre::Vector3(r,r,r));
+
+                        break;
+                    }
+                
+                case urdf::Geometry::MESH :
+                    {
+                        std::string mesh_file_name;
+                        urdf::Mesh* m_ptr = dynamic_cast<urdf::Mesh*>(cptr->geometry.get());
+                        
+                        std::filesystem::path dir_path(_urdf_file), filepath(m_ptr->filename);
+                        // mesh_file_name = dir_path.parent_path().append(filepath.string());
+                        mesh_file_name = resolvePath(m_ptr->filename);
+                        createMeshFromFile(mesh_file_name,mesh_name);
+
+                        // check whether the file extension is stl and set material loading flag true;
+                        if (filepath.extension() == ".stl" )
+                            rqd_mat_loading = true;
+                        else
+                            rqd_mat_loading = false;
+
+
+                        rlink->attachChildMesh(scnMgr,mesh_name,Ogre::Vector3(x,y,z),Ogre::Quaternion(qw,qx,qy,qz),
+                                                Ogre::Vector3(m_ptr->scale.x, m_ptr->scale.y, m_ptr->scale.z));
+
+                        if (filepath.extension() == ".dae" || filepath.extension() == ".DAE")
+                        {
+                            // A patch to handle orientatin mismatch issue with Collada files.
+                            // Change the angle and axes if you see mesh pose discrepancy.
+                            std::cout << "Found a Collada file." << std::endl;
+                            // rlink->getChildMeshNode(mesh_name)->rotate(Ogre::Quaternion(Ogre::Degree(90),Ogre::Vector3::UNIT_X));
+                            rlink->getChildMeshNode(mesh_name)->rotate(Ogre::Quaternion(Ogre::Degree(mfAngle),mfAxis));
+                        }
+                        break;
+                    }
+                
+                default:
+                    {
+                        rqd_mat_loading = false;
+                        std::cout << "No Collision Info found\n";
+                        break;
+                    }
+                }
+                // set material 
+
+                std::cout << "Preparing to load material..." << std::endl;
+                Ogre::MaterialPtr pmat;
+                Ogre::ResourceManager::ResourceCreateOrRetrieveResult res;
+                pmat = Ogre::MaterialManager::getSingleton().getByName("Collision");
+                // retrieve the attached entity from the child mesh node;
+                Ogre::Entity* ent = static_cast<Ogre::Entity*>(rlink->getChildMeshNode(mesh_name)->getAttachedObject(0));
+                ent->setMaterial(pmat);
+
+                rlink->meshes.push_back(mesh_name);
+            }
+        }   
+        
+    }
+
+
 
     void mRobot::createOgreNodesFromLinkPtr(urdf::Link* ulink,Ogre::SceneNode* ogNode)
     {
@@ -208,7 +342,13 @@ namespace mviz
             // axis test.
             // axis* ax = new axis(rlink);
             rlink->setAxis();
-            convertLinkPtrTomRobotLink(ulink,rlink);
+            // convertVisualLinkPtrTomRobotLink(ulink,rlink);
+            // convertCollisionLinkPtrTomRobotLink(ulink,rlink);
+
+            if (!_collision_flag)
+                convertVisualLinkPtrTomRobotLink(ulink,rlink);
+            else
+                convertCollisionLinkPtrTomRobotLink(ulink,rlink);
         
             if (ulink->parent_joint != nullptr)
             {
@@ -237,8 +377,12 @@ namespace mviz
             // axis* ax = new axis(rlink);
             rlink->setAxis();
             rlink->setAxisVisible(true);
+            
+            if (!_collision_flag)
+                convertVisualLinkPtrTomRobotLink(ulink,rlink);
+            else
+                convertCollisionLinkPtrTomRobotLink(ulink,rlink);
 
-            convertLinkPtrTomRobotLink(ulink,rlink);
             if (ulink->parent_joint != nullptr)
             {
                 ParseJoint(rlink,ulink->parent_joint);
@@ -283,7 +427,7 @@ namespace mviz
         
         // push data to lists excluding the FIXED joints as no need to update them.
         // if (_jptr->type != urdf::Joint::FIXED || _jptr->type != urdf::Joint::FLOATING || _jptr->type != urdf::Joint::PLANAR)
-        if (_jptr->type == urdf::Joint::REVOLUTE || _jptr->type == urdf::Joint::CONTINUOUS)
+        if (_jptr->type == urdf::Joint::REVOLUTE || _jptr->type == urdf::Joint::CONTINUOUS || _jptr->type == urdf::Joint::PRISMATIC)
         {
             std::cout << "JOINT NAME: " << _jptr->name << std::endl;
             joint_name.push_back(_jptr->name);
@@ -449,6 +593,93 @@ namespace mviz
            
         }
 
+    }
+
+    mRobot::~mRobot()
+    {
+        std::cout << "deleting " << getName() << std::endl;
+        for (int i = object_ptrs.size() -1 ; i >= 0; i--)
+        {
+            delete object_ptrs[i];
+        }
+        // rootNode->getParentSceneNode()->removeAndDestroyChild(rootNode);
+        std::cout << "Robot Object destoryed" << std::endl;
+    }
+
+    /**
+     * The function can resolve path if the folder containing meshes is present in the directory same as
+     * the directory containing urdf file. If the mesh filepath contains package directive, the program can
+     * resolve the path if the path exists otherwise it will throw up runtime error.
+    */
+    std::string mRobot::resolvePath(std::string& _path)
+    {
+        std::filesystem::path path(_path), res;
+        if (path.begin()->generic_string() == "package:")
+        {
+            if (_find_package_path(path,res))
+            {
+                path = res;
+            }
+            else
+            {
+                throw std::runtime_error("Cannot resolve path : " + path.generic_string()); 
+            }
+            
+        }
+        else
+        {
+            if (!std::filesystem::exists(path))
+            {
+                std::filesystem::path dir_path = URDF_PATH.parent_path();
+                try
+                {
+                    path = dir_path.append(path.string());
+                }
+                catch(const std::exception& e)
+                {
+                    std::cerr << e.what() << '\n';
+                    throw std::runtime_error("Cannot resolve path : " + path.generic_string()); 
+                }
+                
+            }
+        }
+        
+        return path.generic_string();
+    }
+
+    bool mRobot::_find_package_path(std::filesystem::path& _path, std::filesystem::path& _res)
+    {
+        int count = 20;
+        bool _found = false;
+        std::string package_string = "package:";
+        std::string _resource_path = _path.generic_string();
+        std::string _str = _resource_path.replace(_resource_path.find(package_string),package_string.length(),"");
+        std::filesystem::path current_path = URDF_PATH;
+        std::filesystem::path validpath;
+
+        if (!PACKAGE_PATH.empty())
+        {
+            _res = std::filesystem::path(PACKAGE_PATH + _str);
+            if (std::filesystem::exists(_res))
+                return true;
+            else
+                return false;
+        }
+        while (count >= 0)
+        {
+            std::string _str2 = current_path.generic_string() + _str;
+            validpath = std::filesystem::path(_str2);
+            if (std::filesystem::exists(validpath))
+            {
+                _res = validpath;
+                PACKAGE_PATH = current_path.generic_string();
+                _found = true;
+                break;
+            } 
+            current_path = current_path.parent_path();
+            count--;
+        }
+        return _found;
     }
 
 } // namespace mviz

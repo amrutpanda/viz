@@ -42,7 +42,8 @@ namespace mviz
     
     void axis::setAxisMaterial(Ogre::Entity* _ent, std::string matName = "")
     {
-        std::cout << "checking for selected material in Ogre scenegraph\n";
+        // std::cout << "checking for selected material in Ogre scenegraph\n";
+        
         // check whether the material exists otherwise create new material.
         Ogre::MaterialPtr pmat = Ogre::MaterialManager::getSingleton().getByName(matName,"UserData");
         if ( pmat == nullptr)

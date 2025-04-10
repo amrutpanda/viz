@@ -13,6 +13,7 @@ Simulation::Simulation(/* args */)
     solver = new btSequentialImpulseConstraintSolver();
     dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher,overlappingPairCache,solver,collisionConfiguration);
     dynamicsWorld->setGravity(btVector3(0,0,0));
+    
 }
 
 void Simulation::setGravity(double _gx, double _gy, double _gz)
@@ -104,6 +105,58 @@ unsigned int Simulation::addBodySphere(std::string _name, double r, double m,
     return rigidBodyNames.size() - 1 ;
 }
 
+unsigned int Simulation::addBodyFromFile(std::string _name, std::string _filename, 
+                                     Eigen::Vector3d _pose, Eigen::Quaterniond _q,Eigen::Vector3d _scale)
+{
+    btConvexHullShape* convexhullShape = new btConvexHullShape();
+    // import mesh using assimp.
+    Assimp::Importer Importer;
+    const aiScene* pScene = Importer.ReadFile(_filename.c_str(), aiProcess_JoinIdenticalVertices);
+    
+    
+    if (pScene != nullptr)
+        std::cout << "num Meshes: " << pScene->mNumMeshes << std::endl;
+    else
+    {
+        std::cerr << Importer.GetErrorString() << std::endl;
+        throw std::runtime_error("pScene is null");
+    }
+
+    aiVector3D* ctr = pScene->mMeshes[0]->mVertices;
+    std::cout << pScene->mMeshes[0]->mNumVertices <<  std::endl;
+
+    for (int i = 0; i < pScene->mNumMeshes; i++)
+    {
+        aiVector3D* _ctnr = pScene->mMeshes[i]->mVertices;
+        std::cout << pScene->mMeshes[i]->mNumVertices << std::endl;
+        for (int j = 0; j < pScene->mMeshes[i]->mNumVertices; j++)
+        {
+            // std::cout << ctr[j].x << " " << ctr[j].y << " " << ctr[j].z << " " << std::endl;
+            convexhullShape->addPoint(btVector3(_ctnr[j].x, _ctnr[j].y, _ctnr[j].z),false);
+        }
+        convexhullShape->recalcLocalAabb();
+    }
+    // convexhullShape->setMargin(0.01);
+    // convexhullShape->optimizeConvexHull();
+    btShapeHull shape(convexhullShape);
+    shape.buildHull(0.01);
+    std::cout << shape.numVertices() << std::endl;
+    
+    auto ptr = shape.getVertexPointer();        
+    for (int i = 0; i < shape.numVertices(); i++)
+    {
+        std::cout << ptr->x() << " " << ptr->y() << " " << ptr->z() << std::endl;
+        ptr++;
+    }
+    
+    
+
+    std::cout << convexhullShape->getNumPoints() << std::endl;
+    // collisionShapes.push_back(convexhullShape);
+    return 10;   
+}
+
+
 void Simulation::applyForce(int bodyIndex, Eigen::Vector3d _force)
 {
     btRigidBody* rbody = _rigidBodies[bodyIndex];
@@ -113,7 +166,6 @@ void Simulation::applyForce(int bodyIndex, Eigen::Vector3d _force)
     rbody->getMotionState()->getWorldTransform(trans);
     _rel_pos = trans.getOrigin();
     rbody->applyForce(_f,_rel_pos);
-    
 }
 
 void Simulation::stepSimulation(double _timesteps)

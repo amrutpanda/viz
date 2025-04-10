@@ -1,0 +1,17 @@
+1. Any collision shape like btConvexhullShape has a method like setUserPointer, which can be made to point to a custom 
+data structure of instance of a class. This pointer stores some useful information about the collision shape.
+
+Here is the example.
+"               btConvexhullShape* tshape = new btConvexhullShape();
+                btShapeHull* hull = new btShapeHull(tshape);
+                hull->buildHull(tshape->getMargin());
+                auto ptr = hull->getVertexPointer();
+                // copy the points inside hull to a new shape.
+                tshape->setUserPointer(hull);
+                // don't forget to free memory of hull when freeing tshape.
+
+
+2. convexhull should atmost contain 42 points, beyond which can hit the performance.
+So it is better to use btShapehull and build a hull containing exactly 42 no. of vertices.
+
+3.

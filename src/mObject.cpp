@@ -185,6 +185,19 @@ namespace mviz
           
      }
 
+     mObject* mObject::getChildObject(std::string _chObjName)
+     {
+         try
+         {
+               return child_objects[_chObjName];
+         }
+         catch(const std::exception& e)
+         {
+               return nullptr;
+         }
+          
+     }
+
      bool mObject::IsChildMeshExists(std::string& _chName)
      {
           mChild* ch;
@@ -290,12 +303,46 @@ namespace mviz
 
      void mObject::setAxisVisible(bool _flag)
      {
-          std::cout << "setting axis visible. Name: " << objectName << std::endl;
+          // std::cout << "setting axis visible. Name: " << objectName << std::endl;
           std::string axis_object_name = "AXIS";
           if (objectName != axis_object_name || IsChildObjectExists(axis_object_name))
                setChildObjectVisible(axis_object_name,_flag);
           else
                std::cout << "This is an 'axis' mObject. Ignoring setvisible command." << std::endl;
+     }
+
+     void mObject::destroymObject(bool _destroy_ogreNode)
+     {
+          mObject* ax;
+          if (IsChildObjectExists("AXIS"))
+          {
+               ax = getChildObject("AXIS");
+               ax->destroymObject(true);
+          }
+
+          // delete the attached child meshes.
+          for (int i = 0; i < children.size(); i++)
+          {
+               children[i]->_sNode->destroyAllObjects();
+               astd_Node->removeAndDestroyChild(children[i]->_sNode);
+          }
+          // delete the main ogrenode and dummy ogrenode.
+          if (_destroy_ogreNode)
+          {
+               dummy_Node->removeAndDestroyChild(astd_Node);
+               dummy_Node->getParentSceneNode()->removeAndDestroyChild(dummy_Node);
+          }
+          // enable the flag.
+          _isNodesDestroyed = true;
+     }
+
+     mObject::~mObject()
+     {
+         if (! _isNodesDestroyed)
+         {
+               // destroymObject();
+         }
+         
      }
      // method description for mObject, ends here.
 

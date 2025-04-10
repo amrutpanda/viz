@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 project(viz)
+set(CMAKE_BUILD_TYPE "Debug")
 
 function(fetch_ext_library _lib_name github_link git_tag )
     include(FetchContent)

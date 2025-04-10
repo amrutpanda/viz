@@ -1,3 +1,5 @@
+#ifndef _MROBOT_H
+#define _MROBOT_H
 #pragma once
 
 #include "mObject.h"
@@ -20,9 +22,12 @@ namespace mviz
     class mRobot
     {
     private:
+        bool _collision_flag = false;
         std::string robot_name; // Name of the robot assigned by the user.
         std::string _robot_name; // Name of the robot mentioned in URDF.
         std::string _urdf_file;
+        std::filesystem::path URDF_PATH;
+        std::string PACKAGE_PATH;
         // urdf::ModelInterfaceSharedPtr _urdf;
         std::vector <std::string> link_names;
         std::vector <std::string> joint_name;
@@ -47,16 +52,21 @@ namespace mviz
         // void createOgreNodesFromLinkSharedPtr(urdf::LinkSharedPtr,Ogre::SceneNode* );
 
 
-        void convertLinkPtrTomRobotLink(urdf::Link*, mRobotLink*);
+        void convertVisualLinkPtrTomRobotLink(urdf::Link*, mRobotLink*);
+        void convertCollisionLinkPtrTomRobotLink(urdf::Link*, mRobotLink*);
         void createOgreNodesFromLinkPtr(urdf::Link*,Ogre::SceneNode* );
         // void createOgreNodeFromLinkConstSharedPtr(urdf::LinkConstSharedPtr, Ogre::SceneNode*);
         void ParseJoint(mRobotLink* _rlink, urdf::JointConstSharedPtr _jptr);
         void ParseVisualInfo(mRobotLink* _rlink, urdf::VisualSharedPtr _vptr);
         void ParseBaseLink(mRobotLink* _rlink);
         unsigned int getUrdfGeometryType(urdf::GeometrySharedPtr _gptr);
+        std::string resolvePath(std::string& _filePath);
+        bool _find_package_path(std::filesystem::path &path, std::filesystem::path& _res);
     public:
         // mRobot(std::string robot_name, std::string urdf_file,Ogre::SceneManager* _scnMgr ,Ogre::SceneNode* root_node);
-        mRobot(std::string robot_name, std::string urdf_file,Ogre::SceneManager* _scnMgr ,Ogre::SceneNode* root_node, Eigen::Vector3d _bpos = Eigen::Vector3d::Zero(), Eigen::Quaterniond _brot = Eigen::Quaterniond::Identity() );
+        mRobot(std::string robot_name, std::string urdf_file,Ogre::SceneManager* _scnMgr ,
+            Ogre::SceneNode* root_node, Eigen::Vector3d _bpos = Eigen::Vector3d::Zero(), 
+            Eigen::Quaterniond _brot = Eigen::Quaterniond::Identity(), bool show_collision = false );
 
         // mRobot(std::string robot_name, std::string urdf_file): robot_name(robot_name),urdf_file(urdf_file) {};
         std::string getName();
@@ -69,7 +79,7 @@ namespace mviz
         void flipDAEMeshes(double& angle, int axis); // Angle is in Degree
         mRobotLink* getRobotLinkFromFrameName(std::string& _fName);
 
-        ~mRobot() {};
+        ~mRobot();
 
         // void convertRobotLinkToOgreNode(urdf::LinkSharedPtr link, Ogre::SceneNode* sNode);
     };
@@ -77,3 +87,4 @@ namespace mviz
     
 } // namespace mviz
 
+#endif

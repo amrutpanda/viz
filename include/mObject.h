@@ -41,6 +41,7 @@ namespace mviz
         Ogre::SceneNode* dummy_Node = nullptr;
         Ogre::Entity* entityPtr;
     protected:
+        bool _isNodesDestroyed = false;
         Ogre::SceneManager* mScnMgr;
         std::string entity_name;
         std::vector<mChild*> children;
@@ -51,7 +52,15 @@ namespace mviz
     public:
         mObject(std::string name,int type);
         mObject() {};
-        virtual ~mObject() {};
+        // virtual ~mObject();
+        virtual ~mObject();
+        /**
+         * Destroys the mObject and associated child meshes along with the Axis object.
+         * Args: _destroy_SceneNode
+         * if enabled it will destroyed the ogre scenenode from scenegraph. Need to exercise extra 
+         * caution to ensure its parent is not deleted. Otherwise it can cause seg fault issues.
+        */
+        void destroymObject(bool _destroy_SceneNode = false);
 
         Ogre::SceneNode* getSceneNode() {return astd_Node;};
         const Eigen::Vector3d & getPosition();

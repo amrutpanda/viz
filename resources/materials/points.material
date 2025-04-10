@@ -1,0 +1,15 @@
+material points
+{
+	technique
+	{
+		pass
+		{
+			ambient vertexcolour
+			diffuse 0 0 0 1
+			point_size 10.0
+			lighting on
+			
+		}
+	}
+}
+

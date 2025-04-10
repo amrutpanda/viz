@@ -15,10 +15,14 @@ int main(int argc, char const *argv[])
     std::string robot_name = "Mamun";
     viz.readFile("myworld.world");
 
+    viz.loadFont();
+
     while (runloop)
     {
         if (!viz.ImguiRenderOneFrame())
             break;
+        // if (!viz.RenderOneFrame())
+        //     break;
             
     }
     

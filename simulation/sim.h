@@ -4,8 +4,15 @@
 
 #include <iostream>
 #include <btBulletDynamicsCommon.h>
+#include <BulletCollision/CollisionShapes/btConvexHullShape.h>
+#include <BulletCollision/CollisionShapes/btShapeHull.h>
 #include <Eigen/Dense>
 #include <Logger.hpp>
+// assimp header files
+#include <assimp/cimport.h>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 class Simulation
 {
 private:
@@ -43,6 +50,9 @@ public:
                         Eigen::Vector3d _pose, Eigen::Quaterniond _q = Eigen::Quaterniond(1,0,0,0));
     unsigned int addBodyCylinder(std::string _name, double r, double h,double m,
                             Eigen::Vector3d _pose, Eigen::Quaterniond _q = Eigen::Quaterniond(1,0,0,0));
+    unsigned int addBodyFromFile(std::string _name, std::string _filename, 
+                                    Eigen::Vector3d _pose, Eigen::Quaterniond _q = Eigen::Quaterniond(1,0,0,0),
+                                    Eigen::Vector3d _scale = Eigen::Vector3d(1,1,1));
     void stepSimulation(double _timesteps);
     void getBodyPoseAndRotation(int bodyIndex, Eigen::Vector3d& _pos, Eigen::Quaterniond& _q);
     void applyForce(int bodyIndex, Eigen::Vector3d _force);
