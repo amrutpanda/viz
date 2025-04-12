@@ -216,6 +216,7 @@ void BulletURDFImporter::createMultiBodyCompFromURDFLink(int linkIndex, int pare
                 p_multibody->setupRevolute(linkIndex,mass,Inertia,parentIndex,rotParentToThisLink,_joint_rotation_axis,
                                                 parentComToThisPivotOffset,thisLinkPivotToThisLinkComOffset);
                 m_multibody->_jointNameIndexMap[_pJoint->name] = linkIndex;
+                // p_multibody->getLink(linkIndex).m_jointDamping = 0.5;
                 break;
             }
         case urdf::Joint::CONTINUOUS :
@@ -282,7 +283,7 @@ bool BulletURDFImporter::createMultiBodyLinkCollisionShapes(int linkIndex, urdf:
         case urdf::Geometry::BOX :
             {
                 urdf::Box* boxptr = dynamic_cast<urdf::Box*>(cptr->geometry.get());
-                btVector3 dim(boxptr->dim.x/2, boxptr->dim.y/2,boxptr->dim.z/2);
+                btVector3 dim(boxptr->dim.x/2, boxptr->dim.y/2,boxptr->dim.z/2); // TO-DO: need to verify the box size.
                 shape = new btBoxShape(dim);
                 break;
             }
@@ -400,7 +401,7 @@ bool BulletURDFImporter::createMultiBodyLinkCollisionShapes(int linkIndex, urdf:
         p_multibody->getLink(linkIndex).m_jointFeedback = _jointfb;
         m_multibody->_jointFeedbackMap[linkIndex] = _jointfb;
     }
-
+    col->setFriction(0.5); // for testing friction.
     return true;
     
 }
@@ -572,9 +573,9 @@ bool BulletURDFImporter::_find_collision_mesh_world_transform(btMultiBodyLinkCol
     {
         btMultibodyLink _link = p_multibody->getLink(linkIndex);
         btVector3 _dThisLinkComToCol_local = _colPosThisLinkFrame - _link.m_dVector; // distance from col mesh origing to com of this link.
-        btVector3 _dThisLinkComtoCol_world =  quatRotate(rot_world_to_local[linkIndex + 1].inverse(), _dThisLinkComToCol_local );
+        btVector3 _dThisLinkComtoCol_world =  quatRotate(rot_world_to_local[linkIndex + 1], _dThisLinkComToCol_local );
         btVector3 vec = local_origin_world_frame[linkIndex + 1] + _dThisLinkComtoCol_world;
-        // printVector(vec,"col pos");
+        printVector(_dThisLinkComToCol_local,"col pos");
         // printVector(local_origin_world_frame[linkIndex + 1],"com world pos");
         // fill up transforms.
         tr.setIdentity();
@@ -586,6 +587,7 @@ bool BulletURDFImporter::_find_collision_mesh_world_transform(btMultiBodyLinkCol
         _ptr->setRotation(_colRotThisLinkFrame);
         if (_col != nullptr)
         {
+            std::cout << "setting user pointer. linkIndex: " << linkIndex << std::endl;
             _col->setUserPointer((void*)_ptr);
         }
     }

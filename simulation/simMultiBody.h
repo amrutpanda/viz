@@ -27,24 +27,25 @@ public:
     simMultiBodyDynamicsWorld();
     void InitialiseDynamicsWorld();
     void LoadRobotFromURDFFile(std::string _filename);
+    btConstraintSolver* getSolver();
+    btMultiBodyConstraintSolver* getMultiBodySolver();
     void setRobotBasePose(std::string _robotName,double _x, double _y, double _z);
     void setRobotBaseOrientation(std::string _robotName, double _qx, double _qy, double _qz, double _qw);
     void getRobotJointInfo(std::string _robotName);
     btMultiBody* getRobotObject(std::string _robotName);
     btMultiBody* getRobotObject(int index);
     mMultiBody* getMultiBodyObject(int index);
+    mMultiBody* getMultiBodyObject(std::string _name) noexcept;
     void getRobotJointPos(int index, Eigen::VectorXd& _q);
     void getRobotJointVel(int index, Eigen::VectorXd& _qd);
-    void getRobotJointsPos(mMultiBody*,Eigen::VectorXd& _q);
-    void getRobotJointsVel(mMultiBody*, Eigen::VectorXd& _dq);
+    void getRobotJointPos(mMultiBody*,Eigen::VectorXd& _q);
+    void getRobotJointVel(mMultiBody*, Eigen::VectorXd& _dq);
     void setRobotJointTorque(mMultiBody*, Eigen::VectorXd& _t);
     void getRobotJointTorque(mMultiBody*, Eigen::VectorXd& _t);
-    
-    int getNumRobots();
+
+    int getNumRobots() noexcept;
     void step(int _ts);
     ~simMultiBodyDynamicsWorld();
-
-    
 
 };
 

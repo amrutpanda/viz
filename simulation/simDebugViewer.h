@@ -7,6 +7,7 @@ using namespace mviz;
 class simDebugViewer : public mviz::mGraphics
 {
 private:
+    bool _show_collsion_shape = false;
     simMultiBodyDynamicsWorld* m_world;
     std::vector<std::string> _robot_names;
     std::vector<mMultiBody*> _mulitbody_objects;

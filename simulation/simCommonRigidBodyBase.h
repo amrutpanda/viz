@@ -153,6 +153,10 @@ public:
         rot_world_to_local.resize(0);
         local_origin_world_frame.resize(0);
         _multibody->forwardKinematics(rot_world_to_local,local_origin_world_frame);
+        btTransform* ptr;
+        btTransform tr;
+        btVector3 _offset;
+        btVector3 _pos;
         for (int i = 0; i < rot_world_to_local.size(); i++)
         {
             if (i == 0 )
@@ -161,22 +165,37 @@ public:
                     _colliders[i]->setWorldTransform(_multibody->getLink(i).m_cachedWorldTransform);
                 continue;
             }
-            // btTransform tr;
-            // btVector3* _offset_ptr = static_cast<btVector3*> (_colliders[i]->getUserPointer());
-            // btVector3 _offset = *_offset_ptr;
-            // tr.setOrigin(local_origin_world_frame[i] + quatRotate(rot_world_to_local[i].inverse(), _offset));
-            // tr.setRotation(rot_world_to_local[i]);
             // if (_colliders[i] != nullptr)
             // {
-            //     // _colliders[i]->setInterpolationWorldTransform(tr);
-            //     _colliders[i]->setWorldTransform(tr);
+            //     ptr = static_cast<btTransform*> (_colliders[i]->getUserPointer());
+            //     _offset = ptr->getOrigin();
+            //     _pos = local_origin_world_frame[i] + quatRotate(rot_world_to_local[i], _offset);
+            //     // printVector(_offset,"UpdateTransform _pos: ");
+            //     tr.setOrigin(_pos);
+            //     tr.setRotation(rot_world_to_local[i]*ptr->getRotation());
+
+               
+            //     if (_colliders[i] != nullptr)
+            //     {
+            //         // _colliders[i]->setInterpolationWorldTransform(tr);
+            //         _colliders[i]->setWorldTransform(tr);
+            //     }
             // }
 
         }
         
     }
 
-
+    void printVector(btVector3& _v, std::string _str)
+    {
+        std::cout << _str << ": " << _v.x() <<  " " << _v.y() << " " << _v.z() << std::endl;
+    }
+    void printQuaternion(btQuaternion& _v, std::string _str)
+    {
+        if (_str.empty())
+            _str = "Rot";
+            std::cout << _str << ": " << _v.x() <<  " " << _v.y() << " " << _v.z() << " " << _v.w() << std::endl;
+    }
 
 
     /* data */

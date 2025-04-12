@@ -105,6 +105,7 @@ int main(int argc, char const *argv[])
     // _urdf_file_name = "/home/asp/Files/resources/urdf_files_dataset/urdf_files/oems/anymal_anybotics/anymal_b_simple_description/urdf/anymal.urdf";
     // _urdf_file_name = "/home/asp/Files/resources/baxter_common/baxter_description/urdf/baxter.urdf";
     // _urdf_file_name = "/home/asp/Files/resources/urdf_files_dataset/urdf_files/oems/xacro_generated/franka_emika/franka_description/robots/dual_panda/dual_panda.urdf";
+    // _urdf_file_name = "/home/asp/Files/sai2/OpenSai/core/sai2-model/urdf_models/panda/panda_arm.urdf";
     // _urdf_file_name = "/home/asp/Files/resources/baxter_common/baxter_description/urdf/baxter.urdf";
     // _urdf_file_name = "/home/asp/Files/sai2/OpenSai/core/sai2-model/urdf_models/iiwa7/kuka_iiwa.urdf";
     // _urdf_file_name = "/home/asp/Files/sai2/OpenSai/core/sai2-model/urdf_models/HRP4C/HRP4C_custom_v1.urdf";
@@ -119,18 +120,18 @@ int main(int argc, char const *argv[])
     sim->getRobotJointPos(0,_jpos);
     // std::cout << _jpos  << std::endl;
     
-    // std::cout << p_multibody->getNumDofs() << std::endl;
     // for (int i = 0; i < p_multibody->getNumLinks(); i++)
     // {
     //     std::cout << "Mass: " << p_multibody->getLinkMass(i) << std::endl;
+    //     std::cout << p_multibody->isLinkStaticOrKinematic(i) << std::endl;
+    //     std::cout << "_________________" << std::endl;
     // }
 
-    // mMultiBody* mt = sim->getMultiBodyObject(0);
-    
-    // for (auto it = mt->_jointNameIndexMap.begin() ; it != mt->_jointNameIndexMap.end() ; ++it)
-    // {
-    //     std::cout << it->first << it->second << std::endl;
-    // }
+    mMultiBody* mt = sim->getMultiBodyObject(0);
+    for (auto it = mt->_jointNameIndexMap.begin() ; it != mt->_jointNameIndexMap.end() ; ++it)
+    {
+        std::cout << it->first <<  " index: " << it->second << std::endl;
+    }
     
     simDebugViewer v(sim);
     v.renderViewer();

@@ -14,4 +14,5 @@ Here is the example.
 2. convexhull should atmost contain 42 points, beyond which can hit the performance.
 So it is better to use btShapehull and build a hull containing exactly 42 no. of vertices.
 
-3.
+3. The transformation in little different than the way we used it in Ogre. The rotation part is generally from
+world_to_local. So in order to get rotation/quaternion from local_to_world the quaternion needs to be inversed.

@@ -82,7 +82,7 @@ void simMultiBodyDynamicsWorld::LoadRobotFromURDFFile(std::string _filename)
     }
     _multibody_name_map[importer.getName()] = importer.getMultiBodyStruct(m_dynamicsWorld);
     m_dynamicsWorld->addMultiBody(_multibody_name_map.at(importer.getName())->_multibody);
-    // _multibody_name_map.at(importer.getName())->_multibody->setHasSelfCollision(false); // disable self-collision.
+    _multibody_name_map.at(importer.getName())->_multibody->setHasSelfCollision(true); // disable self-collision.
     // _multibody_name_map.at(importer.getName())->_multibody->
     std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" << std::endl;
     std::cout << "Robot Name: " << importer.getName() << std::endl;
@@ -188,10 +188,20 @@ void simMultiBodyDynamicsWorld::getRobotJointPos(int index, Eigen::VectorXd& _q)
     
 }
 
+btConstraintSolver* simMultiBodyDynamicsWorld::getSolver()
+{
+    return m_solver;
+}
+
+btMultiBodyConstraintSolver* simMultiBodyDynamicsWorld::getMultiBodySolver()
+{
+    return dynamic_cast<btMultiBodyConstraintSolver*>(m_solver);
+}
+
 mMultiBody* simMultiBodyDynamicsWorld::getMultiBodyObject(int index)
 {
     if (index >= _multibody_name_map.size())
-        throw std::runtime_error("Invalid index: (getRobotJointPos): " + std::to_string(index));
+        throw std::runtime_error("Invalid index: (getMultiBodyObject): " + std::to_string(index));
     // _multibody_name_map
     mMultiBody* _mbs;
     int _count = 0;
@@ -207,8 +217,61 @@ mMultiBody* simMultiBodyDynamicsWorld::getMultiBodyObject(int index)
     return _mbs;
 }
 
-int simMultiBodyDynamicsWorld::getNumRobots()
+mMultiBody* simMultiBodyDynamicsWorld::getMultiBodyObject(std::string _name) noexcept
+{
+    mMultiBody* _mbs = nullptr;
+    for (auto it = _multibody_name_map.begin() ; it != _multibody_name_map.end(); ++it)
+    {
+        if (it->first == _name)
+        {
+            _mbs = it->second;
+            break;
+        }
+    }
+    return _mbs;
+}
+
+int simMultiBodyDynamicsWorld::getNumRobots() noexcept
 {
     return _multibody_name_map.size();
 }
 
+void simMultiBodyDynamicsWorld::getRobotJointPos(mMultiBody* _robot,Eigen::VectorXd& _q)
+{
+    if (_q.size() != _robot->_multibody->getNumDofs())
+        throw std::runtime_error("vector size doesnot match with the no. of joints. Inside: getRobotJointPos function\n");
+    for (int i = 0; i < _robot->_multibody->getNumDofs(); i++)
+    {
+        _q[i] = _robot->_multibody->getJointPos(i);
+    }
+}
+
+void simMultiBodyDynamicsWorld::getRobotJointVel(mMultiBody* _robot,Eigen::VectorXd& _q)
+{
+    if (_q.size() != _robot->_multibody->getNumDofs())
+        throw std::runtime_error("vector size doesnot match with the no. of joints.Inside: getRobotJointVel function\n");
+    for (int i = 0; i < _robot->_multibody->getNumDofs(); i++)
+    {
+        _q[i] = _robot->_multibody->getJointVel(i);
+    }
+}
+
+void simMultiBodyDynamicsWorld::getRobotJointTorque(mMultiBody* _robot,Eigen::VectorXd& _q)
+{
+    if (_q.size() != _robot->_multibody->getNumDofs())
+        throw std::runtime_error("vector size doesnot match with the no. of joints.Inside: getRobotJointTorque function\n");
+    for (int i = 0; i < _robot->_multibody->getNumDofs(); i++)
+    {
+        _q[i] = _robot->_multibody->getJointTorque(i);
+    }
+}
+
+void simMultiBodyDynamicsWorld::setRobotJointTorque(mMultiBody* _robot,Eigen::VectorXd& _q)
+{
+    if (_q.size() != _robot->_multibody->getNumDofs())
+        throw std::runtime_error("vector size doesnot match with the no. of joints.Inside: setRobotJointTorque function\n");
+    for (int i = 0; i < _robot->_multibody->getNumDofs(); i++)
+    {
+        _robot->_multibody->addJointTorque(i,btScalar(_q[i]));
+    }
+}
