@@ -165,24 +165,24 @@ public:
         btVector3 _offset;
         btVector3 _pos;
         btMultiBodyLinkCollider* _col;
-
         for (int i = 0; i < rot_world_to_local.size(); i++)
         {
             _col = _colliders[i];
+            if (_col == nullptr)
+                continue;
+
             link_tr = _multibody->getLink(i).m_cachedWorldTransform;
+
             if (i == 0 )
-            {
-                if (_col != nullptr)
-                    _col->setWorldTransform(link_tr);
+            { 
+                _col->setWorldTransform(link_tr);
                 continue;
             }
-
             if (_col->getUserPointer() != nullptr)
             {
                 ptr = static_cast<btTransform*>(_col->getUserPointer());
-                _offset = ptr->getOrigin();
-                // will multiply transforms tomorrow.
-
+                tr = link_tr * (*ptr);
+                _col->setWorldTransform(tr);
             }
         }
         

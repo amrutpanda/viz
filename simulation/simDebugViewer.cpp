@@ -102,7 +102,6 @@ void simDebugViewer::buildSimRobotGraphicsFromMultiBodyData(mMultiBody* _robot)
     // compute forward kinematics;
     _robot->_multibody->forwardKinematics(rot_world_to_local, local_origin_world_frame); // coordinate of link com in world frame.
     std::cout << _robot->_multibody->getNumLinks()+1 << std::endl;
-
     for (int i = 0; i < rot_world_to_local.size(); i++)
     {
         _aabbObj = _mObj_vector[i];
@@ -266,7 +265,6 @@ void simDebugViewer::_createCollisionMeshGraphicalObject(mMultiBody* _robot, int
     }
     // store it.
     _robot_collision_shapes_objects.push_back(_colmObj_list);
-    
     rot_world_to_local.resize(0);
     local_origin_world_frame.resize(0);
     _robot->updateTransforms();
@@ -307,6 +305,7 @@ void simDebugViewer::_createCollisionMeshGraphicalObject(mMultiBody* _robot, int
                 _ptr->attachChildMesh(scnMgr,_mesh_name,Ogre::Vector3(_p.x(), _p.y(), _p.z()),
                                                         Ogre::Quaternion(_q.w(),_q.x(),_q.y(), _q.z()),
                                                         Ogre::Vector3(_scale.x(), _scale.y(), _scale.z()));
+                // std::cout << "_child pos: "<< _ptr->getChildMeshNode(_mesh_name)->_getDerivedPosition() << std::endl;
                 continue;
             }
 
