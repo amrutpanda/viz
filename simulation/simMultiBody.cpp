@@ -114,10 +114,12 @@ void simMultiBodyDynamicsWorld::getRobotJointInfo(std::string _robotName)
     try
     {
         mbs = _multibody_name_map[_robotName];
-        for (auto l : mbs->_jointNameIndexMap)
+        for (int i = 0; i < mbs->_jointNameIndexList.size(); i++)
         {
-            std::cout << l.first << std::endl;
+            std::cout << "Index: " << mbs->_jointNameIndexList[i].first << "  JointName: " 
+                                    << mbs->_jointNameIndexList[i].second << std::endl;
         }
+        
     }
     catch(const std::exception& e)
     {
@@ -174,14 +176,14 @@ void simMultiBodyDynamicsWorld::getRobotJointPos(int index, Eigen::VectorXd& _q)
         if (_count == index)
         {
             _mbs = it->second;
-            assert((_q.size() == _mbs->_jointNameIndexMap.size(),"Mismatch in vector size to joint number. Inside getRobotJointPos\n"));
+            assert((_q.size() == _mbs->_jointNameIndexList.size(),"Mismatch in vector size to joint number. Inside getRobotJointPos\n"));
             break;
         }
         _count++;
     }
 
     btMultiBody* mb = _mbs->_multibody;
-    for (int i = 0; i < _mbs->_jointNameIndexMap.size(); i++)
+    for (int i = 0; i < _mbs->_jointNameIndexList.size(); i++)
     {
         _q[i] = mb->getJointPos(i);
     } 
@@ -242,7 +244,8 @@ void simMultiBodyDynamicsWorld::getRobotJointPos(mMultiBody* _robot,Eigen::Vecto
         throw std::runtime_error("vector size doesnot match with the no. of joints. Inside: getRobotJointPos function\n");
     for (int i = 0; i < _robot->_multibody->getNumDofs(); i++)
     {
-        _q[i] = _robot->_multibody->getJointPos(i);
+        // _q[i] = _robot->_multibody->getJointPos(i);
+        _q[i] = _robot->_multibody->getJointPos(_robot->_jointNameIndexList[i].first);
     }
 }
 
@@ -252,7 +255,8 @@ void simMultiBodyDynamicsWorld::getRobotJointVel(mMultiBody* _robot,Eigen::Vecto
         throw std::runtime_error("vector size doesnot match with the no. of joints.Inside: getRobotJointVel function\n");
     for (int i = 0; i < _robot->_multibody->getNumDofs(); i++)
     {
-        _q[i] = _robot->_multibody->getJointVel(i);
+        // _q[i] = _robot->_multibody->getJointVel(i);
+        _q[i] = _robot->_multibody->getJointVel(_robot->_jointNameIndexList[i].first);
     }
 }
 
@@ -262,7 +266,7 @@ void simMultiBodyDynamicsWorld::getRobotJointTorque(mMultiBody* _robot,Eigen::Ve
         throw std::runtime_error("vector size doesnot match with the no. of joints.Inside: getRobotJointTorque function\n");
     for (int i = 0; i < _robot->_multibody->getNumDofs(); i++)
     {
-        _q[i] = _robot->_multibody->getJointTorque(i);
+        _q[i] = _robot->_multibody->getJointTorque(_robot->_jointNameIndexList[i].first);
     }
 }
 
@@ -272,6 +276,6 @@ void simMultiBodyDynamicsWorld::setRobotJointTorque(mMultiBody* _robot,Eigen::Ve
         throw std::runtime_error("vector size doesnot match with the no. of joints.Inside: setRobotJointTorque function\n");
     for (int i = 0; i < _robot->_multibody->getNumDofs(); i++)
     {
-        _robot->_multibody->addJointTorque(i,btScalar(_q[i]));
+        _robot->_multibody->addJointTorque(_robot->_jointNameIndexList[i].first,btScalar(_q[i]));
     }
 }

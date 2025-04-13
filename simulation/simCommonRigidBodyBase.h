@@ -118,11 +118,11 @@ public:
         delete _multibody;
         std::cout << "Freed bullet multiBody object" << std::endl;
 
-        for (int i = 0; i < _jointFeedbackMap.size() ; i++)
+        for (int i = 0; i < _jointFeedbackIndexList.size() ; i++)
         {
-            if (_jointFeedbackMap[i] != nullptr)
+            if (_jointFeedbackIndexList[i].second != nullptr)
             {
-                delete _jointFeedbackMap[i];
+                delete _jointFeedbackIndexList[i].second;
             }
             
         }
@@ -165,24 +165,28 @@ public:
         btVector3 _offset;
         btVector3 _pos;
         btMultiBodyLinkCollider* _col;
-        for (int i = 0; i < rot_world_to_local.size(); i++)
+        for (int i = 0; i < rot_world_to_local.size(); i++) // 0 index is the base.
         {
             _col = _colliders[i];
             if (_col == nullptr)
                 continue;
 
-            link_tr = _multibody->getLink(i).m_cachedWorldTransform;
-
+            link_tr = _multibody->getLink(i-1).m_cachedWorldTransform; // i-1 as i=0 is the base link collision mesh in
+                                                                       // _colliders vector and base link index is -1 in multibody
             if (i == 0 )
             { 
                 _col->setWorldTransform(link_tr);
                 continue;
             }
+            
             if (_col->getUserPointer() != nullptr)
             {
                 ptr = static_cast<btTransform*>(_col->getUserPointer());
-                tr = link_tr * (*ptr);
+                tr.setOrigin( link_tr.getOrigin() + quatRotate(link_tr.getRotation(),ptr->getOrigin()));
+                // tr.setOrigin( link_tr.getOrigin());
+                tr.setRotation(link_tr.getRotation()* (*ptr->getRotation()));
                 _col->setWorldTransform(tr);
+                
             }
         }
         
@@ -205,9 +209,13 @@ public:
     std::string _name;
     btAlignedObjectArray<btCollisionShape*> _colShapes;
     btAlignedObjectArray<btMultiBodyLinkCollider*> _colliders;
-    std::unordered_map <std::string,int> _linkNameIndexMap;
-    std::unordered_map <std::string,int> _jointNameIndexMap;
-    std::unordered_map <int, btMultiBodyJointFeedback*> _jointFeedbackMap;
+    // std::unordered_map <std::string,int> _linkNameIndexMap;
+    // std::unordered_map <std::string,int> _jointNameIndexMap;
+    // std::unordered_map <int, btMultiBodyJointFeedback*> _jointFeedbackMap;
+    std::vector<std::pair<int,btMultiBodyJointFeedback*>> _jointFeedbackIndexList;
+    std::vector<std::pair<int,std::string>> _jointNameIndexList;
+    std::vector<std::pair<int,std::string>> _linkNameIndexList;
+    std::vector<std::pair<int,std::string>> _fixedJointNameIndexList;
 };
 
 typedef mMultiBody RobotObject;

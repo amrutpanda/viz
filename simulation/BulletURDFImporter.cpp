@@ -209,21 +209,24 @@ void BulletURDFImporter::createMultiBodyCompFromURDFLink(int linkIndex, int pare
             {
                 p_multibody->setupFixed(linkIndex,mass,Inertia,parentIndex,rotParentToThisLink,
                                             parentComToThisPivotOffset, thisLinkPivotToThisLinkComOffset);
+                m_multibody->_fixedJointNameIndexList.push_back(std::pair<int,std::string>(linkIndex,_link->name));
                 break;
             }
         case urdf::Joint::REVOLUTE :
             {
                 p_multibody->setupRevolute(linkIndex,mass,Inertia,parentIndex,rotParentToThisLink,_joint_rotation_axis,
                                                 parentComToThisPivotOffset,thisLinkPivotToThisLinkComOffset);
-                m_multibody->_jointNameIndexMap[_pJoint->name] = linkIndex;
-                // p_multibody->getLink(linkIndex).m_jointDamping = 0.5;
+                // m_multibody->_jointNameIndexMap[_pJoint->name] = linkIndex;
+                m_multibody->_jointNameIndexList.push_back(std::pair<int,std::string>(linkIndex,_pJoint->name));
+        
                 break;
             }
         case urdf::Joint::CONTINUOUS :
             {
                 p_multibody->setupRevolute(linkIndex,mass,Inertia,parentIndex,rotParentToThisLink,_joint_rotation_axis,
                                                     parentComToThisPivotOffset,thisLinkPivotToThisLinkComOffset);
-                m_multibody->_jointNameIndexMap[_pJoint->name] = linkIndex;
+                // m_multibody->_jointNameIndexMap[_pJoint->name] = linkIndex;
+                m_multibody->_jointNameIndexList.push_back(std::pair<int,std::string>(linkIndex,_pJoint->name));
                 break;
             }
         case urdf::Joint::PRISMATIC :
@@ -231,7 +234,8 @@ void BulletURDFImporter::createMultiBodyCompFromURDFLink(int linkIndex, int pare
                 // disableParentCollision has been set to false.
                 p_multibody->setupPrismatic(linkIndex,mass,Inertia,parentIndex,rotParentToThisLink,_joint_rotation_axis,
                                                 parentComToThisPivotOffset,thisLinkPivotToThisLinkComOffset,true);
-                m_multibody->_jointNameIndexMap[_pJoint->name] = linkIndex;
+                // m_multibody->_jointNameIndexMap[_pJoint->name] = linkIndex;
+                m_multibody->_jointNameIndexList.push_back(std::pair<int,std::string>(linkIndex,_pJoint->name));
                 break;
             }
 
@@ -247,7 +251,8 @@ void BulletURDFImporter::createMultiBodyCompFromURDFLink(int linkIndex, int pare
 
     p_multibody->getLink(linkIndex).m_linkName = _link->name.c_str();
     std::cout << _link->name << " " << p_multibody->getLink(linkIndex).m_linkName << std::endl;
-    m_multibody->_linkNameIndexMap[_link->name] = linkIndex;
+    // m_multibody->_linkNameIndexMap[_link->name] = linkIndex;
+    m_multibody->_linkNameIndexList.push_back(std::pair<int, std::string>(linkIndex,_link->name));
     // create collision shapes.
 
 }
@@ -392,16 +397,18 @@ bool BulletURDFImporter::createMultiBodyLinkCollisionShapes(int linkIndex, urdf:
         m_multibody->_colShapes.push_back(shape);
         m_multibody->_colliders.push_back(col);
     }
-    
-    m_world->addCollisionObject(col); // TO-DO: Need to evaluate other two arguments which are filter masks.
+    // setup collsion group and mask.
+    int collisionfiltergroup = int(btBroadphaseProxy::DefaultFilter);
+    int collisionfiltermask = int(btBroadphaseProxy::AllFilter);
+
+    m_world->addCollisionObject(col,collisionfiltergroup,collisionfiltermask); // TO-DO: Need to evaluate other two arguments which are filter masks.
     if (p_multibody->getLink(linkIndex).m_jointFeedback == nullptr)
     {
         std::cout << "No jointfeedback pointer set. Setting now..\n";
         btMultiBodyJointFeedback* _jointfb = new btMultiBodyJointFeedback();
         p_multibody->getLink(linkIndex).m_jointFeedback = _jointfb;
-        m_multibody->_jointFeedbackMap[linkIndex] = _jointfb;
+        m_multibody->_jointFeedbackIndexList.push_back(std::pair<int,btMultiBodyJointFeedback*>(linkIndex,_jointfb));
     }
-    col->setFriction(0.5); // for testing friction.
     return true;
     
 }
@@ -417,7 +424,10 @@ void BulletURDFImporter::ParseBaseCollisionMesh()
     tr.setRotation(_base_rot);
     col->setWorldTransform(tr);
 
-    m_world->addCollisionObject(col); // TO-DO: Need to evaluate other two arguments.
+    // int collisionfiltergroup = int(btBroadphaseProxy::DefaultFilter);
+    // int collisionfiltermask = int(btBroadphaseProxy::AllFilter);
+    // m_world->addCollisionObject(col,collisionfiltergroup,collisionfiltermask); // TO-DO: Need to evaluate other two arguments.
+    m_world->addCollisionObject(col);
 
     m_multibody->_colShapes.push_back(shape);
     m_multibody->_colliders.push_back(col);
