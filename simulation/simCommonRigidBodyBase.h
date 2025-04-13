@@ -139,7 +139,14 @@ public:
                 delete _colShapes[i];
             }
             if (_colliders[i] != nullptr)
+            {
+                if (_colliders[i]->getUserPointer() != nullptr)
+                {
+                    delete static_cast<btTransform*>(_colliders[i]->getUserPointer());
+                }
+                
                 delete _colliders[i];
+            }
         }
 
     }
@@ -154,34 +161,29 @@ public:
         local_origin_world_frame.resize(0);
         _multibody->forwardKinematics(rot_world_to_local,local_origin_world_frame);
         btTransform* ptr;
-        btTransform tr;
+        btTransform tr, link_tr;
         btVector3 _offset;
         btVector3 _pos;
+        btMultiBodyLinkCollider* _col;
+
         for (int i = 0; i < rot_world_to_local.size(); i++)
         {
+            _col = _colliders[i];
+            link_tr = _multibody->getLink(i).m_cachedWorldTransform;
             if (i == 0 )
             {
-                if (_colliders[i] != nullptr)
-                    _colliders[i]->setWorldTransform(_multibody->getLink(i).m_cachedWorldTransform);
+                if (_col != nullptr)
+                    _col->setWorldTransform(link_tr);
                 continue;
             }
-            // if (_colliders[i] != nullptr)
-            // {
-            //     ptr = static_cast<btTransform*> (_colliders[i]->getUserPointer());
-            //     _offset = ptr->getOrigin();
-            //     _pos = local_origin_world_frame[i] + quatRotate(rot_world_to_local[i], _offset);
-            //     // printVector(_offset,"UpdateTransform _pos: ");
-            //     tr.setOrigin(_pos);
-            //     tr.setRotation(rot_world_to_local[i]*ptr->getRotation());
 
-               
-            //     if (_colliders[i] != nullptr)
-            //     {
-            //         // _colliders[i]->setInterpolationWorldTransform(tr);
-            //         _colliders[i]->setWorldTransform(tr);
-            //     }
-            // }
+            if (_col->getUserPointer() != nullptr)
+            {
+                ptr = static_cast<btTransform*>(_col->getUserPointer());
+                _offset = ptr->getOrigin();
+                // will multiply transforms tomorrow.
 
+            }
         }
         
     }

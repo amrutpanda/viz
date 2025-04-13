@@ -14,7 +14,7 @@ simDebugViewer::simDebugViewer(simMultiBodyDynamicsWorld* _world) : mGraphics("s
 {
     signal(SIGINT,sighandler);
     m_world = _world;
-    m_world->setGravity(0,0,100);
+    m_world->setGravity(0,0,10);
     // m_world->InitialiseDynamicsWorld();  
     // mObject* s = new mObject();
     attachFlagVariable(&runloop);
@@ -123,21 +123,6 @@ void simDebugViewer::updateSimRobotGraphics(int _robot_index)
 {
     mObject* _ptr;
     std::vector<mObject*> _mObjList = _robot_objects[_robot_index];
-   
-    // rot_world_to_local.resize(0);
-    // local_origin_world_frame.resize(0);
-    // mMultiBody* _robot = m_world->getMultiBodyObject(_robot_index);
-    // _robot->_multibody->forwardKinematics(rot_world_to_local, local_origin_world_frame);
-    // for (int i = 1; i < rot_world_to_local.size(); i++)
-    // {
-    //     _ptr = _mObjList[i];
-    //     // _ptr->setPosition(Ogre::Vector3(local_origin_world_frame[i].x(), local_origin_world_frame[i].y(), local_origin_world_frame[i].z()));
-    //     // _ptr->setRotation(Ogre::Quaternion(rot_world_to_local[i].w(), rot_world_to_local[i].x(),rot_world_to_local[i].y(), rot_world_to_local[i].z()));
-    //     btVector3 _p = _robot->_multibody->getLink(i-1).m_cachedWorldTransform.getOrigin();
-    //     btQuaternion _q = _robot->_multibody->getLink(i-1).m_cachedWorldTransform.getRotation();
-    //     _ptr->setPosition(Ogre::Vector3(_p.x(),_p.y(), _p.z()));
-    //     _ptr->setRotation(Ogre::Quaternion(_q.w(), _q.x(), _q.y(), _q.z()));
-    // }
 
     mMultiBody* _mtObj = _mulitbody_objects[_robot_index];
     btVector3 _p = _mtObj->_multibody->getBasePos();
@@ -154,24 +139,6 @@ void simDebugViewer::updateSimRobotGraphics(int _robot_index)
         _ptr->setPosition(Ogre::Vector3(_p.x(),_p.y(), _p.z()));
         _ptr->setRotation(Ogre::Quaternion(_q.w(), _q.x(), _q.y(), _q.z()));
     }
-
-    if (_show_collsion_shape)
-    {
-        _mObjList = _robot_collision_shapes_objects[_robot_index];
-        for (int i = 0; i < _mtObj->_multibody->getNumLinks()+1; i++)
-        {
-            _ptr = _mObjList[i];  
-            if (_mtObj->_colliders[i] != nullptr)
-            {
-                _p = _mtObj->_colliders[i]->getWorldTransform().getOrigin();
-                _q = _mtObj->_colliders[i]->getWorldTransform().getRotation(); // need to check it.
-                _ptr->setPosition(Ogre::Vector3(_p.x(),_p.y(), _p.z()));
-                _ptr->setRotation(Ogre::Quaternion(_q.w(), _q.x(), _q.y(), _q.z()));
-            } 
-        }
-
-    }
-    
     
 }
 
@@ -300,21 +267,6 @@ void simDebugViewer::_createCollisionMeshGraphicalObject(mMultiBody* _robot, int
     // store it.
     _robot_collision_shapes_objects.push_back(_colmObj_list);
     
-   
-    // rot_world_to_local.resize(0);
-    // local_origin_world_frame.resize(0);
-    // _robot->_multibody->forwardKinematics(rot_world_to_local, local_origin_world_frame);
-
-    // for (int i = 0; i < _robot->_colliders.size() ; i++)
-    // {
-    //     if (_robot->_colliders[i] != nullptr)
-    //     {
-    //         btTransform tr = _robot->_colliders[i]->getWorldTransform();
-    //         std::cout << "Checking collision mesh tranform. Link: " << i << std::endl;
-    //         printVector(tr.getOrigin(),"_pos");
-    //     }
-    // }
-
     rot_world_to_local.resize(0);
     local_origin_world_frame.resize(0);
     _robot->updateTransforms();
@@ -343,25 +295,29 @@ void simDebugViewer::_createCollisionMeshGraphicalObject(mMultiBody* _robot, int
             std::cout << "Got convex mesh\n";
             _processConvexHullShape(_chshape,_ptr,_mesh_name);
 
-            // if (_col->getUserPointer() != nullptr)
-            // {
-            //     btVector3 _p = 
-            // }
-
-            btVector3 _p = _col->getWorldTransform().getOrigin();
-            btQuaternion _q = _col->getWorldTransform().getRotation();
             btVector3 _scale = _chshape->getLocalScaling();
-            printVector(_col->getWorldTransform().getOrigin(),"pos");
-            // _ptr->attachChildMesh(scnMgr,_mesh_name,Ogre::Vector3(_p.x(), _p.y(), _p.z()),
-            //                                         Ogre::Quaternion(_q.w(),_q.x(),_q.y(), _q.z()),
-            //                                         Ogre::Vector3(_scale.x(), _scale.y(), _scale.z()));
+            if (_col->getUserPointer() != nullptr)
+            {
+                btTransform* _tr = static_cast<btTransform*>(_col->getUserPointer());
+                btVector3 _p = _tr->getOrigin();
+                btQuaternion _q = _tr->getRotation();
+                
+                // btQuaternion _q = _col->getWorldTransform().getRotation();
+                printVector(_p,"pos");
+                _ptr->attachChildMesh(scnMgr,_mesh_name,Ogre::Vector3(_p.x(), _p.y(), _p.z()),
+                                                        Ogre::Quaternion(_q.w(),_q.x(),_q.y(), _q.z()),
+                                                        Ogre::Vector3(_scale.x(), _scale.y(), _scale.z()));
+                continue;
+            }
+
+            // btVector3 _p = _col->getWorldTransform().getOrigin();
 
 
             _ptr->attachChildMesh(scnMgr,_mesh_name,Ogre::Vector3(0, 0, 0),
                                                     Ogre::Quaternion(1 ,0 ,0 ,0 ),
                                                     Ogre::Vector3(_scale.x(), _scale.y(), _scale.z()));
-            _ptr->setPosition(Ogre::Vector3(_p.x(), _p.y(), _p.z()));
-            _ptr->setRotation(Ogre::Quaternion(_q.w(),_q.x(), _q.y(), _q.z()));
+            // _ptr->setPosition(Ogre::Vector3(_p.x(), _p.y(), _p.z()));
+            // _ptr->setRotation(Ogre::Quaternion(_q.w(),_q.x(), _q.y(), _q.z()));
         }
         else if (_cmpd_shape != nullptr)
         {
@@ -402,8 +358,8 @@ void simDebugViewer::_processConvexHullShape(btConvexHullShape* _shape, mObject*
     
     Ogre::ManualObject* man = scnMgr->createManualObject();
     Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().getByName("Collision","UserData");
-    mat->getTechnique(0)->getPass(0)->setAmbient(Ogre::ColourValue(randd(), randd(), randd()));
-    std::cout << "Color value: " << mat->getTechnique(0)->getPass(0)->getAmbient() << std::endl;
+    // mat->getTechnique(0)->getPass(0)->setAmbient(Ogre::ColourValue(randd(), randd(), randd()));
+    // std::cout << "Color value: " << mat->getTechnique(0)->getPass(0)->getAmbient() << std::endl;
     man->begin(mat,Ogre::RenderOperation::OT_TRIANGLE_LIST);
     btVector3* _ptr = const_cast<btVector3*> (shape_mesh->getVertexPointer());
     unsigned int* _idx = const_cast<unsigned int*>(shape_mesh->getIndexPointer());
