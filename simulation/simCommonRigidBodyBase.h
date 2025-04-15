@@ -192,6 +192,37 @@ public:
         
     }
 
+    void setupCollisionFlags()
+    {
+        for (int i = 0; i < _colliders.size(); i++)
+        {
+            if (i == 0)
+            {
+                _colliders[i]->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT);
+            }
+            if ((i == _colliders.size() - 1))
+            {
+                if (_colliders[i] != nullptr)
+                {
+                    _colliders[i]->setCollisionFlags(btCollisionObject::CF_DYNAMIC_OBJECT);
+                } 
+            }
+            else
+            {
+                if (_colliders[i] != nullptr)
+                {
+                    _colliders[i]->setCollisionFlags(btCollisionObject::CF_NO_CONTACT_RESPONSE);
+                }
+                // _colliders[0]->setCollisionFlags(btCollisionObject::CF_DYNAMIC_OBJECT);
+                // _colliders[_colliders.size() - 2]->setCollisionFlags(btCollisionObject::CF_DYNAMIC_OBJECT);
+                // _colliders[_colliders.size() - 1]->setCollisionFlags(btCollisionObject::CF_DYNAMIC_OBJECT);
+            }
+
+            
+        }
+        
+    }
+
     void printVector(btVector3& _v, std::string _str)
     {
         std::cout << _str << ": " << _v.x() <<  " " << _v.y() << " " << _v.z() << std::endl;

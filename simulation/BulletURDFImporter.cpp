@@ -339,9 +339,11 @@ bool BulletURDFImporter::createMultiBodyLinkCollisionShapes(int linkIndex, urdf:
                     }
                     tshape->recalcLocalAabb();
                 }
-
+                // experimental: set margin to be zero.
+                tshape->setMargin(0);
                 // create a shapehull builder.
                 btShapeHull* hull = new btShapeHull(tshape);
+                std::cout << "Margin: " << tshape->getMargin() << std::endl;
                 hull->buildHull(tshape->getMargin());
                 auto ptr = hull->getVertexPointer();       
 
@@ -397,11 +399,17 @@ bool BulletURDFImporter::createMultiBodyLinkCollisionShapes(int linkIndex, urdf:
         m_multibody->_colShapes.push_back(shape);
         m_multibody->_colliders.push_back(col);
     }
-    // setup collsion group and mask.
-    int collisionfiltergroup = int(btBroadphaseProxy::DefaultFilter);
-    int collisionfiltermask = int(btBroadphaseProxy::AllFilter);
+    // setting up collsion flags for the collider.
 
-    m_world->addCollisionObject(col,collisionfiltergroup,collisionfiltermask); // TO-DO: Need to evaluate other two arguments which are filter masks.
+    // col->setCollisionFlags(btCollisionObject::CF_NO_CONTACT_RESPONSE);
+    // setup collsion group and mask.
+
+    bool isDynamic = (p_multibody->getLinkMass(linkIndex) == 0) ? false : true;
+    int collisionfiltergroup = isDynamic ? int(btBroadphaseProxy::DefaultFilter) : int(btBroadphaseProxy::StaticFilter);
+    int collisionfiltermask = isDynamic ? int(btBroadphaseProxy::AllFilter) : int(btBroadphaseProxy::AllFilter ^ btBroadphaseProxy::StaticFilter);
+    m_world->addCollisionObject(col,collisionfiltergroup, collisionfiltermask); // TO-DO: Need to evaluate other two arguments which are filter masks.
+    // m_world->addCollisionObject(col);
+    
     if (p_multibody->getLink(linkIndex).m_jointFeedback == nullptr)
     {
         std::cout << "No jointfeedback pointer set. Setting now..\n";
@@ -424,10 +432,11 @@ void BulletURDFImporter::ParseBaseCollisionMesh()
     tr.setRotation(_base_rot);
     col->setWorldTransform(tr);
 
-    // int collisionfiltergroup = int(btBroadphaseProxy::DefaultFilter);
-    // int collisionfiltermask = int(btBroadphaseProxy::AllFilter);
-    // m_world->addCollisionObject(col,collisionfiltergroup,collisionfiltermask); // TO-DO: Need to evaluate other two arguments.
-    m_world->addCollisionObject(col);
+    bool isDynamic = (p_multibody->getBaseMass() == 0 && fixedBase) ? false : true;
+    int collisionfiltergroup = isDynamic ? int(btBroadphaseProxy::DefaultFilter) : int(btBroadphaseProxy::StaticFilter);
+    int collisionfiltermask = isDynamic ? int(btBroadphaseProxy::AllFilter) : int(btBroadphaseProxy::AllFilter ^ btBroadphaseProxy::StaticFilter);
+    m_world->addCollisionObject(col,collisionfiltergroup, collisionfiltermask); // TO-DO: Need to evaluate other two arguments.
+    // m_world->addCollisionObject(col);
 
     m_multibody->_colShapes.push_back(shape);
     m_multibody->_colliders.push_back(col);

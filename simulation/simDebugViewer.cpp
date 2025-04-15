@@ -138,7 +138,8 @@ void simDebugViewer::updateSimRobotGraphics(int _robot_index)
         _ptr->setPosition(Ogre::Vector3(_p.x(),_p.y(), _p.z()));
         _ptr->setRotation(Ogre::Quaternion(_q.w(), _q.x(), _q.y(), _q.z()));
     }
-    
+    // experimental.
+    _mtObj->setupCollisionFlags();
 }
 
 void simDebugViewer::attachAabb(btMultibodyLink& _link, mObject* _mObj, btVector3 _color) // to-do: resolve bug.
@@ -399,7 +400,9 @@ void simDebugViewer::renderViewer()
     {
         RenderOneFrame();
         updateSimRobotGraphics(0);
-        m_world->getMultiBodyObject(0)->_multibody->addJointTorque(3,-01.01);
+        m_world->getMultiBodyObject(0)->_multibody->addJointTorque(1,-01.01);
+        m_world->getMultiBodyObject(0)->_multibody->addJointTorque(4,-01.01);
+        m_world->getMultiBodyObject(0)->_multibody->addJointTorque(3,-010.01);
         // std::cout << m_world->getMultiBodyObject(0)->_multibody->getJointPos(0) << std::endl;
         // std::cout << m_world->getMultiBodyObject(0)->_multibody->getJointTorque(3) << std::endl;
         // m_world->getMultiBodyObject(0)->_multibody->addLinkTorque(3,btVector3(10,10,0));

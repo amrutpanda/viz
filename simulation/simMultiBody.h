@@ -26,7 +26,9 @@ public:
     
     simMultiBodyDynamicsWorld();
     void InitialiseDynamicsWorld();
-    void LoadRobotFromURDFFile(std::string _filename);
+    void LoadRobotFromURDFFile(std::string _filename, Eigen::Vector3d _base_pose = Eigen::Vector3d(0,0,0),
+                                Eigen::Quaterniond _base_rotation = Eigen::Quaterniond(1,0,0,0), bool _fixedBase = true,
+                                bool _has_selfcollision = false);
     btConstraintSolver* getSolver();
     btMultiBodyConstraintSolver* getMultiBodySolver();
     void setRobotBasePose(std::string _robotName,double _x, double _y, double _z);
@@ -43,8 +45,13 @@ public:
     void setRobotJointTorque(mMultiBody*, Eigen::VectorXd& _t);
     void getRobotJointTorque(mMultiBody*, Eigen::VectorXd& _t);
 
+    int addBodyBox(double l, double b, double h, double m, Eigen::Vector3d& _pose, Eigen::Quaterniond& _q);
+    int addBodySphere(double r, double m, Eigen::Vector3d& _pose, Eigen::Quaterniond& _q);
+    int addBodyCylinder(double r, double h, double m, Eigen::Vector3d& _pose, Eigen::Quaterniond& _q);
+    int addBodyConvexHull(std::string _filename,double m, Eigen::Vector3d _pose,
+                         Eigen::Quaterniond _q,Eigen::Vector3d _scale);
     int getNumRobots() noexcept;
-    void step(int _ts);
+    void stepSimulation(float _ts, float _fixedStep = 0.01);
     ~simMultiBodyDynamicsWorld();
 
 };

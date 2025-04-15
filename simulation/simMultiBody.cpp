@@ -73,16 +73,22 @@ void simMultiBodyDynamicsWorld::InitialiseDynamicsWorld()
     // setGravity(0,0, -10);
 }
 
-void simMultiBodyDynamicsWorld::LoadRobotFromURDFFile(std::string _filename)
+void simMultiBodyDynamicsWorld::LoadRobotFromURDFFile(std::string _filename, Eigen::Vector3d _base_pose,
+                                Eigen::Quaterniond _base_rotation, bool _fixedBase, bool _has_selfcollision)
 {
     BulletURDFImporter importer;
-    if (!importer.ReadFile(_filename))
+    if (!importer.ReadFile(_filename,_fixedBase))
     {
         throw std::runtime_error("Error while reading file: " + _filename);
     }
     _multibody_name_map[importer.getName()] = importer.getMultiBodyStruct(m_dynamicsWorld);
     m_dynamicsWorld->addMultiBody(_multibody_name_map.at(importer.getName())->_multibody);
-    _multibody_name_map.at(importer.getName())->_multibody->setHasSelfCollision(true); // disable self-collision.
+    
+    _multibody_name_map.at(importer.getName())->_multibody->setHasSelfCollision(_has_selfcollision); // flag for checking self-collision.
+    
+    setRobotBasePose(importer.getName(),_base_pose.x(), _base_pose.y(), _base_pose.z());
+    setRobotBaseOrientation(importer.getName(),_base_rotation.x(), _base_rotation.y(), _base_rotation.z(), _base_rotation.w());
+    
     // _multibody_name_map.at(importer.getName())->_multibody->
     std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" << std::endl;
     std::cout << "Robot Name: " << importer.getName() << std::endl;
