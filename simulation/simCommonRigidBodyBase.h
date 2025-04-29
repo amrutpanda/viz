@@ -138,15 +138,27 @@ public:
                 }
                 delete _colShapes[i];
             }
+            // if (_colliders[i] != nullptr)
+            // {
+            //     if (_colliders[i]->getUserPointer() != nullptr)
+            //     {
+            //         delete static_cast<btTransform*>(_colliders[i]->getUserPointer());
+            //     }
+                
+            //     delete _colliders[i];
+            // }
+        }
+
+        for (int i = 0; i < _colliders.size(); i++)
+        {
             if (_colliders[i] != nullptr)
             {
                 if (_colliders[i]->getUserPointer() != nullptr)
                 {
                     delete static_cast<btTransform*>(_colliders[i]->getUserPointer());
                 }
-                
-                delete _colliders[i];
             }
+            delete _colliders[i];
         }
 
     }

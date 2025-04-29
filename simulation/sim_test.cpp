@@ -102,7 +102,7 @@
 int main(int argc, char const *argv[])
 {
     std::string _urdf_file_name = "/home/asp/Files/cpp/projects/viz/src/kuka.urdf";
-    // _urdf_file_name = "/home/asp/Files/resources/urdf_files_dataset/urdf_files/oems/anymal_anybotics/anymal_b_simple_description/urdf/anymal.urdf";
+    _urdf_file_name = "/home/asp/Files/resources/urdf_files_dataset/urdf_files/oems/anymal_anybotics/anymal_b_simple_description/urdf/anymal.urdf";
     // _urdf_file_name = "/home/asp/Files/resources/baxter_common/baxter_description/urdf/baxter.urdf";
     // _urdf_file_name = "/home/asp/Files/resources/urdf_files_dataset/urdf_files/oems/xacro_generated/franka_emika/franka_description/robots/dual_panda/dual_panda.urdf";
     // _urdf_file_name = "/home/asp/Files/sai2/OpenSai/core/sai2-model/urdf_models/panda/panda_arm.urdf";

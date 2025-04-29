@@ -17,7 +17,11 @@ private:
     void process_mMultibody(mMultiBody* _robot);
     void buildSimRobotGraphicsFromMultiBodyData(mMultiBody* );
     void _createCollisionMeshGraphicalObject(mMultiBody*,int);
+
     void _processConvexHullShape(btConvexHullShape* _shape, mObject* _mObj, std::string& );
+    void _processBoxShape(btBoxShape* _shape, std::string& ,btVector3& scale);
+    void _processSphereShape(btSphereShape* _shape, std::string& ,btVector3& scale);
+    void _processCylinderShape(btCylinderShape* _shape, std::string& ,btVector3& scale);
 
     void updateSimRobotGraphics(int _robot_index);
     void updateSimRobotCollisionGraphics(int _robot_index);

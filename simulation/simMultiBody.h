@@ -21,6 +21,12 @@ private:
 
     std::unordered_map <std::string, mMultiBody* > _multibody_name_map;
     std::unordered_map <std::string, btRigidBody*> _rigidbody_name_map;
+
+    std::vector<btRigidBody*> _rigidBodyList;
+    std::vector<btCollisionShape*> _rigidBodyCollisionShapes;
+    std::vector<btMotionState*> _rigidBodyMotionStates;
+
+    std::vector<std::pair<unsigned int, btMultiBodyJointFeedback*>> _force_sensors;
     
 public:
     
@@ -44,12 +50,19 @@ public:
     void getRobotJointVel(mMultiBody*, Eigen::VectorXd& _dq);
     void setRobotJointTorque(mMultiBody*, Eigen::VectorXd& _t);
     void getRobotJointTorque(mMultiBody*, Eigen::VectorXd& _t);
+    void getForceSensorOutput(int _index, Eigen::Vector3d& _force, Eigen::Vector3d& _moment);
 
-    int addBodyBox(double l, double b, double h, double m, Eigen::Vector3d& _pose, Eigen::Quaterniond& _q);
-    int addBodySphere(double r, double m, Eigen::Vector3d& _pose, Eigen::Quaterniond& _q);
-    int addBodyCylinder(double r, double h, double m, Eigen::Vector3d& _pose, Eigen::Quaterniond& _q);
-    int addBodyConvexHull(std::string _filename,double m, Eigen::Vector3d _pose,
+    unsigned int addBodyBox(double l, double b, double h, double m, Eigen::Vector3d& _pose, Eigen::Quaterniond& _q);
+    unsigned int addBodySphere(double r, double m, Eigen::Vector3d& _pose, Eigen::Quaterniond& _q);
+    unsigned int addBodyCylinder(double r, double h, double m, Eigen::Vector3d& _pose, Eigen::Quaterniond& _q);
+    unsigned int addBodyConvexHull(std::string _filename,double m, Eigen::Vector3d& _inertia, Eigen::Vector3d _pose,
                          Eigen::Quaterniond _q,Eigen::Vector3d _scale);
+    void getBodyPoseAndRotation(unsigned int bodyindex, Eigen::Vector3d& _pos, Eigen::Quaterniond& _q);
+    unsigned int attachForceSensorToRobot(std::string _robotName, std::string _linkName);
+    unsigned int attachForceSensorToRobot(unsigned int _robotIndex, unsigned int _ind);
+
+    bool getForceMomentFromForceSensor(unsigned int _ind, Eigen::Vector3d&, Eigen::Quaterniond&);
+
     int getNumRobots() noexcept;
     void stepSimulation(float _ts, float _fixedStep = 0.01);
     ~simMultiBodyDynamicsWorld();

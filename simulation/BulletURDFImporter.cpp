@@ -289,14 +289,19 @@ bool BulletURDFImporter::createMultiBodyLinkCollisionShapes(int linkIndex, urdf:
             {
                 urdf::Box* boxptr = dynamic_cast<urdf::Box*>(cptr->geometry.get());
                 btVector3 dim(boxptr->dim.x/2, boxptr->dim.y/2,boxptr->dim.z/2); // TO-DO: need to verify the box size.
+                // btVector3 dim(boxptr->dim.x, boxptr->dim.y,boxptr->dim.z);
                 shape = new btBoxShape(dim);
                 break;
             }
         case urdf::Geometry::CYLINDER :
             {
                 urdf::Cylinder* cldptr = dynamic_cast<urdf::Cylinder*>(cptr->geometry.get());
-                btVector3 dim(cldptr->radius, cldptr->length, 1); // 1 stands for Z axis direction
+                // btVector3 dim(cldptr->radius, cldptr->length, 1); // 1 stands for Z axis direction
+                btVector3 dim(cldptr->radius, cldptr->length/10, cldptr->radius);
+                // printVector(dim,"Cylinder dims: ");
                 shape = new btCylinderShape(dim);
+                // shape = new btCylinderShapeZ(dim);
+                shape->setMargin(0);
                 break;
             }
         case urdf::Geometry::SPHERE :
@@ -367,9 +372,9 @@ bool BulletURDFImporter::createMultiBodyLinkCollisionShapes(int linkIndex, urdf:
             break;
         }
         
-        btTransform tr;
-        if (!_find_collision_mesh_world_transform(col, linkIndex,_pos,_rot,tr));
-            col->setWorldTransform(tr); // will be executed more than once in case of multiple mesh,but benign.
+        // btTransform tr;
+        // if (!_find_collision_mesh_world_transform(col, linkIndex,_pos,_rot,tr));
+        //     col->setWorldTransform(tr); // will be executed more than once in case of multiple mesh,but benign.
 
         if (_link->collision_array.size() > 1)
         {
@@ -380,6 +385,9 @@ bool BulletURDFImporter::createMultiBodyLinkCollisionShapes(int linkIndex, urdf:
         }
         else
         {
+            btTransform tr;
+            if (!_find_collision_mesh_world_transform(col, linkIndex,_pos,_rot,tr));
+                col->setWorldTransform(tr); 
             col->setCollisionShape(shape);
         }
         
@@ -388,6 +396,9 @@ bool BulletURDFImporter::createMultiBodyLinkCollisionShapes(int linkIndex, urdf:
     if (_link->collision_array.size() > 1)
     {
         std::cout << "Multiple collision meshes detected" << std::endl;
+        // change the transform to identity.
+        col->setUserPointer(new btTransform);
+        static_cast<btTransform*>(col->getUserPointer())->setIdentity();
         col->setCollisionShape(_cmpd_shape);
         p_multibody->getLink(linkIndex).m_collider = col;
         m_multibody->_colShapes.push_back(_cmpd_shape);
@@ -595,15 +606,25 @@ bool BulletURDFImporter::_find_collision_mesh_world_transform(btMultiBodyLinkCol
         btVector3 _dThisLinkComtoCol_world =  quatRotate(rot_world_to_local[linkIndex + 1], _dThisLinkComToCol_local );
         btVector3 vec = local_origin_world_frame[linkIndex + 1] + _dThisLinkComtoCol_world;
         printVector(_dThisLinkComToCol_local,"col pos");
+
         // printVector(local_origin_world_frame[linkIndex + 1],"com world pos");
         // fill up transforms.
+
         tr.setIdentity();
         tr.setOrigin(local_origin_world_frame[linkIndex + 1] + _dThisLinkComtoCol_world);
         tr.setRotation(rot_world_to_local[linkIndex + 1]);
+
         // attach distance from com to col origin in local frame to a userpointer.
         btTransform* _ptr = new btTransform();
         _ptr->setOrigin(_dThisLinkComToCol_local);
         _ptr->setRotation(_colRotThisLinkFrame);
+        
+        // if (_)
+        // {
+        //     /* code */
+        // }
+        
+
         if (_col != nullptr)
         {
             std::cout << "setting user pointer. linkIndex: " << linkIndex << std::endl;
@@ -626,8 +647,8 @@ bool BulletURDFImporter::_find_collision_mesh_local_transform(btMultiBodyLinkCol
     {
         btMultibodyLink _link = p_multibody->getLink(linkIndex);
         btVector3 _dThisLinkComToCol_local = _colPosThisLinkFrame - _link.m_dVector; // distance from col mesh origing to com of this link.
-        btVector3 _dThisLinkComtoCol_world =  quatRotate(rot_world_to_local[linkIndex + 0].inverse(), _dThisLinkComToCol_local );
-        btVector3 vec = _dThisLinkComtoCol_world;
+        // btVector3 _dThisLinkComtoCol_world =  quatRotate(rot_world_to_local[linkIndex + 0].inverse(), _dThisLinkComToCol_local );
+        // btVector3 vec = _dThisLinkComtoCol_world;
         // printVector(vec,"col local pos");
         // fill up transforms.
         tr.setIdentity();
@@ -636,7 +657,7 @@ bool BulletURDFImporter::_find_collision_mesh_local_transform(btMultiBodyLinkCol
     }
     catch(const std::exception& e)
     {
-        std::cerr << e.what() << "Error while getting collision mesh tranform of Link Index: " << linkIndex << '\n';
+        std::cerr << e.what() << "\nError while getting collision mesh tranform of Link Index: " << linkIndex << '\n';
         return false;
         // throw std::runtime_error("Error while computing collision mesh transform. Link Index: " + std::to_string(linkIndex));
     } 

@@ -285,6 +285,9 @@ void simDebugViewer::_createCollisionMeshGraphicalObject(mMultiBody* _robot, int
         
         // mObject* _ptr = _colmObj_list[i];
         mObject* _ptr = _robot_objects[_robot_index][i];
+        btBoxShape* _bshape = dynamic_cast<btBoxShape*>(_shape);
+        btCylinderShape* _cyshape = dynamic_cast<btCylinderShape*>(_shape);
+        btSphereShape* _spshape = dynamic_cast<btSphereShape*>(_shape);
         btConvexHullShape* _chshape = dynamic_cast<btConvexHullShape*>(_shape);
         btCompoundShape* _cmpd_shape = dynamic_cast<btCompoundShape*>(_shape);
         btTransform _link_com_tr =  _robot->_multibody->getLink(i-1).m_cachedWorldTransform;
@@ -319,32 +322,160 @@ void simDebugViewer::_createCollisionMeshGraphicalObject(mMultiBody* _robot, int
             // _ptr->setPosition(Ogre::Vector3(_p.x(), _p.y(), _p.z()));
             // _ptr->setRotation(Ogre::Quaternion(_q.w(),_q.x(), _q.y(), _q.z()));
         }
+        else if (_bshape != nullptr)
+        {
+            std::cout << "Got box shape\n";
+            btVector3 _scale;
+            _processBoxShape(_bshape,_mesh_name,_scale);
+            if (_col->getUserPointer() != nullptr)
+            {
+                btTransform* _tr = static_cast<btTransform*>(_col->getUserPointer());
+                btVector3 _p = _tr->getOrigin();
+                btQuaternion _q = _tr->getRotation();
+                
+                // btQuaternion _q = _col->getWorldTransform().getRotation();
+                printVector(_link_com_tr.getOrigin(),"pos");
+                _ptr->attachChildMesh(scnMgr,_mesh_name,Ogre::Vector3(_p.x(), _p.y(), _p.z()),
+                                                        Ogre::Quaternion(_q.w(),_q.x(),_q.y(), _q.z()),
+                                                        Ogre::Vector3(_scale.x(), _scale.y(), _scale.z()));
+               
+                std::cout << i << "_child World pos: "<< _ptr->getChildMeshNode(_mesh_name)->_getDerivedPosition() << std::endl;
+                std::cout << i << "_child COM pos: "<< _ptr->getSceneNode()->_getDerivedPosition() << std::endl;
+                printVector(_col->getWorldTransform().getOrigin(),"_col pos: ");
+                continue;
+            }
+
+            _ptr->attachChildMesh(scnMgr,_mesh_name,Ogre::Vector3(0, 0, 0),
+                                                    Ogre::Quaternion(1 ,0 ,0 ,0 ),
+                                                    Ogre::Vector3(_scale.x(), _scale.y(), _scale.z()));
+        }
+
+        else if (_cyshape != nullptr)
+        {
+            std::cout<< "Got Cylinder shape\n";
+            btVector3 _scale;
+            _processCylinderShape(_cyshape,_mesh_name,_scale);
+            if (_col->getUserPointer() != nullptr)
+            {
+                btTransform* _tr = static_cast<btTransform*>(_col->getUserPointer());
+                btVector3 _p = _tr->getOrigin();
+                btQuaternion _q = _tr->getRotation();
+                
+                // btQuaternion _q = _col->getWorldTransform().getRotation();
+                printVector(_link_com_tr.getOrigin(),"pos");
+                _ptr->attachChildMesh(scnMgr,_mesh_name,Ogre::Vector3(_p.x(), _p.y(), _p.z()),
+                                                        Ogre::Quaternion(_q.w(),_q.x(),_q.y(), _q.z()),
+                                                        Ogre::Vector3(_scale.x(), _scale.y(), _scale.z()));
+               
+                std::cout << i << "_child World pos: "<< _ptr->getChildMeshNode(_mesh_name)->_getDerivedPosition() << std::endl;
+                std::cout << i << "_child COM pos: "<< _ptr->getSceneNode()->_getDerivedPosition() << std::endl;
+                printVector(_col->getWorldTransform().getOrigin(),"_col pos: ");
+                continue;
+            }
+
+            _ptr->attachChildMesh(scnMgr,_mesh_name,Ogre::Vector3(0, 0, 0),
+                                                    Ogre::Quaternion(1 ,0 ,0 ,0 ),
+                                                    Ogre::Vector3(_scale.x(), _scale.y(), _scale.z()));
+        }
+
+        else if (_spshape != nullptr)
+        {
+            std::cout << "Got Sphere shape\n";
+            btVector3 _scale;
+            _processSphereShape(_spshape,_mesh_name,_scale);
+            if (_col->getUserPointer() != nullptr)
+            {
+                btTransform* _tr = static_cast<btTransform*>(_col->getUserPointer());
+                btVector3 _p = _tr->getOrigin();
+                btQuaternion _q = _tr->getRotation();
+                
+                // btQuaternion _q = _col->getWorldTransform().getRotation();
+                printVector(_link_com_tr.getOrigin(),"pos");
+                _ptr->attachChildMesh(scnMgr,_mesh_name,Ogre::Vector3(_p.x(), _p.y(), _p.z()),
+                                                        Ogre::Quaternion(_q.w(),_q.x(),_q.y(), _q.z()),
+                                                        Ogre::Vector3(_scale.x(), _scale.y(), _scale.z()));
+               
+                std::cout << i << "_child World pos: "<< _ptr->getChildMeshNode(_mesh_name)->_getDerivedPosition() << std::endl;
+                std::cout << i << "_child COM pos: "<< _ptr->getSceneNode()->_getDerivedPosition() << std::endl;
+                printVector(_col->getWorldTransform().getOrigin(),"_col pos: ");
+                continue;
+            }
+
+            _ptr->attachChildMesh(scnMgr,_mesh_name,Ogre::Vector3(0, 0, 0),
+                                                    Ogre::Quaternion(1 ,0 ,0 ,0 ),
+                                                    Ogre::Vector3(_scale.x(), _scale.y(), _scale.z()));
+        }
+        
         else if (_cmpd_shape != nullptr)
         {
             std::cout << "Got compound mesh\n";
             // btTransform _link_com_tr =  _robot->_multibody->getLink(i).m_cachedWorldTransform;
             for (int j = 0; j < _cmpd_shape->getNumChildShapes(); j++)
             {
+                btVector3 _scale;
+                btBoxShape* _bshape = dynamic_cast<btBoxShape*>(_cmpd_shape->getChildShape(j));
+                btCylinderShape* _cyshape = dynamic_cast<btCylinderShape*>(_cmpd_shape->getChildShape(j));
+                btSphereShape* _spshape = dynamic_cast<btSphereShape*>(_cmpd_shape->getChildShape(j));
                 _chshape = dynamic_cast<btConvexHullShape*>(_cmpd_shape->getChildShape(j));
                 btTransform _ch_tr = _cmpd_shape->getChildTransform(j);
                 if (_chshape != nullptr )
                 {
                     _processConvexHullShape(_chshape,_ptr,_mesh_name);
-                    btVector3 _p = _ch_tr.getOrigin() - _link_com_tr.getOrigin();
-                    btQuaternion _q = _ch_tr.getRotation();
-                    btVector3 _scale = _chshape->getLocalScaling();
-                    printVector(_scale,"scale");
-                    // _ptr->attachChildMesh(scnMgr,_mesh_name,Ogre::Vector3(_p.x(), _p.y(), _p.z()),
-                    //                                     Ogre::Quaternion(_q.w(),_q.x(),_q.y(), _q.z()),
-                    //                                     Ogre::Vector3(_scale.x(),_scale.y(), _scale.z()));
-
-                    // _ptr->attachChildMesh(scnMgr,_mesh_name,Ogre::Vector3(0),
-                    //                                 Ogre::Quaternion(0,0,0, 1),
-                    //                                 Ogre::Vector3(_scale.x(),_scale.y(), _scale.z()));
                     
+                    btVector3 _p = _ch_tr.getOrigin();
+                    btQuaternion _q = _ch_tr.getRotation();
+                    _scale = _chshape->getLocalScaling();
+                    printVector(_scale,"scale");
+                    _ptr->attachChildMesh(scnMgr,_mesh_name,Ogre::Vector3(_p.x(), _p.y(), _p.z()),
+                                                        Ogre::Quaternion(_q.w(),_q.x(),_q.y(), _q.z()),
+                                                        Ogre::Vector3(_scale.x(),_scale.y(), _scale.z()));
+                    continue;
                 }
+                // _ptr->attachChildMesh(scnMgr,_mesh_name,Ogre::Vector3(0),
+                //                                     Ogre::Quaternion(0,0,0, 1),
+                //                                     Ogre::Vector3(_scale.x(),_scale.y(), _scale.z()));
+
+                else if (_bshape != nullptr)
+                {
+                    _processBoxShape(_bshape,_mesh_name,_scale);
+                    btVector3 _p = _ch_tr.getOrigin();
+                    btQuaternion _q = _ch_tr.getRotation();
+                    _ptr->attachChildMesh(scnMgr,_mesh_name,Ogre::Vector3(_p.x(), _p.y(), _p.z()),
+                                                        Ogre::Quaternion(_q.w(),_q.x(),_q.y(), _q.z()),
+                                                        Ogre::Vector3(_scale.x(),_scale.y(), _scale.z()));
+                    continue;
+                }
+                
+                else if (_spshape != nullptr)
+                {
+                    _processSphereShape(_spshape,_mesh_name,_scale);
+                    btVector3 _p = _ch_tr.getOrigin();
+                    btQuaternion _q = _ch_tr.getRotation();
+                    _ptr->attachChildMesh(scnMgr,_mesh_name,Ogre::Vector3(_p.x(), _p.y(), _p.z()),
+                                                        Ogre::Quaternion(_q.w(),_q.x(),_q.y(), _q.z()),
+                                                        Ogre::Vector3(_scale.x(),_scale.y(), _scale.z()));
+                    continue;
+                }
+                else if (_cyshape != nullptr)
+                {
+                    _processCylinderShape(_cyshape,_mesh_name,_scale);
+                    btVector3 _p = _ch_tr.getOrigin();
+                    btQuaternion _q = _ch_tr.getRotation();
+                    _ptr->attachChildMesh(scnMgr,_mesh_name,Ogre::Vector3(_p.x(), _p.y(), _p.z()),
+                                                        Ogre::Quaternion(_q.w(),_q.x(),_q.y(), _q.z()),
+                                                        Ogre::Vector3(_scale.x(),_scale.y(), _scale.z()));
+                    continue;
+                }
+                else
+                {
+                    throw std::runtime_error("Cannot process the shape type. Inside _createCollisionMeshGraphicalObject: compound shape ");
+                } 
             }
             
+        }
+        else
+        {
+            throw std::runtime_error("Cannot process the shape type. Inside _createCollisionMeshGraphicalObject:"); 
         }
     }
     std::cout << "Finished >>>\n";
@@ -393,6 +524,33 @@ void simDebugViewer::_processConvexHullShape(btConvexHullShape* _shape, mObject*
     
 }
 
+void simDebugViewer::_processBoxShape(btBoxShape* _shape, std::string& _mesh_name,btVector3& scale)
+{
+    btVector3 box_dims = _shape->getHalfExtentsWithoutMargin();
+    scale = 2*box_dims;
+    _mesh_name = "mCube.mesh";
+}
+
+void simDebugViewer::_processSphereShape(btSphereShape* _shape, std::string& _mesh_name,btVector3& scale)
+{
+    // double r = _shape->getRadius() + _shape->getMargin();
+    double r = _shape->getRadius();
+    btVector3 sp_dims(r,r,r);
+    scale = sp_dims;
+    _mesh_name = "mSphere.mesh";
+}
+
+void simDebugViewer::_processCylinderShape(btCylinderShape* _shape, std::string& _mesh_name,btVector3& scale)
+{
+    btVector3 cy_dims = _shape->getHalfExtentsWithoutMargin();
+    // btVector3 cy_dims = _shape->getImplicitShapeDimensions();
+    printVector(cy_dims,"cy_dims");
+    // btVector3 cy_dims = _shape->getHalfExtentsWithMargin();
+    scale = btVector3(cy_dims.x(), cy_dims.x(), cy_dims.y());
+    // scale = cy_dims;
+    _mesh_name = "mCylinder.mesh";
+}
+
 void simDebugViewer::renderViewer()
 {   
     m_world->getMultiBodyObject(0)->_multibody->addJointTorque(0,-0.11);
@@ -400,9 +558,10 @@ void simDebugViewer::renderViewer()
     {
         RenderOneFrame();
         updateSimRobotGraphics(0);
-        m_world->getMultiBodyObject(0)->_multibody->addJointTorque(1,-01.01);
-        m_world->getMultiBodyObject(0)->_multibody->addJointTorque(4,-01.01);
-        m_world->getMultiBodyObject(0)->_multibody->addJointTorque(3,-010.01);
+        // m_world->getMultiBodyObject(0)->_multibody->addJointTorque(1,-01.01);
+        // m_world->getMultiBodyObject(0)->_multibody->addJointTorque(4,-01.01);
+        // m_world->getMultiBodyObject(0)->_multibody->addJointTorque(3,-010.01);
+
         // std::cout << m_world->getMultiBodyObject(0)->_multibody->getJointPos(0) << std::endl;
         // std::cout << m_world->getMultiBodyObject(0)->_multibody->getJointTorque(3) << std::endl;
         // m_world->getMultiBodyObject(0)->_multibody->addLinkTorque(3,btVector3(10,10,0));

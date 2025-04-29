@@ -10,7 +10,8 @@ simMultiBodyDynamicsWorld::simMultiBodyDynamicsWorld()
 
 simMultiBodyDynamicsWorld::~simMultiBodyDynamicsWorld()
 {
-    delete m_solverinterface;
+    if (m_solverinterface != nullptr)
+        delete m_solverinterface;
 
     if (_multibody_name_map.size() != 0)
     {
@@ -20,13 +21,24 @@ simMultiBodyDynamicsWorld::~simMultiBodyDynamicsWorld()
         }
     }
 
-    if (_rigidbody_name_map.size() != 0)
+    // if (_rigidbody_name_map.size() != 0)
+    // {
+    //     for (auto it : _multibody_name_map)
+    //     {
+    //         delete it.second;
+    //     }
+    // }
+
+    for (int i = 0; i < _rigidBodyList.size(); i++)
     {
-        for (auto it : _multibody_name_map)
-        {
-            delete it.second;
-        }
+        if (_rigidBodyList[i] != nullptr)
+            delete _rigidBodyList[i];
+        if (_rigidBodyCollisionShapes[i] != nullptr)
+            delete _rigidBodyCollisionShapes[i];
+        if(_rigidBodyMotionStates[i] != nullptr)
+            delete _rigidBodyMotionStates[i];
     }
+    
     std::cout << "cleared simMultiBodyDynamicsWorld\n";
     
 }
@@ -284,4 +296,244 @@ void simMultiBodyDynamicsWorld::setRobotJointTorque(mMultiBody* _robot,Eigen::Ve
     {
         _robot->_multibody->addJointTorque(_robot->_jointNameIndexList[i].first,btScalar(_q[i]));
     }
+}
+
+unsigned int simMultiBodyDynamicsWorld::addBodyBox(double l, double b, double h, double m, Eigen::Vector3d& _pose, Eigen::Quaterniond& _q)
+{
+    btCollisionShape* boxShape = new btBoxShape(btVector3(l,b,h));
+    // save collision shapes.
+    _rigidBodyCollisionShapes.push_back(boxShape);
+    // setup transform.
+    btTransform Transform;
+    Transform.setIdentity();
+    Transform.setOrigin(btVector3(_pose.x(),_pose.y(),_pose.z()));
+    btQuaternion rot(_q.x(),_q.y(),_q.z(),_q.w());
+    Transform.setRotation(rot);
+
+    btScalar mass(m);
+    btVector3 localInertia(0, 0, 0);
+    bool isDynamics = (mass != 0.f);
+    if(!isDynamics)
+        std::cout << "This Rigid body is Static. Type : Box "<< std::endl;
+    else
+    {
+        boxShape->calculateLocalInertia(mass,localInertia);
+    }
+    btDefaultMotionState* myMotionState = new btDefaultMotionState(Transform);
+    _rigidBodyMotionStates.push_back(myMotionState);
+    // construct a rigid body.
+    btRigidBody::btRigidBodyConstructionInfo rbinfo(mass,myMotionState,boxShape,localInertia);
+    btRigidBody* body = new btRigidBody(rbinfo);
+    _rigidBodyList.push_back(body);
+    m_dynamicsWorld->addRigidBody(body);
+    // body->setRestitution(0.5);
+    return _rigidBodyList.size() - 1;
+}
+
+unsigned int simMultiBodyDynamicsWorld::addBodySphere(double r, double m, Eigen::Vector3d& _pose, Eigen::Quaterniond& _q)
+{
+    btCollisionShape* sphereShape = new btSphereShape(btScalar(r));
+    // save collision shapes.
+    _rigidBodyCollisionShapes.push_back(sphereShape);
+    // setup transform.
+    btTransform Transform;
+    Transform.setIdentity();
+    Transform.setOrigin(btVector3(_pose.x(),_pose.y(),_pose.z()));
+    btQuaternion rot(_q.x(),_q.y(),_q.z(),_q.w());
+    Transform.setRotation(rot);
+
+    btScalar mass(m);
+    btVector3 localInertia(0, 0, 0);
+    bool isDynamics = (mass != 0.f);
+    if(!isDynamics)
+        std::cout << "This Rigid body is Static. Type : Box "<< std::endl;
+    else
+    {
+        sphereShape->calculateLocalInertia(mass,localInertia);
+    }
+
+    btDefaultMotionState* myMotionState = new btDefaultMotionState(Transform);
+    _rigidBodyMotionStates.push_back(myMotionState);
+
+    btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, sphereShape, localInertia);
+    btRigidBody* body = new btRigidBody(rbInfo);
+
+    body->setRestitution(0.5);
+
+    m_dynamicsWorld->addRigidBody(body);
+    _rigidBodyList.push_back(body);
+     // return the index of the object.
+    return _rigidBodyList.size() - 1 ;
+}
+
+unsigned int simMultiBodyDynamicsWorld::addBodyCylinder(double r, double h, double m, Eigen::Vector3d& _pose, Eigen::Quaterniond& _q)
+{
+    btCollisionShape* CylinderShape = new btCylinderShape(btVector3(r,h,1));
+    // save collision shapes.
+    _rigidBodyCollisionShapes.push_back(CylinderShape);
+    // setup transform.
+    btTransform Transform;
+    Transform.setIdentity();
+    Transform.setOrigin(btVector3(_pose.x(),_pose.y(),_pose.z()));
+    btQuaternion rot(_q.x(),_q.y(),_q.z(),_q.w());
+    Transform.setRotation(rot);
+
+    btScalar mass(m);
+    btVector3 localInertia(0, 0, 0);
+    bool isDynamics = (mass != 0.f);
+    if(!isDynamics)
+        std::cout << "This Rigid body is Static. Type : Box "<< std::endl;
+    else
+    {
+        CylinderShape->calculateLocalInertia(mass,localInertia);
+    }
+
+    btDefaultMotionState* myMotionState = new btDefaultMotionState(Transform);
+    _rigidBodyMotionStates.push_back(myMotionState);
+
+    btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, CylinderShape, localInertia);
+    btRigidBody* body = new btRigidBody(rbInfo);
+
+    body->setRestitution(0.5);
+
+    m_dynamicsWorld->addRigidBody(body);
+    _rigidBodyList.push_back(body);
+     // return the index of the object.
+    return _rigidBodyList.size() - 1 ;
+
+}
+
+unsigned int simMultiBodyDynamicsWorld::addBodyConvexHull(std::string _filename,double m,Eigen::Vector3d& _inertia, 
+    Eigen::Vector3d _pose, Eigen::Quaterniond _q,Eigen::Vector3d _scale)
+{
+    btConvexHullShape* convexhullShape = new btConvexHullShape();
+    // import mesh using assimp.
+    Assimp::Importer Importer;
+    const aiScene* pScene = Importer.ReadFile(_filename.c_str(), aiProcess_JoinIdenticalVertices);
+    
+    
+    if (pScene != nullptr)
+        std::cout << "num Meshes: " << pScene->mNumMeshes << std::endl;
+    else
+    {
+        std::cerr << Importer.GetErrorString() << std::endl;
+        throw std::runtime_error("pScene is null");
+    }
+
+    aiVector3D* ctr = pScene->mMeshes[0]->mVertices;
+    // std::cout << pScene->mMeshes[0]->mNumVertices <<  std::endl;
+
+    for (int i = 0; i < pScene->mNumMeshes; i++)
+    {
+        aiVector3D* _ctnr = pScene->mMeshes[i]->mVertices;
+        // std::cout << pScene->mMeshes[i]->mNumVertices << std::endl;
+        for (int j = 0; j < pScene->mMeshes[i]->mNumVertices; j++)
+        {
+            convexhullShape->addPoint(btVector3(_ctnr[j].x, _ctnr[j].y, _ctnr[j].z),false);
+        }
+        convexhullShape->recalcLocalAabb();
+    }
+    // convexhullShape->setMargin(0.01);
+    // convexhullShape->optimizeConvexHull();
+    btShapeHull shape(convexhullShape);
+    shape.buildHull(convexhullShape->getMargin());
+    // std::cout << shape.numVertices() << std::endl;
+
+    btConvexHullShape* _convexhullshape;
+    
+    auto ptr = shape.getVertexPointer();        
+    for (int i = 0; i < shape.numVertices(); i++)
+    {
+        // std::cout << ptr->x() << " " << ptr->y() << " " << ptr->z() << std::endl;
+        _convexhullshape->addPoint(btVector3(ptr->x(),ptr->y(),ptr->z()),false);
+        ptr++;
+    }
+    _convexhullshape->recalcLocalAabb();
+    // delete old convex hull object.
+    delete convexhullShape;
+    // save the collision shape.
+    _rigidBodyCollisionShapes.push_back(_convexhullshape);
+     // setup transform.
+     btTransform Transform;
+     Transform.setIdentity();
+     Transform.setOrigin(btVector3(_pose.x(),_pose.y(),_pose.z()));
+     btQuaternion rot(_q.x(),_q.y(),_q.z(),_q.w());
+     Transform.setRotation(rot);
+
+     btScalar mass(m);
+    btVector3 localInertia(_inertia.x(), _inertia.y(), _inertia.z());
+    bool isDynamics = (mass != 0.f);
+    if(!isDynamics)
+        std::cout << "This Rigid body is Static. Type : ConvexHull filename: " << _filename << std::endl;
+    else
+    {
+        _convexhullshape->calculateLocalInertia(mass,localInertia);
+    }
+
+    btDefaultMotionState* myMotionState = new btDefaultMotionState(Transform);
+    _rigidBodyMotionStates.push_back(myMotionState);
+
+    btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, _convexhullshape, localInertia);
+    btRigidBody* body = new btRigidBody(rbInfo);
+    body->setRestitution(0.5);
+
+    m_dynamicsWorld->addRigidBody(body);
+    _rigidBodyList.push_back(body);
+     // return the index of the object.
+    return _rigidBodyList.size() - 1 ;   
+}
+
+void simMultiBodyDynamicsWorld::getBodyPoseAndRotation(unsigned int bodyIndex, Eigen::Vector3d& _pos,
+                                                Eigen::Quaterniond& _q)
+{
+    btRigidBody* _rbody = _rigidBodyList[bodyIndex];
+    btTransform trans;
+    if (_rbody && _rbody->getMotionState())
+    {
+        _rbody->getMotionState()->getWorldTransform(trans);
+    }
+
+    _pos[0] = trans.getOrigin().getX();
+    _pos[1] = trans.getOrigin().getY();
+    _pos[2] = trans.getOrigin().getZ();
+
+    // _q.w() = trans.getRotation().getW();
+    // _q.x() = trans.getRotation().getX();
+    // _q.y() = trans.getRotation().getY();
+    // _q.z() = trans.getRotation().getZ();
+
+    _q = Eigen::Quaterniond(trans.getRotation().getW(), trans.getRotation().getX(),
+                            trans.getRotation().getY(), trans.getRotation().getZ());
+}
+
+unsigned int simMultiBodyDynamicsWorld::attachForceSensorToRobot(std::string _robotName, std::string _linkName)
+{
+    bool _found = false;
+    RobotObject* _robot = _multibody_name_map[_robotName];
+    btMultiBody* p_multibody;
+    unsigned int _linkIndex;
+    for (int i = 0; i < _robot->_linkNameIndexList.size(); i++)
+    {
+        if ( _robot->_linkNameIndexList[i].second == _linkName)
+        {
+            _linkIndex = i;
+            _found = true;
+            break;
+        }
+        
+    }
+    if (!_found)
+        std::runtime_error("Could find linkname in Robot object. _robotName: " + _robotName + " _linkName: "+ _linkName);
+    
+    _force_sensors.push_back(std::pair<unsigned int, btMultiBodyJointFeedback*>(_force_sensors.size(),
+                                    _robot->_jointFeedbackIndexList[_linkIndex].second));
+    return _force_sensors.size() - 1;
+}
+
+unsigned int simMultiBodyDynamicsWorld::attachForceSensorToRobot(unsigned int _robotIndex, unsigned int _ind)
+{
+    RobotObject* _robot = getMultiBodyObject(_robotIndex);
+    _force_sensors.push_back(std::pair<unsigned int, btMultiBodyJointFeedback*>(_force_sensors.size(),
+                        _robot->_jointFeedbackIndexList[_ind].second));
+    return _force_sensors.size() - 1;   
 }
