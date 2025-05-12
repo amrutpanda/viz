@@ -62,7 +62,7 @@ namespace Dynamics
         {
             /* code */
         }
-        
+        return 0;   
     }
 
     int DModel::dof()
@@ -100,11 +100,8 @@ namespace Dynamics
         
     }
 
-    void DModel::transformation(Eigen::Vector3d& _pos, Eigen::Matrix3d& _rot,
-        const std::string& link_name,
-        const Vector3d& pos_in_link = Eigen::Vector3d::Zero(),
-        const Matrix3d& rot_in_link = Eigen::Matrix3d::Identity(),
-        const std::string& base_frame = "")
+    void DModel::transformation(Eigen::Vector3d& _pos, Eigen::Matrix3d& _rot, const std::string& link_name,
+                                const Vector3d& pos_in_link, const Matrix3d& rot_in_link, const std::string& base_frame )
     {
         Eigen::Affine3d _T_link_to_base;
         Eigen::Affine3d _T_bframe_to_base;
@@ -117,7 +114,7 @@ namespace Dynamics
         std::string _base = base_frame;
 
         int linkInd = linkId(_link_name);
-        int baseInd = linkId(_link_name);
+        int baseInd = linkId(_base);
         
         if (base_frame.empty())
         {
@@ -134,9 +131,255 @@ namespace Dynamics
             _T_bframe_to_base.linear() = CalcBodyWorldOrientation(*_rbdl_model,_q,baseInd,false).transpose() * rot_in_link;
         }
 
-        // _T = _T_bframe_to_base.inverse() * 
+        _T = _T_bframe_to_base.inverse() * _T_link_to_base;
+        _pos = _T.translation();
+        _rot = _T.linear();
         
     }
 
+    void DModel::position(Eigen::Vector3d& _pos, std::string& link_name, const Eigen::Vector3d& pos_in_link)
+
+    {
+        Eigen::Affine3d _T_link_to_base;
+
+        _T_link_to_base.setIdentity();
+
+        std::string _link_name = link_name;
+        int linkInd = linkId(_link_name);
+       
+        _pos = CalcBaseToBodyCoordinates(*_rbdl_model,_q,linkInd,pos_in_link,false);
+
+    }
+
+    void DModel::positionInWorld(Eigen::Vector3d& _pos, std::string& link_name, const Eigen::Vector3d& pos_in_link)
+    {
+        Eigen::Affine3d _T_link_to_base;
+
+        _T_link_to_base.setIdentity();
+
+        std::string _link_name = link_name;
+        int linkInd = linkId(_link_name);
+       
+        _pos = CalcBaseToBodyCoordinates(*_rbdl_model,_q,linkInd,pos_in_link,false);
+        _pos = _T_world * _pos;
+    }
+
+    void DModel::rotation(Eigen::Matrix3d& _rot, std::string& link_name, const Eigen::Matrix3d& rot_in_link)
+    {
+        Eigen::Affine3d _T_link_to_base;
+
+        _T_link_to_base.setIdentity();
+
+        std::string _link_name = link_name;
+        int linkInd = linkId(_link_name);
+       
+        _rot = CalcBodyWorldOrientation(*_rbdl_model,_q,linkInd,false).transpose();
+        _rot = _rot * rot_in_link;
+    }
+
+    void DModel::rotationInWorld(Eigen::Matrix3d& _rot, std::string& link_name, const Eigen::Matrix3d& rot_in_link)
+    {
+        Eigen::Affine3d _T_link_to_base;
+
+        _T_link_to_base.setIdentity();
+
+        std::string _link_name = link_name;
+        int linkInd = linkId(_link_name);
+       
+        _rot = CalcBodyWorldOrientation(*_rbdl_model,_q,linkInd,false).transpose();
+        _rot = _T_world.linear() * _rot * rot_in_link;
+    }
+
+
+    void DModel::linearVelocity(Eigen::Vector3d& _vel, std::string& link_name, const Eigen::Vector3d& pos_in_link)
+    {
+        std::string _link_name = link_name;
+        int linkInd = linkId(_link_name);
+
+        _vel = CalcPointVelocity(*_rbdl_model,_q,_dq,linkInd,pos_in_link,false);
+    }
+
+    void DModel::linearVelocityWorld(Eigen::Vector3d& _vel, std::string& link_name, const Eigen::Vector3d& pos_in_link)
+    {
+        std::string _link_name = link_name;
+        int linkInd = linkId(_link_name);
+
+        _vel = _T_world.linear() * CalcPointVelocity(*_rbdl_model,_q,_dq,linkInd,pos_in_link,false);
+    }
+
+    void DModel::angularVelocity(Eigen::Vector3d& _avel, std::string& link_name, const Eigen::Vector3d& pos_in_link)
+    {
+        std::string _link_name = link_name;
+        int linkInd = linkId(_link_name);
+        Eigen::VectorXd v_tmp(6);
+
+        v_tmp = CalcPointVelocity6D(*_rbdl_model,_q,_dq,linkInd,pos_in_link,false);
+        _avel = v_tmp.head(3);
+    }
+
+    void DModel::angularVelocityWorld(Eigen::Vector3d& _avel, std::string& link_name, const Eigen::Vector3d& pos_in_link)
+    {
+        std::string _link_name = link_name;
+        int linkInd = linkId(_link_name);
+        Eigen::VectorXd v_tmp(6);
+
+        v_tmp = CalcPointVelocity6D(*_rbdl_model,_q,_dq,linkInd,pos_in_link,false);
+        _avel = _T_world.linear() * v_tmp.head(3);
+    }
+
+    void DModel::linearAcceleration(Eigen::Vector3d& _accel, std::string& link_name, const Eigen::Vector3d& pos_in_link)
+    {
+        std::string _link_name = link_name;
+        int linkInd = linkId(_link_name);
+
+        _accel = CalcPointAcceleration(*_rbdl_model,_q,_dq,_ddq,linkInd,pos_in_link,false);
+    }
+
+    void DModel::linearAccelerationWorld(Eigen::Vector3d& _accel, std::string& link_name, const Eigen::Vector3d& pos_in_link)
+    {
+        std::string _link_name = link_name;
+        int linkInd = linkId(_link_name);
+
+        _accel = _T_world.linear() * CalcPointAcceleration(*_rbdl_model,_q,_dq,_ddq,linkInd,pos_in_link,false);
+    }
+
+    void DModel::angularAcceleration(Eigen::Vector3d& _aaccel, std::string& link_name, const Eigen::Vector3d& pos_in_link)
+    {
+        std::string _link_name = link_name;
+        int linkInd = linkId(_link_name);
+        Eigen::VectorXd a_tmp(6);
+
+        a_tmp = CalcPointAcceleration6D(*_rbdl_model,_q,_dq,_ddq,linkInd,pos_in_link,false);
+        _aaccel = a_tmp.head(3);
+    }
+
+    void DModel::angularAccelerationWorld(Eigen::Vector3d& _aaccel, std::string& link_name, const Eigen::Vector3d& pos_in_link)
+    {
+        std::string _link_name = link_name;
+        int linkInd = linkId(_link_name);
+        Eigen::VectorXd a_tmp(6);
+
+        a_tmp = CalcPointAcceleration6D(*_rbdl_model,_q,_dq,_ddq,linkInd,pos_in_link,false);
+        _aaccel = _T_world.linear() * a_tmp.head(3);
+    }
+
+    void DModel::gravityVector(Eigen::VectorXd& g)
+    {
+        Eigen::Vector3d _gravity = _rbdl_model->gravity;
+
+        if (g.size() != _dof)
+            g.resize(_dof);
+        g.setZero();
+
+        int body_id = 0;
+
+        for (auto it : _rbdl_model->mBodies)
+        {
+            double mass = it.mMass;
+            Eigen::MatrixXd Jv = Eigen::Matrix3d::Zero();
+            CalcPointJacobian(*_rbdl_model,_q,body_id,it.mCenterOfMass,Jv,false);
+            g = g + Jv * _T_world.linear() * mass * _gravity;
+            body_id++;
+        }
+    }
+
+    void DModel::coriolisForces(Eigen::VectorXd& c)
+    {
+        NonlinearEffects(*_rbdl_model,_q,_dq,c);
+        Eigen::VectorXd g(_dof);
+        g.setZero();
+        c -= g;
+    }
+
+    void DModel::coriolisPlusGravityForces(Eigen::VectorXd& h)
+    {
+        NonlinearEffects(*_rbdl_model,_q,_dq,h);
+    }
+    /**
+     * @brief 6D jacobian computation. Jacobian computed from base frame.
+    */
+    void DModel::J_0(Eigen::MatrixXd& J, const std::string& link_name, const Eigen::Vector3d& pos_in_link)
+    {
+        std::string _link_name = link_name;
+        Eigen::MatrixXd J_tmp;
+        J_tmp.resize(6,_dof);
+
+        CalcPointJacobian6D(*_rbdl_model,_q,linkId(_link_name),pos_in_link,J_tmp,false);
+        // RBDL model computes Jw in first 3 rows and Jv on the bottom part. Swapping needed.
+        J << J_tmp.block(3,0,6,_dof) , J_tmp.block(0,0,3,_dof);
+    }
+
+    /**
+     * @brief 6D jacobian computation. Jacobian computed from World frame.
+    */
+   void DModel::J_0_World_Frame(Eigen::MatrixXd& J, const std::string& link_name, const Eigen::Vector3d& pos_in_link)
+   {
+       std::string _link_name = link_name;
+       Eigen::MatrixXd J_tmp;
+       J_tmp.resize(6,_dof);
+
+       CalcPointJacobian6D(*_rbdl_model,_q,linkId(_link_name),pos_in_link,J_tmp,false);
+       // RBDL model computes Jw in first 3 rows and Jv on the bottom part. Swapping needed.
+       J << _T_world.linear()* J_tmp.block(3,0,6,_dof) , _T_world.linear() * J_tmp.block(0,0,3,_dof);
+   }
+
+   /**
+     * @brief 6D jacobian computation. Jacobian computed from Local frame.
+    */
+   void DModel::J_0_Local_Frame(Eigen::MatrixXd& J, const std::string& link_name, const Eigen::Vector3d& pos_in_link)
+   {
+       std::string _link_name = link_name;
+       Eigen::MatrixXd J_tmp;
+       J_tmp.resize(6,_dof);
+       J.resize(6,_dof);
+
+       CalcPointJacobian6D(*_rbdl_model,_q,linkId(_link_name),pos_in_link,J_tmp,false);
+       // RBDL model computes Jw in first 3 rows and Jv on the bottom part. Swapping needed.
+       J << _T_world.linear()* J_tmp.block(3,0,6,_dof) , _T_world.linear() * J_tmp.block(0,0,3,_dof);
+   }
+
+
+
+   void DModel::J_v(Eigen::MatrixXd& Jv, const std::string& link_name,
+                                    const Eigen::Vector3d& pos_in_link)
+   {
+        std::string _link_name = link_name;
+        Jv.resize(3,_dof);
+        CalcPointJacobian(*_rbdl_model,_q,linkId(_link_name),pos_in_link,Jv,false);
+   }
+
+   void DModel::J_v_World_Frame(Eigen::MatrixXd& Jv, const std::string& link_name,
+                                        const Eigen::Vector3d& pos_in_link)
+    {
+        std::string _link_name = link_name;
+        Jv.resize(3,_dof);
+        Eigen::MatrixXd Jv_tmp;
+        
+        CalcPointJacobian(*_rbdl_model,_q,linkId(_link_name),pos_in_link,Jv,false);
+        Jv = _T_world.linear() * Jv;
+    }
+
+    void DModel::J_w(Eigen::MatrixXd& Jw, const std::string& link_name, const Eigen::Vector3d& pos_in_link)
+    {
+        std::string _link_name = link_name;
+        Jw.resize(3,_dof);
+        Eigen::MatrixXd Jv_tmp;
+        Jv_tmp.resize(6,_dof);
+
+        CalcPointJacobian6D(*_rbdl_model,_q,linkId(_link_name),pos_in_link,Jv_tmp,false);
+        Jw = Jv_tmp.block(0,0,3,_dof);
+    }
+
+    void DModel::J_w_World_Frame(Eigen::MatrixXd& Jw, const std::string& link_name, const Eigen::Vector3d& pos_in_link)
+    {
+        std::string _link_name = link_name;
+        Jw.resize(3,_dof);
+        Eigen::MatrixXd Jv_tmp;
+        Jv_tmp.resize(6,_dof);
+
+        CalcPointJacobian6D(*_rbdl_model,_q,linkId(_link_name),pos_in_link,Jv_tmp,false);
+        Jw = _T_world.linear() * Jv_tmp.block(0,0,3,_dof);
+    }
+    
 } // namespace Dynamics
 
