@@ -90,6 +90,8 @@ namespace Dynamics
         Eigen::VectorXd _ddq;
         Eigen::MatrixXd _M;
         Eigen::MatrixXd _M_inv;
+
+        Eigen::Affine3d _T_world;
     };
 } // namespace Dynamics
 
