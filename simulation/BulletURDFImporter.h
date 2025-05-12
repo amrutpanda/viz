@@ -36,6 +36,7 @@ protected:
     bool _find_collision_mesh_world_transform(btMultiBodyLinkCollider*, int linkIndex, btVector3& _colPosThisLinkFrame,
                              btQuaternion& _colRotThisLinkFrame, btTransform& tr);
     bool _find_collision_mesh_local_transform(btMultiBodyLinkCollider*, int, btVector3& , btQuaternion& , btTransform& tr);
+    void convertStringToInertiaVector(btMatrix3x3&, btVector3&);
 public:
     BulletURDFImporter(): m_world(0) {};
     bool ReadFile(std::string _filename, bool _fixedBase = true);

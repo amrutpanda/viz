@@ -152,6 +152,19 @@ void BulletURDFImporter::createMultiBodyCompFromURDFLink(int linkIndex, int pare
         urdf::InertialSharedPtr iptr = _link->inertial;
         mass = iptr->mass;
         // TO-DO: actual evaluation of Inertia tensor to diagonal vector will be implemented.
+        
+        // btMatrix3x3 inr_mat;
+        // inr_mat[0][0] = iptr->ixx;
+        // inr_mat[0][1] = iptr->ixy;
+        // inr_mat[0][2] = iptr->ixz;
+        // inr_mat[1][0] = inr_mat[0][1];
+        // inr_mat[1][1] = iptr->iyy;
+        // inr_mat[1][2] = iptr->iyz;
+        // inr_mat[2][0] = inr_mat[0][2];
+        // inr_mat[2][1] = inr_mat[1][2];
+        // inr_mat[2][2] = iptr->izz;
+        // convertStringToInertiaVector(inr_mat,Inertia);
+
         Inertia = btVector3(iptr->ixx,iptr->iyy,iptr->izz);
     }
     btVector3 parentOriginToThisLinkOffset(0,0,0),_joint_rotation_axis(0,0,0);// axis needed as an argument.
@@ -291,6 +304,7 @@ bool BulletURDFImporter::createMultiBodyLinkCollisionShapes(int linkIndex, urdf:
                 btVector3 dim(boxptr->dim.x/2, boxptr->dim.y/2,boxptr->dim.z/2); // TO-DO: need to verify the box size.
                 // btVector3 dim(boxptr->dim.x, boxptr->dim.y,boxptr->dim.z);
                 shape = new btBoxShape(dim);
+                shape->setMargin(0);
                 break;
             }
         case urdf::Geometry::CYLINDER :
@@ -308,6 +322,7 @@ bool BulletURDFImporter::createMultiBodyLinkCollisionShapes(int linkIndex, urdf:
             {
                 urdf::Sphere* sptr = dynamic_cast<urdf::Sphere*>(cptr->geometry.get());
                 shape = new btSphereShape(btScalar(sptr->radius));
+                shape->setMargin(0);
                 break;
             }
         case urdf::Geometry::MESH :
@@ -349,7 +364,8 @@ bool BulletURDFImporter::createMultiBodyLinkCollisionShapes(int linkIndex, urdf:
                 // create a shapehull builder.
                 btShapeHull* hull = new btShapeHull(tshape);
                 std::cout << "Margin: " << tshape->getMargin() << std::endl;
-                hull->buildHull(tshape->getMargin());
+                std::cout << "keeping the margin to be zero." << std::endl;
+                hull->buildHull(0*tshape->getMargin());
                 auto ptr = hull->getVertexPointer();       
 
                 for (int i = 0; i < hull->numVertices(); i++)
@@ -670,4 +686,11 @@ mMultiBody* BulletURDFImporter::getMultiBodyStruct(btMultiBodyDynamicsWorld* _m_
     ParseCollisionMeshes(m_world);
     return m_multibody;
     
+}
+
+void BulletURDFImporter::convertStringToInertiaVector(btMatrix3x3& imat, btVector3& iv)
+{
+    // imat.diagonalize();
+    // TO-DO: Need to implement this function to compute eigen value and eigen vector 
+    //        using eigen or bullet linear math.
 }

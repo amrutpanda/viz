@@ -8,6 +8,8 @@
 #include <simCommonRigidBodyBase.h>
 // #include <BulletDynamics/btBulletDynamicsCommon.h>
 #include <BulletURDFImporter.h>
+#include <pugixml.hpp>
+#include <sstream>
 
 
 class simMultiBodyDynamicsWorld: public simCommonRigidBodyBase
@@ -27,6 +29,9 @@ private:
     std::vector<btMotionState*> _rigidBodyMotionStates;
 
     std::vector<std::pair<unsigned int, btMultiBodyJointFeedback*>> _force_sensors;
+
+    void convertStringTobtVector3(std::string _vstr, btVector3& _v, std::string _del = " ");
+    void convertStringTobtQuaternion(std::string _qstr, btQuaternion& _q, std::string _del = " ");
     
 public:
     
@@ -35,6 +40,7 @@ public:
     void LoadRobotFromURDFFile(std::string _filename, Eigen::Vector3d _base_pose = Eigen::Vector3d(0,0,0),
                                 Eigen::Quaterniond _base_rotation = Eigen::Quaterniond(1,0,0,0), bool _fixedBase = true,
                                 bool _has_selfcollision = false);
+    void LoadFromWorldFile(std::string);
     btConstraintSolver* getSolver();
     btMultiBodyConstraintSolver* getMultiBodySolver();
     void setRobotBasePose(std::string _robotName,double _x, double _y, double _z);

@@ -23,13 +23,13 @@ namespace mviz
         pugi::xml_document doc;
         pugi::xml_parse_result result = doc.load_file(FilePath.c_str());
         if (!result)
-            throw std::runtime_error("Error while reading the URDF file.\n");
+            throw std::runtime_error("Error while reading the WORLD file.\n");
         pugi::xml_node root_node = doc.root().child("world");
         // std::cout << "pugi node name: " << root_node.child("world").name() << std::endl;
         
         
         for (const pugi::xml_node _node : root_node)
-        {
+        {   
             pugi::xml_node tNode;
             std::string name, type, filename, tval;
             Ogre::Vector3 _xyz, _rpyV;
@@ -500,7 +500,7 @@ namespace mviz
         //
         root->initialise(false);
         Ogre::NameValuePairList options;
-        // options["vsync"] = true;   // to deal with FPS being stuck to refresh rate of monitor.
+        options["vsync"] = true;   // to deal with FPS being stuck to refresh rate of monitor.
         OgreBites::NativeWindowPair p = createWindow(AppName,860,640,options);
         locateResources();
         initialiseRTShaderSystem();
@@ -578,9 +578,9 @@ namespace mviz
         // create a new resource group.
         Ogre::ResourceGroupManager::getSingleton().createResourceGroup("UserData");
         // adding the resource folder to Ogre "FileSystem".
-        Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/home/asp/Files/cpp/projects/viz/resources",
+        Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/home/amrut/Files/C++/viz/resources",
                                                                         "FileSystem","UserData",true);
-        Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/home/asp/Files/cpp/projects/viz/resources/meshes",
+        Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/home/amrut/Files/C++/viz/resources/meshes",
                                                                         "FileSystem","UserData",true);
         // now initialise the resourcegroup.
         Ogre::ResourceGroupManager::getSingleton().initialiseResourceGroup("UserData");

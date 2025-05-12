@@ -8,6 +8,104 @@ simMultiBodyDynamicsWorld::simMultiBodyDynamicsWorld()
     InitialiseDynamicsWorld();
 }
 
+void simMultiBodyDynamicsWorld::LoadFromWorldFile(std::string _world_file)
+{
+    std::filesystem::path _path = std::filesystem::canonical(_world_file);
+    if (_path.extension() != ".world")
+        throw std::runtime_error("Loading failed. Please load a file with extension '.world'...");
+    // pugixml parsing
+    pugi::xml_document doc;
+    pugi::xml_parse_result result = doc.load_file(_world_file.c_str());
+    if (!result)
+        throw std::runtime_error("Error while reading the WORLD file.\n");
+    pugi::xml_node root_node = doc.root().child("world");
+
+    for (const pugi::xml_node _node : root_node)
+    {
+        pugi::xml_node tNode;
+        std::string name, type, filename, tval;
+        btVector3 _xyz;
+        btQuaternion _rpy;
+        btQuaternion _q;
+        btVector3 _inertia;
+        btVector3 _scale;
+        Eigen::Vector3d xyz;
+        Eigen::Quaterniond rpy;
+        Eigen::Quaterniond q;
+        Eigen::Vector3d inertia;
+        Eigen::Vector3d scale;
+        double l,b,h,r;
+        std::string _node_name = _node.name();
+        if (_node_name == "robot")
+        {
+            name = _node.attribute("name").value();
+            /**
+             * Robot name should match the name in URDF file.
+             */
+            std::cout << "sim robot name = " << name << std::endl;
+            filename = _node.child("path").first_attribute().value();
+    
+            convertStringTobtVector3(_node.child("origin").attribute("rpy").value(),_xyz);
+            convertStringTobtQuaternion(_node.child("origin").attribute("rpy").value(),_rpy);
+            
+            xyz = Eigen::Vector3d(_xyz.x(), _xyz.y(), _xyz.z());
+            rpy = Eigen::Quaterniond(_rpy.w(),_rpy.x(), _rpy.y(), _rpy.z());
+
+            LoadRobotFromURDFFile(filename,xyz,rpy,true,false);
+        }
+        else if (_node_name == "object")
+        {
+            name = _node.attribute("name").value();
+            type = _node.attribute("type").value();
+
+            convertStringTobtVector3(_node.child("origin").attribute("rpy").value(),_xyz);
+            convertStringTobtQuaternion(_node.child("origin").attribute("rpy").value(),_rpy);
+            
+            xyz = Eigen::Vector3d(_xyz.x(), _xyz.y(), _xyz.z());
+            rpy = Eigen::Quaterniond(_rpy.w(),_rpy.x(), _rpy.y(), _rpy.z());
+
+            double mass = std::stod( _node.child("inertial").attribute("mass").value() );
+            convertStringTobtVector3(_node.child("inertial").attribute("inertia").value(), _inertia);
+            inertia = Eigen::Vector3d(_inertia.x(), _inertia.y(), _inertia.z());
+
+            if (type == "mesh")
+            {
+                filename = _node.child("mesh").attribute("filename").value();
+                convertStringTobtVector3(_node.child("mesh").attribute("scale").value(), _scale);
+                scale = Eigen::Vector3d(_scale.x(), _scale.y(), _scale.z());
+                addBodyConvexHull(filename,mass,inertia,xyz,rpy,scale);
+            }
+            else if (type == "box")
+            {
+                l = _node.child("dim").attribute("l").as_double();
+                b = _node.child("dim").attribute("b").as_double();
+                h = _node.child("dim").attribute("h").as_double();
+                std::cout << "creating sim box\n";
+                addBodyBox(l,b,h,mass,xyz,rpy);
+            }
+            else if (type == "cylinder")
+            {
+                r = _node.child("dim").attribute("radius").as_double();
+                h = _node.child("dim").attribute("height").as_double();
+                std::cout << "creating sim cylinder.\n";
+                addBodyCylinder(r,h,mass,xyz,rpy);
+            }
+            else if(type == "sphere")
+            {
+                r = _node.child("dim").attribute("radius").as_double();
+                std::cout << "creating sim sphere\n";
+                addBodySphere(r,mass,xyz,rpy);
+            }
+        }
+        else
+        {
+            /* code */
+        }
+        
+    }
+    
+}
+
 simMultiBodyDynamicsWorld::~simMultiBodyDynamicsWorld()
 {
     if (m_solverinterface != nullptr)
@@ -300,7 +398,7 @@ void simMultiBodyDynamicsWorld::setRobotJointTorque(mMultiBody* _robot,Eigen::Ve
 
 unsigned int simMultiBodyDynamicsWorld::addBodyBox(double l, double b, double h, double m, Eigen::Vector3d& _pose, Eigen::Quaterniond& _q)
 {
-    btCollisionShape* boxShape = new btBoxShape(btVector3(l,b,h));
+    btCollisionShape* boxShape = new btBoxShape(btVector3(l/2,b/2,h/2));
     // save collision shapes.
     _rigidBodyCollisionShapes.push_back(boxShape);
     // setup transform.
@@ -536,4 +634,76 @@ unsigned int simMultiBodyDynamicsWorld::attachForceSensorToRobot(unsigned int _r
     _force_sensors.push_back(std::pair<unsigned int, btMultiBodyJointFeedback*>(_force_sensors.size(),
                         _robot->_jointFeedbackIndexList[_ind].second));
     return _force_sensors.size() - 1;   
+}
+
+void simMultiBodyDynamicsWorld::stepSimulation(float _ts, float _fixedStep)
+{
+    float _t_fixed;
+    int _numSteps = 1;
+    if (_ts <= _fixedStep)
+    {
+        _t_fixed = _ts;
+        _numSteps = 1;
+    }
+    else
+    {
+        _numSteps = int(_ts/_fixedStep) + 1;
+        _t_fixed = _fixedStep;
+    }
+    m_dynamicsWorld->stepSimulation(_ts,_numSteps,_t_fixed);
+    
+}
+
+void simMultiBodyDynamicsWorld::convertStringTobtVector3(std::string _vstr, btVector3& _v, std::string _del)
+{
+   assert("The delimiter must be a one character array.\n" && _del.length() == 1);
+   std::stringstream _ss(_vstr);
+   std::string _substr;
+   std::vector<double> _cntr;
+   _cntr.resize(3); // as the btVector3 can have 3 elements.
+   while (getline(_ss,_substr, _del[0]))
+   {
+        try
+        {
+           _cntr.push_back(std::stod(_substr));
+        }
+        catch(const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+            throw std::runtime_error("Error while converting string to btVector3");
+        }
+   }
+
+   _v.setX(_cntr[0]);
+   _v.setY(_cntr[1]);
+   _v.setZ(_cntr[2]);
+      
+}
+
+void simMultiBodyDynamicsWorld::convertStringTobtQuaternion(std::string _qstr, btQuaternion& _q, std::string _del)
+{
+   assert("The delimiter must be a one character array.\n" && _del.length() == 1);
+   std::stringstream _ss(_qstr);
+   std::string _substr;
+   std::vector<double> _cntr;
+   _cntr.resize(3); // as the btVector3 can have 3 elements.
+   while (getline(_ss,_substr, _del[0]))
+   {
+        try
+        {
+           _cntr.push_back(std::stod(_substr));
+        }
+        catch(const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+            throw std::runtime_error("Error while converting string to btVector3");
+        }
+   }
+   
+   btQuaternion _qtemp;
+   _qtemp.setEulerZYX(_cntr[0], _cntr[1], _cntr[2]);
+   _q.setX(_qtemp.getX());
+   _q.setY(_qtemp.getY());
+   _q.setZ(_qtemp.getZ());
+   _q.setW(_qtemp.getW());
 }

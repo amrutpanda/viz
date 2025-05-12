@@ -56,7 +56,8 @@ namespace mviz{
 
         Ogre::SceneNode* camNode;
         OgreBites::CameraMan* mCameraMan;
-        OgreBites::ApplicationContextSDL ctx;
+        // OgreBites::ApplicationContextSDL ctx;
+        OgreBites::ApplicationContext ctx;
         Ogre::Viewport* vp;
         Ogre::RenderWindow* mWin;
         
