@@ -1,9 +1,9 @@
 set(LINK_LIBRARIES ${RBDL_LIBRARY})
 
 message("rbdl lib: ${LINK_LIBRARIES}")
-include_directories(.)
+include_directories(${PROJECT_SOURCE_DIR}/model)
 
-add_library(dynamics STATIC dynamics_model.cpp)
+add_library(dynamics SHARED dynamics_model.cpp)
 target_link_libraries(dynamics ${LINK_LIBRARIES})
 
-set(DYNAMIC_MODEL dynamics CACHE INTERNAL "")
+set(DYNAMICS_LIBRARY dynamics CACHE INTERNAL "")

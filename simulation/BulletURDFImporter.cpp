@@ -223,6 +223,7 @@ void BulletURDFImporter::createMultiBodyCompFromURDFLink(int linkIndex, int pare
                 p_multibody->setupFixed(linkIndex,mass,Inertia,parentIndex,rotParentToThisLink,
                                             parentComToThisPivotOffset, thisLinkPivotToThisLinkComOffset);
                 m_multibody->_fixedJointNameIndexList.push_back(std::pair<int,std::string>(linkIndex,_link->name));
+                std::cout << "Got a fixed joint" << std::endl;
                 break;
             }
         case urdf::Joint::REVOLUTE :
@@ -231,7 +232,7 @@ void BulletURDFImporter::createMultiBodyCompFromURDFLink(int linkIndex, int pare
                                                 parentComToThisPivotOffset,thisLinkPivotToThisLinkComOffset);
                 // m_multibody->_jointNameIndexMap[_pJoint->name] = linkIndex;
                 m_multibody->_jointNameIndexList.push_back(std::pair<int,std::string>(linkIndex,_pJoint->name));
-        
+                std::cout << "Got a revolute joint" << std::endl;
                 break;
             }
         case urdf::Joint::CONTINUOUS :

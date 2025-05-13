@@ -8,8 +8,9 @@
 
 std::string ROBOT_JOINT_KEY = "robot::q";
 
-std::string robot_name = "cr12_robot";
-std::string robot_file = "/home/amrut/Files/resources/TCP-IP-ROS-6AXis/dobot_description/urdf/cr12_robot.urdf";
+std::string robot_name = "cr5_robot";
+// std::string robot_file = "/home/amrut/Files/resources/TCP-IP-ROS-6AXis/dobot_description/urdf/cr12_robot.urdf";
+std::string robot_file = "/home/amrut/Files/resources/CR5_ROS/dobot_description/urdf/cr5_robot.urdf";
 
 bool runloop = true;
 void sighandler(int signum) {runloop = false;}
@@ -46,7 +47,7 @@ int main(int argc, char const *argv[])
     }
     std::cout << "Visualization" << std::endl;
     timer.printTimerHistory();
-    sim_thread.join();
+    // sim_thread.join();
     return 0;
 }
 
@@ -62,6 +63,7 @@ void simulation(std::string& _robot_file)
     LoopTimer timer;
     timer.setLoopFrequency(1000);
     timer.InitializeTimer();
+    std::cout << "DOF: "  << robot->_jointNameIndexList.size() << std::endl;
     while (runloop & timer.WaitForNextLoop())
     {
         sim->getRobotJointPos(robot,_q);

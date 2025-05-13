@@ -24,7 +24,7 @@ namespace Dynamics
         
         DModel(std::string, Eigen::Vector3d& , Eigen::Quaterniond& ,
                 bool floating_base = false, bool _verbose = true);
-        ~DModel() {};
+        ~DModel();
 
         void setGravity(Eigen::Vector3d& _g);
 
@@ -63,12 +63,20 @@ namespace Dynamics
 
         void coriolisPlusGravityForces(Eigen::VectorXd& h);
 
-        void J_0(Eigen::MatrixXd& J, std::string& link_name);
-        void J_0_World_Frame(Eigen::MatrixXd& J, const std::string& link_name);
-        void J_0_Local_Frame(Eigen::MatrixXd& J, const std::string& link_name);
-        void J_v(Eigen::MatrixXd& Jv, const std::string& link_name);
+        void J_0(Eigen::MatrixXd& J, const std::string& link_name,
+                    const Eigen::Vector3d& pos_in_link = Eigen::Vector3d::Zero());
+        void J_0_World_Frame(Eigen::MatrixXd& J, const std::string& link_name,
+                                const Eigen::Vector3d& pos_in_link = Eigen::Vector3d::Zero());
+        void J_0_Local_Frame(Eigen::MatrixXd& J, const std::string& link_name, 
+                                const Eigen::Vector3d& pos_in_link = Eigen::Vector3d::Zero());
+        void J_v(Eigen::MatrixXd& Jv, const std::string& link_name,
+                    const Eigen::Vector3d& pos_in_link = Eigen::Vector3d::Zero());
+        void J_v_World_Frame(Eigen::MatrixXd& Jv, const std::string& link_name,
+                    const Eigen::Vector3d& pos_in_link = Eigen::Vector3d::Zero());
         void J_w(Eigen::MatrixXd& Jw, const std::string& link_name,
-                    const Eigen::Matrix3d& rot_in_link = Eigen::Matrix3d::Identity());
+                    const Eigen::Vector3d& pos_in_link = Eigen::Vector3d::Zero());
+        void J_w_World_Frame(Eigen::MatrixXd& Jw, const std::string& link_name,
+                    const Eigen::Vector3d& pos_in_link = Eigen::Vector3d::Zero());
 
 
         void transformation(Eigen::Vector3d& _pos, Eigen::Matrix3d& _rot,
@@ -76,20 +84,46 @@ namespace Dynamics
                         const Vector3d& pos_in_link = Eigen::Vector3d::Zero(),
                         const Matrix3d& rot_in_link = Eigen::Matrix3d::Identity(),
                         const std::string& base_frame = "");
+        
         void position(Eigen::Vector3d& _pos, std::string& link_name,
-                        const Eigen::Vector3d& pos_in_link = Eigen::Vector3d::Zero(),
-                        const std::string& base_frame= "");
-        
+                        const Eigen::Vector3d& pos_in_link = Eigen::Vector3d::Zero());
+
+        void positionInWorld(Eigen::Vector3d& _pos, std::string& link_name,
+                        const Eigen::Vector3d& pos_in_link = Eigen::Vector3d::Zero());
+
         void rotation(Eigen::Matrix3d& _rot, std::string& link_name,
-                        const Eigen::Matrix3d& rot_in_link = Eigen::Matrix3d::Identity(),
-                        const std::string& base_frame= "");
+                        const Eigen::Matrix3d& rot_in_link = Eigen::Matrix3d::Identity());
+        void rotationInWorld(Eigen::Matrix3d& _rot, std::string& link_name,
+                        const Eigen::Matrix3d& rot_in_link = Eigen::Matrix3d::Identity());
+
+        void linearVelocity(Eigen::Vector3d& _vel, std::string& link_name,
+                        const Eigen::Vector3d& pos_in_link = Eigen::Vector3d::Zero());
+        void linearVelocityWorld(Eigen::Vector3d& _vel, std::string& link_name,
+                        const Eigen::Vector3d& pos_in_link = Eigen::Vector3d::Zero());
         
+        void angularVelocity(Eigen::Vector3d& _avel, std::string& link_name,
+                const Eigen::Vector3d& pos_in_link = Eigen::Vector3d::Zero());
+        void angularVelocityWorld(Eigen::Vector3d& _avel, std::string& link_name,
+                const Eigen::Vector3d& pos_in_link = Eigen::Vector3d::Zero());
+        
+        void linearAcceleration(Eigen::Vector3d& _accel, std::string& link_name,
+                    const Eigen::Vector3d& pos_in_link = Eigen::Vector3d::Zero());
+        void linearAccelerationWorld(Eigen::Vector3d& _accel, std::string& link_name,
+                    const Eigen::Vector3d& pos_in_link = Eigen::Vector3d::Zero());
+        
+        void angularAcceleration(Eigen::Vector3d& _aaccel, std::string& link_name,
+                const Eigen::Vector3d& pos_in_link = Eigen::Vector3d::Zero());
+        void angularAccelerationWorld(Eigen::Vector3d& _aaccel, std::string& link_name,
+                const Eigen::Vector3d& pos_in_link = Eigen::Vector3d::Zero());
+
         // class attributes below.
         Eigen::VectorXd _q;
         Eigen::VectorXd _dq;
         Eigen::VectorXd _ddq;
         Eigen::MatrixXd _M;
         Eigen::MatrixXd _M_inv;
+
+        Eigen::Affine3d _T_world;
     };
 } // namespace Dynamics
 

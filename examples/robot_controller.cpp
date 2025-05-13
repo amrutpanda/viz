@@ -1,15 +1,16 @@
 #include <iostream>
-#include <rbdl/rbdl.h>
-#include <rbdl/addons/urdfreader/urdfreader.h>
 #include <redisclient.h>
 #include <LoopTimer.h>
+#include <dynamics_model.h>
 
 std::string ROBOT_JOINT_POSITION_KEY = "robot::q";
 std::string ROBOT_JOINT_VELOCITY_KEY = "robot::dq";
-std::string ROBOT_JOINT_TORQUE_KEY = "robot::torque";
+std::string ROBOT_JOINT_TORQUE_KEY = "robot::command_torque";
 
-std::string robot_name = "cr12_robot";
-std::string robot_file = "/home/amrut/Files/resources/TCP-IP-ROS-6AXis/dobot_description/urdf/cr12_robot.urdf";
+std::string robot_name = "cr5_robot";
+// std::string robot_file = "/home/amrut/Files/resources/TCP-IP-ROS-6AXis/dobot_description/urdf/cr12_robot.urdf";
+std::string robot_file = "/home/amrut/Files/resources/CR5_ROS/dobot_description/urdf/cr5_robot.urdf";
+
 
 bool runloop = true;
 void sighandler(int signum) {runloop = false;}
@@ -19,21 +20,17 @@ unsigned int nDof = 6;
 Eigen::VectorXd _q,_qdot;
 Eigen::VectorXd _command_torques;
 
-using namespace RigidBodyDynamics;
-using namespace RigidBodyDynamics::Addons;
-using namespace RigidBodyDynamics::Math;
 
 int main(int argc, char const *argv[])
 {
     signal(SIGINT,sighandler);
-    Model* model = new Model();
-    // load urdf.
-    bool res = URDFReadFromFile(robot_file.c_str(),model,false,true);
-    if (!res)
-        throw std::runtime_error("Unable to Load the URDF file.\n");
-    
+    Eigen::Vector3d _bpose(0,0,0);
+    Eigen::Quaterniond _brot;
+    _brot.setIdentity();
+
+    Dynamics::DModel* robot_model = new Dynamics::DModel(robot_file,_bpose,_brot);
     // resize the vectors.
-    int n = model->q_size;
+    int n = 0;
     _q.resize(n);
     _qdot.resize(n);
     _command_torques.resize(n);
@@ -53,8 +50,6 @@ int main(int argc, char const *argv[])
     while (runloop)
     {
         redis_client.executeAllReadCallbacks();
-        
-        model->gravity(_gravity);
         
     }
     
