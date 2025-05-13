@@ -107,9 +107,10 @@ add_library(redisclient STATIC ${PROJECT_SOURCE_DIR}/src/redisclient.cpp)
 target_link_libraries(redisclient ${HIREDIS_LIB})
 set(REDIS_LIBRARY redisclient CACHE INTERNAL "")
 
+include_directories(model)
 
-add_subdirectory(model)
 add_subdirectory(src)
 add_subdirectory(simulation)
+add_subdirectory(model)
 add_subdirectory(examples)
 
