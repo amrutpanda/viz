@@ -396,6 +396,17 @@ void simMultiBodyDynamicsWorld::setRobotJointTorque(mMultiBody* _robot,Eigen::Ve
     }
 }
 
+void simMultiBodyDynamicsWorld::printRobotJointsInfo(RobotObject* _robot)
+{
+    std::cout << "Printing only the joints which can be actuated." << std::endl;
+    for (int i = 0; i < _robot->_jointNameIndexList.size(); i++)
+    {
+        std::cout << "Joint Name: " << _robot->_jointNameIndexList[i].second << " "
+            << " Joint Index: " << _robot->_jointNameIndexList[i].first << std::endl;
+    }
+    
+}
+
 unsigned int simMultiBodyDynamicsWorld::addBodyBox(double l, double b, double h, double m, Eigen::Vector3d& _pose, Eigen::Quaterniond& _q)
 {
     btCollisionShape* boxShape = new btBoxShape(btVector3(l/2,b/2,h/2));

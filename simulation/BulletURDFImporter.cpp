@@ -11,7 +11,6 @@ void printQuaternion(btQuaternion& _v, std::string _str)
         std::cout << _str << ": " << _v.x() <<  " " << _v.y() << " " << _v.z() << " " << _v.w() << std::endl;
 }
 
-
 bool BulletURDFImporter::ReadFile(std::string _filename, bool _fixedBase)
 {
     _urdf = urdf::parseURDFFile(_filename);
@@ -223,6 +222,8 @@ void BulletURDFImporter::createMultiBodyCompFromURDFLink(int linkIndex, int pare
                 p_multibody->setupFixed(linkIndex,mass,Inertia,parentIndex,rotParentToThisLink,
                                             parentComToThisPivotOffset, thisLinkPivotToThisLinkComOffset);
                 m_multibody->_fixedJointNameIndexList.push_back(std::pair<int,std::string>(linkIndex,_link->name));
+                // m_multibody->_fixedJointNameIndexList.push_back(std::pair<int,std::string>(_jointNum,_link->name));
+
                 std::cout << "Got a fixed joint" << std::endl;
                 break;
             }
@@ -232,6 +233,8 @@ void BulletURDFImporter::createMultiBodyCompFromURDFLink(int linkIndex, int pare
                                                 parentComToThisPivotOffset,thisLinkPivotToThisLinkComOffset);
                 // m_multibody->_jointNameIndexMap[_pJoint->name] = linkIndex;
                 m_multibody->_jointNameIndexList.push_back(std::pair<int,std::string>(linkIndex,_pJoint->name));
+                // m_multibody->_jointNameIndexList.push_back(std::pair<int,std::string>(_jointNum,_pJoint->name));
+                m_multibody->_multibody->getLink(linkIndex).m_jointFriction = 0.1;
                 std::cout << "Got a revolute joint" << std::endl;
                 break;
             }
@@ -241,6 +244,7 @@ void BulletURDFImporter::createMultiBodyCompFromURDFLink(int linkIndex, int pare
                                                     parentComToThisPivotOffset,thisLinkPivotToThisLinkComOffset);
                 // m_multibody->_jointNameIndexMap[_pJoint->name] = linkIndex;
                 m_multibody->_jointNameIndexList.push_back(std::pair<int,std::string>(linkIndex,_pJoint->name));
+                // m_multibody->_jointNameIndexList.push_back(std::pair<int,std::string>(_jointNum,_pJoint->name));
                 break;
             }
         case urdf::Joint::PRISMATIC :
@@ -250,6 +254,7 @@ void BulletURDFImporter::createMultiBodyCompFromURDFLink(int linkIndex, int pare
                                                 parentComToThisPivotOffset,thisLinkPivotToThisLinkComOffset,true);
                 // m_multibody->_jointNameIndexMap[_pJoint->name] = linkIndex;
                 m_multibody->_jointNameIndexList.push_back(std::pair<int,std::string>(linkIndex,_pJoint->name));
+                // m_multibody->_jointNameIndexList.push_back(std::pair<int,std::string>(_jointNum,_pJoint->name));
                 break;
             }
 
@@ -262,12 +267,13 @@ void BulletURDFImporter::createMultiBodyCompFromURDFLink(int linkIndex, int pare
         p_multibody->setupFixed(linkIndex,mass,Inertia,parentIndex,rotParentToThisLink,
             parentComToThisPivotOffset, thisLinkPivotToThisLinkComOffset);
     }
-
+    // increment the _jointNum counter.
+    // _jointNum++;
     p_multibody->getLink(linkIndex).m_linkName = _link->name.c_str();
     std::cout << _link->name << " " << p_multibody->getLink(linkIndex).m_linkName << std::endl;
     // m_multibody->_linkNameIndexMap[_link->name] = linkIndex;
     m_multibody->_linkNameIndexList.push_back(std::pair<int, std::string>(linkIndex,_link->name));
-    // create collision shapes.
+    // create collision shapes.size_t
 
 }
 

@@ -31,6 +31,7 @@ protected:
     btMultiBody* p_multibody;   
     int numLinks;
     int numJoints;
+    int _jointNum = 0; // this variable will incremented and used for joint index no.
     std::string resolvePath(std::string& _filePath);
     bool _find_package_path(std::filesystem::path &path, std::filesystem::path& _res);
     bool _find_collision_mesh_world_transform(btMultiBodyLinkCollider*, int linkIndex, btVector3& _colPosThisLinkFrame,
