@@ -113,5 +113,6 @@ include_directories(model)
 add_subdirectory(src)
 add_subdirectory(simulation)
 add_subdirectory(model)
+add_subdirectory(primitives)
 add_subdirectory(examples)
 

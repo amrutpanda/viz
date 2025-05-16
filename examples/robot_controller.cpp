@@ -35,7 +35,7 @@ int main(int argc, char const *argv[])
     Eigen::VectorXd pos(6);
     pos.setZero();
     // pos(0) = 0.1;
-    pos << 0.1,0.4,1.0,-0.2,0,0;
+    pos << -0.1,0.4,-2.0,-0.32,0,0;
 
     RedisClient redis_client;
     redis_client.connect();

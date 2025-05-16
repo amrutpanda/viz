@@ -21,6 +21,12 @@ RedisClient redis_client;
 unsigned int nDof = 6;
 Eigen::VectorXd _q,_dq, command_torques;
 
+double l = 0.3;
+double b = 0.3;
+double h = 0.02;
+Eigen::Vector3d boxpos;
+Eigen::Quaterniond boxrot;
+
 int main(int argc, char const *argv[])
 {
     signal(SIGINT,sighandler);
@@ -35,10 +41,15 @@ int main(int argc, char const *argv[])
 
     redis_client.connect();
 
+    boxpos << -0.3,-0.3,0.25;
+    boxrot = Eigen::Quaterniond(1,0,0,0);
+
     mviz::mVisualizer viz("simviz");
     viz.attachFlagVariable(&runloop);
     viz.initApp();
     viz.createRobotObject(robot_name,robot_file);
+    // viz.createBox("box1",l,b,h);
+    // viz.setObjectPoseAndRotation("box1",boxpos,boxrot);
 
     std::thread sim_thread(simulation,std::ref(robot_file));
 
@@ -49,6 +60,7 @@ int main(int argc, char const *argv[])
     while (runloop & timer.WaitForNextLoop())
     {
         viz.updateRobotGraphics(robot_name,_q);
+        // viz.setObjectPoseAndRotation("box1",boxpos,boxrot);
         viz.RenderOneFrame();
         if (!runloop)
             std::cout << "runloop flag is false" << std::endl;
@@ -70,6 +82,8 @@ void simulation(std::string& _robot_file)
     std::unique_ptr<simMultiBodyDynamicsWorld> sim = std::make_unique<simMultiBodyDynamicsWorld>();
     sim->LoadRobotFromURDFFile(_robot_file);
     sim->setGravity(0, 0, -9.81);
+    // int boxid = sim->addBodyBox(l,b,h,0,boxpos,boxrot); // if mass = 0, the object will be static.
+    
     RobotObject* robot = sim->getMultiBodyObject(robot_name);
     sim->printRobotJointsInfo(robot);
 
@@ -95,6 +109,8 @@ void simulation(std::string& _robot_file)
             command_torques = command_torques - 0.1*_dq;
             sim->setRobotJointTorque(robot,command_torques);
             sim->stepSimulation(0.001);
+
+            // sim->getBodyPoseAndRotation(boxid,boxpos,boxrot);
         } 
         redis_client.executeAllWriteCallbacks();
     }
