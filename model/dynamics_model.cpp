@@ -279,7 +279,7 @@ namespace Dynamics
         {
             double mass = it.mMass;
             CalcPointJacobian(*_rbdl_model,_q,body_id,it.mCenterOfMass,Jv,false);
-            g = g + Jv.transpose() * _T_world.linear().transpose() *( mass * _gravity);
+            g = g + Jv.transpose() * _T_world.linear().transpose() *(- mass * _gravity);
             body_id++;
         }
     }

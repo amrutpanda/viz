@@ -91,8 +91,8 @@ void simulation(std::string& _robot_file)
         {   
             // redis_client.executeAllReadCallbacks();
             // std::cout << "command torque: " << command_torques << std::endl;
-            // command_torques = -0.1*_dq + command_torques;
-            // command_torques = - 500*(_q - pos) - 20* _dq;
+            // add some damping to the robot joints.
+            command_torques = command_torques - 0.1*_dq;
             sim->setRobotJointTorque(robot,command_torques);
             sim->stepSimulation(0.001);
         } 

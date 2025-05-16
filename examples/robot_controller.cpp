@@ -34,7 +34,8 @@ int main(int argc, char const *argv[])
 
     Eigen::VectorXd pos(6);
     pos.setZero();
-    pos(0) = 0.1;
+    // pos(0) = 0.1;
+    pos << 0.1,0.4,1.0,-0.2,0,0;
 
     RedisClient redis_client;
     redis_client.connect();
@@ -61,8 +62,8 @@ int main(int argc, char const *argv[])
         robot_model->updateModel();
 
         robot_model->gravityVector(g);
-        // _command_torques = - robot_model->_M *(50 *(_q - pos) + 2* _dq) + g;
-        _command_torques = g;
+        _command_torques = - robot_model->_M *(50 *(_q - pos) + 30* _dq) + g;
+        // _command_torques = g;
     
         // std::cout << "command torque: \n" << _command_torques << std::endl;
         redis_client.executeAllWriteCallbacks();

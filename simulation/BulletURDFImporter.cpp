@@ -11,7 +11,6 @@ void printQuaternion(btQuaternion& _v, std::string _str)
         std::cout << _str << ": " << _v.x() <<  " " << _v.y() << " " << _v.z() << " " << _v.w() << std::endl;
 }
 
-
 bool BulletURDFImporter::ReadFile(std::string _filename, bool _fixedBase)
 {
     _urdf = urdf::parseURDFFile(_filename);
