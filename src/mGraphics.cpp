@@ -578,9 +578,9 @@ namespace mviz
         // create a new resource group.
         Ogre::ResourceGroupManager::getSingleton().createResourceGroup("UserData");
         // adding the resource folder to Ogre "FileSystem".
-        Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/home/amrut/Files/C++/viz/resources",
+        Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/home/merai/Files/C++/viz/resources",
                                                                         "FileSystem","UserData",true);
-        Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/home/amrut/Files/C++/viz/resources/meshes",
+        Ogre::ResourceGroupManager::getSingleton().addResourceLocation("/home/merai/Files/C++/viz/resources/meshes",
                                                                         "FileSystem","UserData",true);
         // now initialise the resourcegroup.
         Ogre::ResourceGroupManager::getSingleton().initialiseResourceGroup("UserData");

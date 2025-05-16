@@ -8,6 +8,7 @@
 #include <simCommonRigidBodyBase.h>
 // #include <BulletDynamics/btBulletDynamicsCommon.h>
 #include <BulletURDFImporter.h>
+#include <BulletInverseDynamics/btBulletCollisionCommon.h>
 #include <pugixml.hpp>
 #include <sstream>
 
@@ -43,6 +44,7 @@ public:
     void LoadFromWorldFile(std::string);
     btConstraintSolver* getSolver();
     btMultiBodyConstraintSolver* getMultiBodySolver();
+    void printRobotJointsInfo(RobotObject* _robot);
     void setRobotBasePose(std::string _robotName,double _x, double _y, double _z);
     void setRobotBaseOrientation(std::string _robotName, double _qx, double _qy, double _qz, double _qw);
     void getRobotJointInfo(std::string _robotName);

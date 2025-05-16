@@ -2,6 +2,8 @@
 set(LINK_LIBRARIES ${GRAPHICS_LIBRARY} ${SIMULATION_LIBRARY} 
                         ${REDIS_LIBRARY} ${DYNAMICS_LIBRARY}
                         ${RBDL_LIBRARY})
+include_directories(.)
+
 add_executable(rigidbodyTest rigidbody_test.cpp)
 target_link_libraries(rigidbodyTest ${LINK_LIBRARIES})
 

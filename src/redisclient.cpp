@@ -285,7 +285,7 @@ void RedisClient::executeReadCallback(int callback_num) {
     case EIGEN:
         {
             double* ptr = (double*) _reads.objects[callback_num];
-            int n = _reads.size_pair[callback_num].first + _reads.size_pair[callback_num].second;
+            int n = _reads.size_pair[callback_num].first * _reads.size_pair[callback_num].second;
             // double dbarr[n];
             StringToDoubleArray(retval,',',ptr,n);
         }
@@ -423,7 +423,7 @@ void RedisClient::executeWriteCallback(int callback_num) {
     case EIGEN:
         {
             double* ptr = (double*) _writes.objects[callback_num];
-            int n = _writes.size_pair[callback_num].first + _writes.size_pair[callback_num].second;
+            int n = _writes.size_pair[callback_num].first * _writes.size_pair[callback_num].second;
             DoubleArrayToString(ptr,n,str,',');
         }
     default:
@@ -480,6 +480,7 @@ void RedisClient::StringToDoubleArray(std::string& str, char delimiter, double* 
     std::string tstr = "";
     double* ptr = dbarr;
     // char delimiter = '.';
+    // std::cout << "dbarr: " << str << std::endl;
     int len = 0;
     for (size_t i = 0; i < str.size(); i++)
     {
@@ -498,7 +499,7 @@ void RedisClient::StringToDoubleArray(std::string& str, char delimiter, double* 
     len += 1;
 
     if (len != arr_len )
-        throw std::runtime_error("Number of elements to convert to integer doesn't match the given array length. " + std::to_string(len)+" != " + std::to_string(arr_len));    
+        throw std::runtime_error("Number of elements to convert to double doesn't match the given array length. " + std::to_string(len)+" != " + std::to_string(arr_len));    
 }
 
 void RedisClient::DoubleArrayToString(double* dbarr, int arr_len, std::string& str, char delimiter) {
@@ -567,7 +568,7 @@ void RedisClient::executeAllReadCallbacks() {
         case EIGEN:
             {
                 double* ptr = (double*) _reads.objects[callback_num];
-                int n = _reads.size_pair[callback_num].first + _reads.size_pair[callback_num].second;
+                int n = _reads.size_pair[callback_num].first * _reads.size_pair[callback_num].second;
                 // double dbarr[n];
                 StringToDoubleArray(retval,',',ptr,n);
             }
@@ -620,7 +621,7 @@ void RedisClient::executeAllWriteCallbacks() {
         case EIGEN:
             {
                 double* ptr = (double*) _writes.objects[callback_num];
-                int n = _writes.size_pair[callback_num].first + _writes.size_pair[callback_num].second;
+                int n = _writes.size_pair[callback_num].first * _writes.size_pair[callback_num].second;
                 DoubleArrayToString(ptr,n,str,',');
             }
         default:

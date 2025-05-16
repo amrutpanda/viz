@@ -272,13 +272,14 @@ namespace Dynamics
         g.setZero();
 
         int body_id = 0;
-
+        Eigen::MatrixXd Jv;
+        Jv.resize(3,_dof);
+        Jv.setZero();
         for (auto it : _rbdl_model->mBodies)
         {
             double mass = it.mMass;
-            Eigen::MatrixXd Jv = Eigen::Matrix3d::Zero();
             CalcPointJacobian(*_rbdl_model,_q,body_id,it.mCenterOfMass,Jv,false);
-            g = g + Jv * _T_world.linear() * mass * _gravity;
+            g = g + Jv.transpose() * _T_world.linear().transpose() *( mass * _gravity);
             body_id++;
         }
     }
@@ -288,6 +289,7 @@ namespace Dynamics
         NonlinearEffects(*_rbdl_model,_q,_dq,c);
         Eigen::VectorXd g(_dof);
         g.setZero();
+        gravityVector(g);
         c -= g;
     }
 
