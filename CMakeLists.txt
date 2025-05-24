@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 project(viz)
 set(CMAKE_BUILD_TYPE "Debug")
+set(CXX_STANDARD_REQUIRED 20)
 
 function(fetch_ext_library _lib_name github_link git_tag )
     include(FetchContent)
@@ -113,5 +114,6 @@ include_directories(model)
 add_subdirectory(src)
 add_subdirectory(simulation)
 add_subdirectory(model)
+add_subdirectory(primitives)
 add_subdirectory(examples)
 
