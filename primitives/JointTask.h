@@ -24,7 +24,8 @@ namespace Primitives
         Eigen::VectorXd h; // it will store the coriolis torque and gravity torque;
         double _goal_tolerance;
         int _nDof;
-        bool velocity_saturation_flag = false;    
+        bool velocity_saturation_flag = false;
+        double _saturation_velocity = 0.0;  
     
     };
 } // namespace Primitives

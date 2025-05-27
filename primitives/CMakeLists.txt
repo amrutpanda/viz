@@ -1,3 +1,5 @@
+add_subdirectory(ruckig)
+
 set(LINK_LIBRARIES ${DYNAMICS_LIBRARY})
 
 message("Dynamics lib: ${LINK_LIBRARIES}")
