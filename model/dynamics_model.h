@@ -115,6 +115,7 @@ namespace Dynamics
                 const Eigen::Vector3d& pos_in_link = Eigen::Vector3d::Zero());
         void angularAccelerationWorld(Eigen::Vector3d& _aaccel, std::string& link_name,
                 const Eigen::Vector3d& pos_in_link = Eigen::Vector3d::Zero());
+        void computeIK(Eigen::VectorXd& _jposes);
 
         // class attributes below.
         Eigen::VectorXd _q;

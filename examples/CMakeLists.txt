@@ -1,7 +1,7 @@
 # add_executable(rigidbodyTest ${PROJECT_SOURCE_DIR}/examples/rigidbodyTest.cpp)
 set(LINK_LIBRARIES ${GRAPHICS_LIBRARY} ${SIMULATION_LIBRARY} 
                         ${REDIS_LIBRARY} ${DYNAMICS_LIBRARY}
-                        ${RBDL_LIBRARY})
+                        ${RBDL_LIBRARY} ${PRIMITIVES_LIBRARY})
 include_directories(.)
 
 add_executable(rigidbodyTest rigidbody_test.cpp)
@@ -15,3 +15,9 @@ target_link_libraries(simviz_1 ${LINK_LIBRARIES})
 
 add_executable(robot_controller robot_controller.cpp)
 target_link_libraries(robot_controller ${LINK_LIBRARIES})
+
+add_executable(jogging_controller ${CMAKE_CURRENT_LIST_DIR}/Keyboard_jogging/jogging_controller.cpp)
+target_link_libraries(jogging_controller ${LINK_LIBRARIES})
+
+add_executable(kbdReader ${CMAKE_CURRENT_LIST_DIR}/Keyboard_jogging/keyboardReader.cpp)
+target_link_libraries(kbdReader ${LINK_LIBRARIES})
