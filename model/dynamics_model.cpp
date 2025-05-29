@@ -383,5 +383,10 @@ namespace Dynamics
         Jw = _T_world.linear() * Jv_tmp.block(0,0,3,_dof);
     }
     
+    void DModel::computeIK(Eigen::VectorXd& _jpose)
+    {
+        // InverseKinematics(_rbdl_model,_q,0,_jpose);
+    }
+
 } // namespace Dynamics
 

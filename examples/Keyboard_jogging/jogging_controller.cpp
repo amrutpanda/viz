@@ -22,10 +22,11 @@ Eigen::VectorXd _command_torques;
 int main(int argc, char const *argv[])
 {
     signal(SIGINT,sighandler);
-    Eigen::Vector3d _bpose(0,0,0);
+    Eigen::Vector3d _bpose(0,0,0), x_c, x_t;
     Eigen::Quaterniond _brot;
     _brot.setIdentity();
 
+    std::cout << "Starting Jog controller" << std::endl;
     Dynamics::DModel* robot_model = new Dynamics::DModel(robot_file,_bpose,_brot,
                                                           false,false);
     // resize the vectors.
@@ -44,6 +45,8 @@ int main(int argc, char const *argv[])
     int r1 = redis_client.createEigenReadCallback(ROBOT_JOINT_POSITION_KEY,robot_model->_q);
     int r2 = redis_client.createEigenReadCallback(ROBOT_JOINT_VELOCITY_KEY,robot_model->_dq);
     int w1 = redis_client.createEigenWriteCallback(ROBOT_JOINT_TORQUE_KEY,_command_torques);
+    redis_client.createEigenReadCallback(TARGET_EE_POSE,x_t);
+    redis_client.createEigenWriteCallback(CURRENT_EE_POSE,x_c);
 
     Eigen::VectorXd _gravity(n);
     Eigen::VectorXd b(nDof), g(nDof);
