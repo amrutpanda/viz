@@ -84,10 +84,15 @@ namespace Dynamics
                         const Vector3d& pos_in_link = Eigen::Vector3d::Zero(),
                         const Matrix3d& rot_in_link = Eigen::Matrix3d::Identity(),
                         const std::string& base_frame = "");
-        
+        /**
+         * @brief It will calculate the pos of the link with respect to base frame.
+        */
+
         void position(Eigen::Vector3d& _pos, std::string& link_name,
                         const Eigen::Vector3d& pos_in_link = Eigen::Vector3d::Zero());
-
+        /**
+         * @brief It will calculate the pos of the link with respect to world frame.
+        */
         void positionInWorld(Eigen::Vector3d& _pos, std::string& link_name,
                         const Eigen::Vector3d& pos_in_link = Eigen::Vector3d::Zero());
 
@@ -115,7 +120,13 @@ namespace Dynamics
                 const Eigen::Vector3d& pos_in_link = Eigen::Vector3d::Zero());
         void angularAccelerationWorld(Eigen::Vector3d& _aaccel, std::string& link_name,
                 const Eigen::Vector3d& pos_in_link = Eigen::Vector3d::Zero());
-        void computeIK(Eigen::VectorXd& _jposes);
+        void computeIK(Eigen::VectorXd& _jposes, std::string& _link_name,
+                                Eigen::Vector3d& target_pos,        
+                                Eigen::Vector3d pos_in_link = Eigen::Vector3d(0,0,0));
+        void computeIK(Eigen::VectorXd& _jposes, std::string& _link_name,
+                                Eigen::Vector3d& target_pos,
+                                Eigen::Matrix3d& target_rot,        
+                                Eigen::Vector3d pos_in_link= Eigen::Vector3d(0,0,0));
 
         // class attributes below.
         Eigen::VectorXd _q;

@@ -78,6 +78,9 @@ void simulation(std::string& _robot_file)
     int cind = redis_client.createStringReadCallback(CONTROLLER_RUNNING_KEY,_controller_running);
 
     int tind = redis_client.createEigenReadCallback(ROBOT_JOINT_TORQUE_KEY, command_torques);
+    
+    redis_client.set(CONTROLLER_RUNNING_KEY,_controller_running);
+    redis_client.setEigenMatrix(ROBOT_JOINT_TORQUE_KEY,command_torques);
 
     std::unique_ptr<simMultiBodyDynamicsWorld> sim = std::make_unique<simMultiBodyDynamicsWorld>();
     sim->LoadRobotFromURDFFile(_robot_file);
@@ -87,12 +90,17 @@ void simulation(std::string& _robot_file)
     RobotObject* robot = sim->getMultiBodyObject(robot_name);
     sim->printRobotJointsInfo(robot);
 
+    // for (auto it : robot->_linkNameIndexList)
+    // {
+    //     std::cout << "Link_name: " << it.second << " " << "Index: " << it.first << std::endl;
+    // }
+    
     Eigen::VectorXd pos(6);
     pos.setZero();
     pos(0) = 0.5;
 
     LoopTimer timer;
-    timer.setLoopFrequency(1000);
+    timer.setLoopFrequency(500);
     timer.InitializeTimer();
     std::cout << "DOF: "  << robot->_jointNameIndexList.size() << std::endl;
     while (runloop & timer.WaitForNextLoop())

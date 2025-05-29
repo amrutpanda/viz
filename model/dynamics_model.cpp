@@ -147,7 +147,8 @@ namespace Dynamics
         std::string _link_name = link_name;
         int linkInd = linkId(_link_name);
        
-        _pos = CalcBaseToBodyCoordinates(*_rbdl_model,_q,linkInd,pos_in_link,false);
+        // _pos = CalcBaseToBodyCoordinates(*_rbdl_model, _q, linkInd, pos_in_link, false);
+        _pos = CalcBodyToBaseCoordinates(*_rbdl_model,_q, linkInd, pos_in_link,false);
 
     }
 
@@ -158,9 +159,10 @@ namespace Dynamics
         _T_link_to_base.setIdentity();
 
         std::string _link_name = link_name;
-        int linkInd = linkId(_link_name);
+         int linkInd = linkId(_link_name);
        
-        _pos = CalcBaseToBodyCoordinates(*_rbdl_model,_q,linkInd,pos_in_link,false);
+        // _pos = CalcBaseToBodyCoordinates(*_rbdl_model,_q,linkInd,pos_in_link,false);
+        _pos = CalcBodyToBaseCoordinates(*_rbdl_model,_q, linkInd, pos_in_link,false);
         _pos = _T_world * _pos;
     }
 
@@ -383,9 +385,27 @@ namespace Dynamics
         Jw = _T_world.linear() * Jv_tmp.block(0,0,3,_dof);
     }
     
-    void DModel::computeIK(Eigen::VectorXd& _jpose)
+    void DModel::computeIK(Eigen::VectorXd& _jposes, std::string& _link_name,
+                                Eigen::Vector3d& target_pos,
+                                Eigen::Vector3d pos_in_link)
     {
-        // InverseKinematics(_rbdl_model,_q,0,_jpose);
+        _jposes.resize(_dof);
+        std::string link_name = _link_name;
+        InverseKinematicsConstraintSet CS;
+        CS.AddPointConstraint(linkId(link_name),pos_in_link,target_pos);
+        InverseKinematics(*_rbdl_model,_q,CS,_jposes);
+    }
+
+     void DModel::computeIK(Eigen::VectorXd& _jposes, std::string& _link_name,
+                                Eigen::Vector3d& target_pos,
+                                Eigen::Matrix3d& target_rot,        
+                                Eigen::Vector3d pos_in_link)
+    {
+        _jposes.resize(_dof);
+        std::string link_name = _link_name;
+        InverseKinematicsConstraintSet CS;
+        CS.AddFullConstraint(linkId(link_name),pos_in_link,target_pos,target_rot);
+        InverseKinematics(*_rbdl_model,_q,CS,_jposes);
     }
 
 } // namespace Dynamics

@@ -17,10 +17,16 @@ int main(int argc, char const *argv[])
     signal(SIGINT,sig_handler);
 
     Eigen::Vector3d x_c, x_t;
+    x_c.setZero();
+    x_t.setZero();
     // TODO: Need to implement rotation of coordinate frame.
+    Eigen::AngleAxisd rot(_alpha_z,Eigen::Vector3d::UnitZ());
     redis_client.connect();
     redis_client.createEigenReadCallback(CURRENT_EE_POSE,x_c);
     redis_client.createEigenWriteCallback(TARGET_EE_POSE,x_t);
+
+    redis_client.getEigenMatrix(CURRENT_EE_POSE,x_c);
+    redis_client.setEigenMatrix(TARGET_EE_POSE,x_c);
 
     const char* device = "/dev/input/event3";
 
@@ -31,57 +37,67 @@ int main(int argc, char const *argv[])
     input_event evt;
     std::cout << "Starting to read from Keyboard\n" << std::endl;
 
+     // set the controller key.
+    std::string _controller_running = "1";
+    redis_client.set(CONTROLLER_RUNNING_KEY,_controller_running);
+
     while (runloop)
     {
-        redis_client.executeAllWriteCallbacks();
+        redis_client.executeAllReadCallbacks();
         ssize_t bytes = read(fd,&evt,sizeof(evt));
-        if (bytes != sizeof(evt))
+        if (bytes != sizeof(evt) || evt.value != 1)
             continue;
         switch (evt.code)
         {
         case 30:
             {
                 std::cout << "A" << std::endl;
-                x_t = x_c + Eigen::Vector3d(_dx,0,0);
+                x_t = x_c + rot.toRotationMatrix() * Eigen::Vector3d(_dx,0,0);
                 break;
             }
         case 31:
             {
                 std::cout << "S" << std::endl;
-                x_t = x_c + Eigen::Vector3d(0,-_dx,0);
+                x_t = x_c + rot.toRotationMatrix() * Eigen::Vector3d(0,-_dx,0);
                 break;
             }
         case 17:
             {
                 std::cout << "W" << std::endl;
-                x_t = x_c + Eigen::Vector3d(0,_dx,0);
+                x_t = x_c + rot.toRotationMatrix() *  Eigen::Vector3d(0,_dx,0);
                 break;
             }
         case 32:
             {
                 std::cout << "D" << std::endl;
-                x_t = x_c + Eigen::Vector3d(-_dx,0,0);
+                x_t = x_c + rot.toRotationMatrix() * Eigen::Vector3d(-_dx,0,0);
                 break;
             }
         case 103:
             {
                 std::cout << "up" << std::endl;
-                x_t = x_c + Eigen::Vector3d(0,0,_dx);
+                x_t = x_c + rot.toRotationMatrix() * Eigen::Vector3d(0,0,_dx);
                 break;
             }
         case 108:
             {
                 std::cout << "down" << std::endl;
-                x_t = x_c + Eigen::Vector3d(0,0,-_dx);
+                x_t = x_c + rot.toRotationMatrix() * Eigen::Vector3d(0,0,-_dx);
                 break;
             }
         default:
-            break;
+            {
+                x_t = x_c;
+                break;
+            }
         }
+        std::cout << "x_t: \n" << x_t << std::endl;
         // std::cout << "Key pressed: " << evt.code << std::endl;
         redis_client.executeAllWriteCallbacks();
+        
     }
-
+    _controller_running = "0";
+    redis_client.set(CONTROLLER_RUNNING_KEY,_controller_running);
     close(fd);
     return 0;
 }
