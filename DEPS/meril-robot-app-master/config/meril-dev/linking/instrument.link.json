@@ -1,0 +1,348 @@
+{
+  "Version": "1.0.0",
+  "Groups": [
+    {
+      "Name": "Docked",
+      "SystemMode": "All",
+      "Enable": true,
+      "SetParameters": [
+        {
+          "Path": "root/Ethercat/GCC/00-EK1914-01/Inputs/03-CartIsDocked",
+          "Force": true,
+          "Value": true
+        }
+      ]
+    },
+    {
+      "Name": "Window Detectors and Actuator Control Loops",
+      "SystemMode": "All",
+      "Links": [
+        {
+          "Source": {
+            "Path": "root/InstrumentAxesControl/actuatorControlLoops/actuatorControlLoop%02d/positionErrorWindowDetector/state",
+            "Index": 1,
+            "Length": 4
+          },
+          "Destination": {
+            "Path": "root/Logic/positionErrorDetectors",
+            "Index": 6
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/InstrumentAxesControl/actuatorControlLoops/actuatorControlLoop%02d/positionWindowDetector/state",
+            "Index": 1,
+            "Length": 4
+          },
+          "Destination": {
+            "Path": "root/Logic/positionDetectors",
+            "Index": 6
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/InstrumentAxesControl/actuatorControlLoops/actuatorControlLoop%02d/velocityWindowDetector/state",
+            "Index": 1,
+            "Length": 4
+          },
+          "Destination": {
+            "Path": "root/Logic/velocityDetectors",
+            "Index": 6
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/InstrumentAxesControl/actuatorControlLoops/actuatorControlLoop%02d/accelerationWindowDetector/state",
+            "Index": 1,
+            "Length": 4
+          },
+          "Destination": {
+            "Path": "root/Logic/accelerationDetectors",
+            "Index": 6
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/DriveLogic/disableDrive",
+            "Index": 6,
+            "Length": 4
+          },
+          "Destination": {
+            "Path": "root/InstrumentAxesControl/actuatorControlLoops/actuatorControlLoop%02d/disable",
+            "Index": 1
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/InstrumentAxesControl/axesSetpointJumpDetectors/windowDetector%02d/state",
+            "Index": 1,
+            "Length": 4
+          },
+          "Destination": {
+            "Path": "root/Logic/jumpDetectors",
+            "Index": 6
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/InstrumentAxesControl/axesLimiters/State%02d/active",
+            "Index": 1,
+            "Length": 4
+          },
+          "Destination": {
+            "Path": "root/Logic/actuatorLimitersActive",
+            "Index": 6
+          }
+        }
+      ]
+    },
+    {
+      "Name": "From Logic To Actuator Control",
+      "SystemMode": "All",
+      "Links": [
+        {
+          "Source": {
+            "Path": "root/Logic/:stateToCtrl"
+          },
+          "Destination": {
+            "Path": "root/InstrumentAxesControl/:fromState"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/Logic/:modeToCtrl"
+          },
+          "Destination": {
+            "Path": "root/InstrumentAxesControl/:fromMode"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/Logic/driveMode",
+            "Index": 6,
+            "Length": 4
+          },
+          "Destination": {
+            "Path": "root/InstrumentAxesControl/actuatorControlLoops/actuatorControlLoop%02d/driveMode",
+            "Index": 1
+          }
+        }
+      ]
+    },
+    {
+      "Name": "From Actuator Control To Logic",
+      "SystemMode": "All",
+      "Links": [
+        {
+          "Source": {
+            "Path": "root/InstrumentAxesControl/:toState"
+          },
+          "Destination": {
+            "Path": "root/Logic/:instrumentAxesCtrlToState"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "Between Actuator Control and Robot Control",
+      "SystemMode": "All",
+      "Enable": true,
+      "Links": [
+        {
+          "Source": {
+            "Path": "root/InstrumentAxesControl/axesPositionsActual"
+          },
+          "Destination": {
+            "Path": "root/ManipulatorControl/jointPositionsActual",
+            "Index": 6
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/InstrumentAxesControl/axesVelocitiesActual"
+          },
+          "Destination": {
+            "Path": "root/ManipulatorControl/jointVelocitiesActual",
+            "Index": 6
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/InstrumentAxesControl/axesAccelerationsActual"
+          },
+          "Destination": {
+            "Path": "root/ManipulatorControl/jointAccelerationsActual",
+            "Index": 6
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/InstrumentAxesControl/axesIsOpenLoop"
+          },
+          "Destination": {
+            "Path": "root/ManipulatorControl/jointIsOpenLoop",
+            "Index": 6
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/InstrumentAxesControl/axesPositionsReference"
+          },
+          "Destination": {
+            "Path": "root/ManipulatorControl/jointPositionsLimitedReference",
+            "Index": 6
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/InstrumentAxesControl/axesVelocitiesReference"
+          },
+          "Destination": {
+            "Path": "root/ManipulatorControl/jointVelocitiesLimitedReference",
+            "Index": 6
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/InstrumentAxesControl/axesAccelerationsReference"
+          },
+          "Destination": {
+            "Path": "root/ManipulatorControl/jointAccelerationsLimitedReference",
+            "Index": 6
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/ManipulatorControl/jointPositionsTarget",
+            "Index": 6,
+            "Length": 4
+          },
+          "Destination": {
+            "Path": "root/InstrumentAxesControl/axesPositionsInput"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/ManipulatorControl/jointVelocitiesTarget",
+            "Index": 6,
+            "Length": 4
+          },
+          "Destination": {
+            "Path": "root/InstrumentAxesControl/axesVelocitiesInput"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/ManipulatorControl/jointAccelerationsTarget",
+            "Index": 6,
+            "Length": 4
+          },
+          "Destination": {
+            "Path": "root/InstrumentAxesControl/axesAccelerationsInput"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/ManipulatorControl/jointLimitSettings/active/jointPositionLowerLimits",
+            "Index": 6,
+            "Length": 4
+          },
+          "Destination": {
+            "Path": "root/InstrumentAxesControl/axesLimiters/Limits%02d/positionLowerLimit",
+            "Index": 1
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/ManipulatorControl/jointLimitSettings/active/jointPositionUpperLimits",
+            "Index": 6,
+            "Length": 4
+          },
+          "Destination": {
+            "Path": "root/InstrumentAxesControl/axesLimiters/Limits%02d/positionUpperLimit",
+            "Index": 1
+          }
+        }
+      ]
+    },
+    {
+      "Name": "From Instrument to Instrument Axes",
+      "SystemMode": "All",
+      "Enable": true,
+      "Links": [
+        {
+          "Source": {
+            "Path": "root/Instruments/ActiveInstrument/transformationMatrix_4x4"
+          },
+          "Destination": {
+            "Path": "root/InstrumentAxesControl/axesToActuatorsTransform"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/Instruments/ActiveInstrument/inverseTransformationMatrix_4x4"
+          },
+          "Destination": {
+            "Path": "root/InstrumentAxesControl/actuatorsToAxesTransform"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "Simulation General",
+      "SystemMode": "Simulation",
+      "Links": [
+        {
+          "Source": {
+            "Path": "root/InstrumentAxesControl/actuatorControlLoops/actuatorControlLoop%02d/positionTransformation/transducer/referenceHardwareSide",
+            "Index": 1,
+            "Length": 4
+          },
+          "Destination": {
+            "Path": "root/Simulator/positionValueInit",
+            "Index": 6
+          }
+        }
+      ]
+    },
+    {
+      "Name": "Simulation",
+      "SystemMode": "Simulation",
+      "SystemMode_": "Production",
+      "SetParameters": [
+        {
+          "Path": "root/Ethercat/GCC/01-EL6910-01/Outputs/oSTONotActive",
+          "Value": true
+        },
+        {
+          "Path": "root/Ethercat/Robot/Axis-06/Out/ExchangeInstrumentButton",
+          "Value": 1
+        },
+        {
+          "Path": "root/Ethercat/Robot/Axis-06/Out/TeachButton",
+          "Value": 1
+        },
+        {
+          "Path": "root/Ethercat/Robot/Axis-06/Out/UnlockButton",
+          "Value": 1
+        },
+        {
+          "Path": "root/Ethercat/Robot/Axis-06/Out/ExchangeInstrumentButton",
+          "Value": 1
+        },
+        {
+          "Path": "root/Ethercat/Robot/Axis-06/Out/StraightenInstrumentButton",
+          "Value": 1
+        },
+        {
+          "Path": "root/Ethercat/Robot/Axis-06/Out/SurgicalButton",
+          "Value": 1
+        },
+        {
+          "Path": "root/Logic/:busToState/estop_not_active",
+          "Value": true
+        }
+      ]
+    }
+  ]
+}

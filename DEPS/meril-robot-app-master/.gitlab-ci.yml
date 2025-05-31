@@ -1,0 +1,19 @@
+workflow:
+  rules:
+    - if: $CI_COMMIT_BRANCH == 'master'
+
+variables:
+  objects: "$CI_PROJECT_NAME"
+  toolchains: "{intel,rpi-armv8}*2024.01"
+  branches_or_tags: "${CI_PROJECT_NAME}:${CI_COMMIT_BRANCH}"
+  additional_cmake_opts: ""
+
+stages:
+  - test
+
+motorcortex-binaries:
+  stage: test
+  trigger:
+    project: distribution/motorcortex-binaries
+    strategy: depend
+    branch: master

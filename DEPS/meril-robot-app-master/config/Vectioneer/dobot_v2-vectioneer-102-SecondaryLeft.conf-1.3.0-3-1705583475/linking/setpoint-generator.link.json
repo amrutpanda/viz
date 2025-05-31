@@ -1,0 +1,24 @@
+{
+  "Version": "1.0.0",
+  "Groups": [
+    {
+      "Name": "SetpointGenerator",
+      "SystemMode": "All",
+      "Enable": true,
+      "Links": [
+        {
+          "Source": {
+            "Path": "root/SetpointGenerators/SetpointGenerator01/output",
+            "Index": 0,
+            "Length": 1
+          },
+          "Destination": {
+            "Path": "root/ManipulatorControl/hostInInstrumentPinch",
+            "Index": 0,
+            "Length": 1
+          }
+        }
+      ]
+    }
+  ]
+}

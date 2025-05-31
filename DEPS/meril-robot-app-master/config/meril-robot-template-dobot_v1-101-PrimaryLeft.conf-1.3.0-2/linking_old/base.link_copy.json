@@ -1,0 +1,408 @@
+{
+  "Version": "1.0.0",
+  "Groups": [
+    {
+      "Name": "Collision Detection",
+      "SystemMode": "All",
+      "Enable": true,
+      "Links": [
+        {
+          "Source": {
+            "Path": "root/ManipulatorControl/idJointTorque/reference/dynamic"
+          },
+          "Destination": {
+            "Path": "root/AxesControl/axesTorqueInputs"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "Window Detectors and Actuator Control Loops",
+      "SystemMode": "All",
+      "Links": [
+        {
+          "Source": {
+            "Path": "root/ManipulatorControl/jointCompliance/Controllers/admittanceControl%02d/positionIntegrator/outputLimiterIsActive",
+            "Index": 1
+          },
+          "Destination": {
+            "Path": "root/Logic/outputLimiterIsActive"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/AxesControl/actuatorControlLoops/actuatorControlLoop%02d/positionErrorWindowDetector/state",
+            "Index": 1
+          },
+          "Destination": {
+            "Path": "root/Logic/positionErrorDetectors"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/AxesControl/actuatorControlLoops/actuatorControlLoop%02d/positionWindowDetector/state",
+            "Index": 1
+          },
+          "Destination": {
+            "Path": "root/Logic/positionDetectors"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/AxesControl/actuatorControlLoops/actuatorControlLoop%02d/velocityWindowDetector/state",
+            "Index": 1
+          },
+          "Destination": {
+            "Path": "root/Logic/velocityDetectors"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/AxesControl/actuatorControlLoops/actuatorControlLoop%02d/accelerationWindowDetector/state",
+            "Index": 1
+          },
+          "Destination": {
+            "Path": "root/Logic/accelerationDetectors"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/AxesControl/actuatorControlLoops/actuatorControlLoop%02d/torqueWindowDetector/state",
+            "Index": 1
+          },
+          "Destination": {
+            "Path": "root/Logic/torqueDetectors"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/Logic/persistenceCommand"
+          },
+          "Destination": {
+            "Path": "root/AxesControl/actuatorControlLoops/actuatorControlLoop%02d/positionTransformation/transducer/persistenceEvent",
+            "Index": 1
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/DriveLogic/driveEnabled"
+          },
+          "Destination": {
+            "Path": "root/AxesControl/actuatorControlLoops/actuatorControlLoop%02d/driveIsEnabled",
+            "Index": 1
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/AxesControl/axesSetpointJumpDetectors/windowDetector%02d/state",
+            "Index": 1
+          },
+          "Destination": {
+            "Path": "root/Logic/jumpDetectors"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/AxesControl/axesLimiters/State%02d/active",
+            "Index": 1
+          },
+          "Destination": {
+            "Path": "root/Logic/actuatorLimitersActive"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "Window Detectors and Main Control Loop",
+      "SystemMode": "All",
+      "Links": [
+        {
+          "Source": {
+            "Path": "root/ManipulatorControl/manipulabilityDetector/state"
+          },
+          "Destination": {
+            "Path": "root/Logic/actualManipulabilityDetector"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "Drive --> Logic",
+      "SystemMode": "All",
+      "Links": [
+        {
+          "Source": {
+            "Path": "root/DriveLogic/driveHasNoError"
+          },
+          "Destination": {
+            "Path": "root/Logic/driveHasNoError"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/Logic/driveCommand"
+          },
+          "Destination": {
+            "Path": "root/DriveLogic/driveCommandAll"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/Logic/driveMode"
+          },
+          "Destination": {
+            "Path": "root/DriveLogic/driveModeAll"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "Ecat --> Logic",
+      "SystemMode": "All",
+      "Links": [
+        {
+          "Source": {
+            "Path": "root/Ethercat/GCC/error"
+          },
+          "Destination": {
+            "Path": "root/Logic/:busToState/ecat_domain_error",
+            "Index": 0,
+            "Length": 1
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/Ethercat/Robot/error"
+          },
+          "Destination": {
+            "Path": "root/Logic/:busToState/ecat_domain_error",
+            "Index": 1,
+            "Length": 1
+          }
+        }
+      ]
+    },
+    {
+      "Name": "From HomingLogic To Control",
+      "SystemMode": "All",
+      "Links": [
+        {
+          "Source": {
+            "Path": "root/Logic/homing/velocityOut"
+          },
+          "Destination": {
+            "Path_": "root/AxesControl/actuatorControlLoops/actuatorControlLoop01/inputHomingJogVelocity",
+            "Path": "root/AxesControl/actuatorControlLoops/actuatorControlLoop%02d/inputHomingJogVelocity",
+            "Index": 1
+          }
+        }
+      ]
+    },
+    {
+      "Name": "From Logic To Control",
+      "SystemMode": "All",
+      "Links": [
+        {
+          "Source": {
+            "Path": "root/Logic/:stateToCtrl"
+          },
+          "Destination": {
+            "Path": "root/ManipulatorControl/:fromState"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/Logic/:modeToCtrl"
+          },
+          "Destination": {
+            "Path": "root/ManipulatorControl/:fromMode"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "From Control To Logic",
+      "SystemMode": "All",
+      "Links": [
+        {
+          "Source": {
+            "Path": "root/ManipulatorControl/:toMode"
+          },
+          "Destination": {
+            "Path": "root/Logic/:ctrlToMode"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "From Logic To Actuator Control",
+      "SystemMode": "All",
+      "Links": [
+        {
+          "Source": {
+            "Path": "root/Logic/:stateToCtrl"
+          },
+          "Destination": {
+            "Path": "root/AxesControl/:fromState"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/Logic/:modeToCtrl"
+          },
+          "Destination": {
+            "Path": "root/AxesControl/:fromMode"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "From Actuator Control To Logic",
+      "SystemMode": "All",
+      "Links": [
+        {
+          "Source": {
+            "Path": "root/AxesControl/:toState"
+          },
+          "Destination": {
+            "Path": "root/Logic/:ctrlToState"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "Between Actuator Control and Robot Control",
+      "SystemMode": "All",
+      "Enable": true,
+      "Links": [
+        {
+          "Source": {
+            "Path": "root/ManipulatorControl/idJointTorque/actual/gravity"
+          },
+          "Destination": {
+            "Path": "root/AxesControl/axesTorqueInputs"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/AxesControl/axesPositionsActual"
+          },
+          "Destination": {
+            "Path": "root/ManipulatorControl/jointPositionsActual"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/AxesControl/axesVelocitiesActual"
+          },
+          "Destination": {
+            "Path": "root/ManipulatorControl/jointVelocitiesActual"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/AxesControl/axesAccelerationsActual"
+          },
+          "Destination": {
+            "Path": "root/ManipulatorControl/jointAccelerationsActual"
+          }
+        },
+        {
+          "Source": {
+            "WrongPath_": "root/AxesControl/actuatorControlLoops/actuatorTorquesActual",
+            "Path": "root/AxesControl/sensorTorquesActual"
+          },
+          "Destination": {
+            "Path": "root/ManipulatorControl/jointTorquesActual"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/AxesControl/axesPositionsReference"
+          },
+          "Destination": {
+            "Path": "root/ManipulatorControl/jointPositionsLimitedReference"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/AxesControl/axesVelocitiesReference"
+          },
+          "Destination": {
+            "Path": "root/ManipulatorControl/jointVelocitiesLimitedReference"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/AxesControl/axesAccelerationsReference"
+          },
+          "Destination": {
+            "Path": "root/ManipulatorControl/jointAccelerationsLimitedReference"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/AxesControl/allDrivesDisabled"
+          },
+          "Destination": {
+            "Path": "root/ManipulatorControl/allDrivesDisabled"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/ManipulatorControl/jointPositionsTarget"
+          },
+          "Destination": {
+            "Path": "root/AxesControl/axesPositionInputs"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "Simulation General",
+      "SystemMode": "Simulation",
+      "Links": [
+        {
+          "Source": {
+            "Path": "root/DriveLogic/driveEnabled"
+          },
+          "Destination": {
+            "Path": "root/Simulator/driveOn"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/AxesControl/actuatorControlLoops/actuatorControlLoop%02d/positionTransformation/transducer/referenceHardwareSide",
+            "Index": 1
+          },
+          "Destination": {
+            "Path": "root/Simulator/positionValueInit"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "Simulation",
+      "SystemMode": "Simulation",
+      "SetParameters": [
+        {
+          "Path": "root/CollisionDetectors/CollisionDetector%02d/collisionDetector/disable",
+          "Value": true,
+          "Index": 1
+        },
+        {
+          "Path": "root/Ethercat/GCC/01-EL6910-01/Outputs/oSTONotActive",
+          "Value": true
+        },
+        {
+          "Path": "root/Ethercat/Robot/Axis-06/Out/5000_01/Bit1",
+          "Value": 1
+        },
+        {
+          "Path": "root/Ethercat/Robot/Axis-06/Out/5000_01/Bit4",
+          "Value": 1
+        }
+      ]
+    }
+  ]
+}

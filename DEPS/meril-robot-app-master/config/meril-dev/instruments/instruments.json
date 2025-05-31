@@ -1,0 +1,1294 @@
+{
+  "categories": {
+    "Needle Drivers": [
+      {
+        "id": 13,
+        "name": "Large needle driver",
+        "pinchLimits": [
+          0.5236,
+          1
+        ],
+        "pitchLimits": [
+          -1,
+          1
+        ],
+        "currentLimits": [
+          600,
+          600,
+          600,
+          600
+        ],
+        "backlashCompensation": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "transformationMatrix_4x4": [
+          [
+            1,
+            -0.7,
+            -0.7,
+            0
+          ],
+          [
+            0,
+            -1,
+            -1,
+            0
+          ],
+          [
+            0,
+            1,
+            -1,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ],
+        "inverseTransformationMatrix_4x4": [
+          [
+            1,
+            -0.7,
+            0,
+            0
+          ],
+          [
+            0,
+            -0.5,
+            0.5,
+            0
+          ],
+          [
+            0,
+            -0.5,
+            -0.5,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ],
+        "shaftLength": 400,
+        "pitchLength": 10.8,
+        "yawLength": 17,
+        "totalInstrumentLength": 427.8
+      },
+      {
+        "id": 15,
+        "name": "Mega needle driver",
+        "pinchLimits": [
+          0.5236,
+          1
+        ],
+        "pitchLimits": [
+          -1,
+          1
+        ],
+        "currentLimits": [
+          600,
+          600,
+          600,
+          600
+        ],
+        "backlashCompensation": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "transformationMatrix_4x4": [
+          [
+            1,
+            -0.7,
+            -0.7,
+            0
+          ],
+          [
+            0,
+            -1,
+            -1,
+            0
+          ],
+          [
+            0,
+            1,
+            -1,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ],
+        "inverseTransformationMatrix_4x4": [
+          [
+            1,
+            -0.7,
+            0,
+            0
+          ],
+          [
+            0,
+            -0.5,
+            0.5,
+            0
+          ],
+          [
+            0,
+            -0.5,
+            -0.5,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ],
+        "shaftLength": 400,
+        "pitchLength": 10.8,
+        "yawLength": 17,
+        "totalInstrumentLength": 427.8
+      },
+      {
+        "id": 16,
+        "name": "Large suture cut needle driver",
+        "pinchLimits": [
+          0.6632,
+          1
+        ],
+        "pitchLimits": [
+          -1,
+          1
+        ],
+        "currentLimits": [
+          600,
+          600,
+          600,
+          600
+        ],
+        "backlashCompensation": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "transformationMatrix_4x4": [
+          [
+            1,
+            -0.7,
+            -0.7,
+            0
+          ],
+          [
+            0,
+            -1,
+            -1,
+            0
+          ],
+          [
+            0,
+            1,
+            -1,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ],
+        "inverseTransformationMatrix_4x4": [
+          [
+            1,
+            -0.7,
+            0,
+            0
+          ],
+          [
+            0,
+            -0.5,
+            0.5,
+            0
+          ],
+          [
+            0,
+            -0.5,
+            -0.5,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ],
+        "shaftLength": 400,
+        "pitchLength": 10.8,
+        "yawLength": 17,
+        "totalInstrumentLength": 427.8
+      },
+      {
+        "id": 14,
+        "name": "Mega suture cut needle driver",
+        "pinchLimits": [
+          0.6981,
+          1
+        ],
+        "pitchLimits": [
+          -1,
+          1
+        ],
+        "currentLimits": [
+          600,
+          600,
+          600,
+          600
+        ],
+        "backlashCompensation": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "transformationMatrix_4x4": [
+          [
+            1,
+            -0.7,
+            -0.7,
+            0
+          ],
+          [
+            0,
+            -1,
+            -1,
+            0
+          ],
+          [
+            0,
+            1,
+            -1,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ],
+        "inverseTransformationMatrix_4x4": [
+          [
+            1,
+            -0.7,
+            0,
+            0
+          ],
+          [
+            0,
+            -0.5,
+            0.5,
+            0
+          ],
+          [
+            0,
+            -0.5,
+            -0.5,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ],
+        "shaftLength": 400,
+        "pitchLength": 10.8,
+        "yawLength": 17,
+        "totalInstrumentLength": 427.8
+      }
+    ],
+    "Bipolar cautery instruments": [
+      {
+        "id": 4,
+        "name": "Maryland bipolar forceps",
+        "pinchLimits": [
+          0.7854,
+          1
+        ],
+        "pitchLimits": [
+          -1,
+          1
+        ],
+        "currentLimits": [
+          600,
+          600,
+          600,
+          600
+        ],
+        "backlashCompensation": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "transformationMatrix_4x4": [
+          [
+            1,
+            -0.7,
+            -0.7,
+            0
+          ],
+          [
+            0,
+            -1,
+            -1,
+            0
+          ],
+          [
+            0,
+            1,
+            -1,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ],
+        "inverseTransformationMatrix_4x4": [
+          [
+            1,
+            -0.7,
+            0,
+            0
+          ],
+          [
+            0,
+            -0.5,
+            0.5,
+            0
+          ],
+          [
+            0,
+            -0.5,
+            -0.5,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ],
+        "shaftLength": 400,
+        "pitchLength": 10.8,
+        "yawLength": 17,
+        "totalInstrumentLength": 427.8
+      },
+      {
+        "id": 8,
+        "name": "Long bipolar grasper",
+        "pinchLimits": [
+          1.221,
+          1
+        ],
+        "pitchLimits": [
+          -1,
+          1
+        ],
+        "currentLimits": [
+          600,
+          600,
+          600,
+          600
+        ],
+        "backlashCompensation": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "transformationMatrix_4x4": [
+          [
+            1,
+            -0.7,
+            -0.7,
+            0
+          ],
+          [
+            0,
+            -1,
+            -1,
+            0
+          ],
+          [
+            0,
+            1,
+            -1,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ],
+        "inverseTransformationMatrix_4x4": [
+          [
+            1,
+            -0.7,
+            0,
+            0
+          ],
+          [
+            0,
+            -0.5,
+            0.5,
+            0
+          ],
+          [
+            0,
+            -0.5,
+            -0.5,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ],
+        "shaftLength": 400,
+        "pitchLength": 10.8,
+        "yawLength": 17,
+        "totalInstrumentLength": 427.8
+      },
+      {
+        "id": 5,
+        "name": "Fenestrated bipolar forceps",
+        "pinchLimits": [
+          0.7854,
+          1
+        ],
+        "pitchLimits": [
+          -1,
+          1
+        ],
+        "currentLimits": [
+          600,
+          600,
+          600,
+          600
+        ],
+        "backlashCompensation": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "transformationMatrix_4x4": [
+          [
+            1,
+            -0.7,
+            -0.7,
+            0
+          ],
+          [
+            0,
+            -1,
+            -1,
+            0
+          ],
+          [
+            0,
+            1,
+            -1,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ],
+        "inverseTransformationMatrix_4x4": [
+          [
+            1,
+            -0.7,
+            0,
+            0
+          ],
+          [
+            0,
+            -0.5,
+            0.5,
+            0
+          ],
+          [
+            0,
+            -0.5,
+            -0.5,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ],
+        "shaftLength": 400,
+        "pitchLength": 10.8,
+        "yawLength": 17,
+        "totalInstrumentLength": 427.8
+      },
+      {
+        "id": 9,
+        "name": "Force bipolar",
+        "pinchLimits": [
+          0.531,
+          1
+        ],
+        "pitchLimits": [
+          -1,
+          1
+        ],
+        "currentLimits": [
+          600,
+          600,
+          600,
+          600
+        ],
+        "backlashCompensation": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "transformationMatrix_4x4": [
+          [
+            1,
+            -0.7,
+            -0.7,
+            0
+          ],
+          [
+            0,
+            -1,
+            -1,
+            0
+          ],
+          [
+            0,
+            1,
+            -1,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ],
+        "inverseTransformationMatrix_4x4": [
+          [
+            1,
+            -0.7,
+            0,
+            0
+          ],
+          [
+            0,
+            -0.5,
+            0.5,
+            0
+          ],
+          [
+            0,
+            -0.5,
+            -0.5,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ],
+        "shaftLength": 400,
+        "pitchLength": 10.8,
+        "yawLength": 17,
+        "totalInstrumentLength": 427.8
+      }
+    ],
+    "Monopolar cautery instruments": [
+      {
+        "id": 1,
+        "name": "Monopolar curved Scissors",
+        "pinchLimits": [
+          0.5236,
+          1
+        ],
+        "pitchLimits": [
+          -1,
+          1
+        ],
+        "currentLimits": [
+          600,
+          600,
+          600,
+          600
+        ],
+        "backlashCompensation": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "transformationMatrix_4x4": [
+          [
+            1,
+            -0.7,
+            -0.7,
+            0
+          ],
+          [
+            0,
+            -1,
+            -1,
+            0
+          ],
+          [
+            0,
+            1,
+            -1,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ],
+        "inverseTransformationMatrix_4x4": [
+          [
+            1,
+            -0.7,
+            0,
+            0
+          ],
+          [
+            0,
+            -0.5,
+            0.5,
+            0
+          ],
+          [
+            0,
+            -0.5,
+            -0.5,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ],
+        "shaftLength": 400,
+        "pitchLength": 10.8,
+        "yawLength": 17,
+        "totalInstrumentLength": 427.8
+      },
+      {
+        "id": 2,
+        "name": "Monopolar cautery hook",
+        "pinchLimits": [
+          0.5236,
+          1
+        ],
+        "pitchLimits": [
+          -1,
+          1
+        ],
+        "currentLimits": [
+          600,
+          600,
+          600,
+          600
+        ],
+        "backlashCompensation": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "transformationMatrix_4x4": [
+          [
+            1,
+            -0.7,
+            -0.7,
+            0
+          ],
+          [
+            0,
+            -1,
+            -1,
+            0
+          ],
+          [
+            0,
+            1,
+            -1,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ],
+        "inverseTransformationMatrix_4x4": [
+          [
+            1,
+            -0.7,
+            0,
+            0
+          ],
+          [
+            0,
+            -0.5,
+            0.5,
+            0
+          ],
+          [
+            0,
+            -0.5,
+            -0.5,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ],
+        "shaftLength": 400,
+        "pitchLength": 10.8,
+        "yawLength": 17,
+        "totalInstrumentLength": 427.8
+      },
+      {
+        "id": 3,
+        "name": "Monopolar cautery spatula",
+        "pinchLimits": [
+          0.6981,
+          1
+        ],
+        "pitchLimits": [
+          -1,
+          1
+        ],
+        "currentLimits": [
+          600,
+          600,
+          600,
+          600
+        ],
+        "backlashCompensation": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "transformationMatrix_4x4": [
+          [
+            1,
+            -0.7,
+            -0.7,
+            0
+          ],
+          [
+            0,
+            -1,
+            -1,
+            0
+          ],
+          [
+            0,
+            1,
+            -1,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ],
+        "inverseTransformationMatrix_4x4": [
+          [
+            1,
+            -0.7,
+            0,
+            0
+          ],
+          [
+            0,
+            -0.5,
+            0.5,
+            0
+          ],
+          [
+            0,
+            -0.5,
+            -0.5,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ],
+        "shaftLength": 400,
+        "pitchLength": 10.8,
+        "yawLength": 17,
+        "totalInstrumentLength": 427.8
+      }
+    ],
+    "Graspers": [
+      {
+        "id": 20,
+        "name": "Tip-up fenestrated grasper",
+        "pinchLimits": [
+          1.0472,
+          1
+        ],
+        "pitchLimits": [
+          -1,
+          1
+        ],
+        "currentLimits": [
+          600,
+          600,
+          600,
+          600
+        ],
+        "backlashCompensation": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "transformationMatrix_4x4": [
+          [
+            1,
+            -0.7,
+            -0.7,
+            0
+          ],
+          [
+            0,
+            -1,
+            -1,
+            0
+          ],
+          [
+            0,
+            1,
+            -1,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ],
+        "inverseTransformationMatrix_4x4": [
+          [
+            1,
+            -0.7,
+            0,
+            0
+          ],
+          [
+            0,
+            -0.5,
+            0.5,
+            0
+          ],
+          [
+            0,
+            -0.5,
+            -0.5,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ],
+        "shaftLength": 400,
+        "pitchLength": 10.8,
+        "yawLength": 17,
+        "totalInstrumentLength": 427.8
+      },
+      {
+        "id": 18,
+        "name": "Tenaculum forceps",
+        "pinchLimits": [
+          1.309,
+          1
+        ],
+        "pitchLimits": [
+          -1,
+          1
+        ],
+        "currentLimits": [
+          600,
+          600,
+          600,
+          600
+        ],
+        "backlashCompensation": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "transformationMatrix_4x4": [
+          [
+            1,
+            -0.7,
+            -0.7,
+            0
+          ],
+          [
+            0,
+            -1,
+            -1,
+            0
+          ],
+          [
+            0,
+            1,
+            -1,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ],
+        "inverseTransformationMatrix_4x4": [
+          [
+            1,
+            -0.7,
+            0,
+            0
+          ],
+          [
+            0,
+            -0.5,
+            0.5,
+            0
+          ],
+          [
+            0,
+            -0.5,
+            -0.5,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ],
+        "shaftLength": 400,
+        "pitchLength": 10.8,
+        "yawLength": 17,
+        "totalInstrumentLength": 427.8
+      },
+      {
+        "id": 17,
+        "name": "Prograsp forceps",
+        "pinchLimits": [
+          0.6981,
+          1
+        ],
+        "pitchLimits": [
+          -1,
+          1
+        ],
+        "currentLimits": [
+          600,
+          600,
+          600,
+          600
+        ],
+        "backlashCompensation": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "transformationMatrix_4x4": [
+          [
+            1,
+            -0.7,
+            -0.7,
+            0
+          ],
+          [
+            0,
+            -1,
+            -1,
+            0
+          ],
+          [
+            0,
+            1,
+            -1,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ],
+        "inverseTransformationMatrix_4x4": [
+          [
+            1,
+            -0.7,
+            0,
+            0
+          ],
+          [
+            0,
+            -0.5,
+            0.5,
+            0
+          ],
+          [
+            0,
+            -0.5,
+            -0.5,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ],
+        "shaftLength": 400,
+        "pitchLength": 10.8,
+        "yawLength": 17,
+        "totalInstrumentLength": 427.8
+      },
+      {
+        "id": 22,
+        "name": "Cadiere Forceps",
+        "pinchLimits": [
+          0.5236,
+          1
+        ],
+        "pitchLimits": [
+          -1,
+          1
+        ],
+        "currentLimits": [
+          600,
+          600,
+          600,
+          600
+        ],
+        "backlashCompensation": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "transformationMatrix_4x4": [
+          [
+            1,
+            -0.7,
+            -0.7,
+            0
+          ],
+          [
+            0,
+            -1,
+            -1,
+            0
+          ],
+          [
+            0,
+            1,
+            -1,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ],
+        "inverseTransformationMatrix_4x4": [
+          [
+            1,
+            -0.7,
+            0,
+            0
+          ],
+          [
+            0,
+            -0.5,
+            0.5,
+            0
+          ],
+          [
+            0,
+            -0.5,
+            -0.5,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ],
+        "shaftLength": 400,
+        "pitchLength": 10.8,
+        "yawLength": 17,
+        "totalInstrumentLength": 427.8
+      }
+    ],
+    "Scissors": [
+      {
+        "id": 24,
+        "name": "Potts Scissors",
+        "pinchLimits": [
+          0.5585,
+          1
+        ],
+        "pitchLimits": [
+          -1,
+          1
+        ],
+        "currentLimits": [
+          600,
+          600,
+          600,
+          600
+        ],
+        "backlashCompensation": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "transformationMatrix_4x4": [
+          [
+            1,
+            -0.7,
+            -0.7,
+            0
+          ],
+          [
+            0,
+            -1,
+            -1,
+            0
+          ],
+          [
+            0,
+            1,
+            -1,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ],
+        "inverseTransformationMatrix_4x4": [
+          [
+            1,
+            -0.7,
+            0,
+            0
+          ],
+          [
+            0,
+            -0.5,
+            0.5,
+            0
+          ],
+          [
+            0,
+            -0.5,
+            -0.5,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            1
+          ]
+        ],
+        "shaftLength": 400,
+        "pitchLength": 10.8,
+        "yawLength": 17,
+        "totalInstrumentLength": 427.8
+      }
+    ]
+  }
+}

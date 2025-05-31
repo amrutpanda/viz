@@ -1,0 +1,231 @@
+{
+  "Version": "1.0.0",
+  "Groups": [
+    {
+      "Name": "frameCounter",
+      "SystemMode": "All",
+      "Links": [
+        {
+          "Source": {
+            "Path": "root/UdpComm/Incoming/frameCounter"
+          },
+          "Destination": {
+            "Path": "root/UdpComm/Outgoing/frameCounter"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "Incoming",
+      "SystemMode": "All",
+      "Enable": true,
+      "Links": [
+        {
+          "Source": {
+            "Path": "root/UdpComm/Incoming/position"
+          },
+          "Destination": {
+            "Path": "root/ManipulatorControl/hostInTool/Position/input"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/UdpComm/Incoming/eulerZYX",
+            "Index": 2,
+            "Length": 1
+          },
+          "Destination": {
+            "Path": "root/ManipulatorControl/hostInTool/Orientation/eulerZYX/input",
+            "Index": 0,
+            "Length": 1
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/UdpComm/Incoming/quaternion"
+          },
+          "Destination": {
+            "Path": "root/ManipulatorControl/hostInTool/Orientation/quaternion/input"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/UdpComm/Incoming/positionEnable"
+          },
+          "Destination": {
+            "Path": "root/ManipulatorControl/hostInTool/Position/track/enable"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/UdpComm/Incoming/positionEnable"
+          },
+          "Destination": {
+            "Path": "root/ManipulatorControl/hostInTool/Orientation/track/enable"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/UdpComm/Incoming/orientationEnable"
+          },
+          "Destination": {
+            "Path": "root/ManipulatorControl/hostInTool/Orientation/quaternion/enable"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/UdpComm/Incoming/orientationEnable"
+          },
+          "Destination": {
+            "Path": "root/ManipulatorControl/hostInTool/Orientation/track/global"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/UdpComm/Incoming/stateCommand"
+          },
+          "Destination": {
+            "Path": "root/Logic/stateCommand"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/UdpComm/Incoming/modeCommand"
+          },
+          "Destination": {
+            "Path": "root/Logic/modeCommand"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/UdpComm/Incoming/positionScale"
+          },
+          "Destination": {
+            "Path": "root/ManipulatorControl/hostInTool/Position/track/factor"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/UdpComm/Incoming/orientationScale"
+          },
+          "Destination": {
+            "Path": "root/ManipulatorControl/hostInTool/Orientation/track/factor"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/UdpComm/Incoming/pinch"
+          },
+          "Destination": {
+            "Path": "root/ManipulatorControl/hostInInstrumentPinch"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "Outgoing",
+      "SystemMode": "All",
+      "Links": [
+        {
+          "Source": {
+            "Path": "root/AxesControl/axesPositionsActual"
+          },
+          "Destination": {
+            "Path": "root/UdpComm/Outgoing/actualJointPositionsFiltered"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/AxesControl/actuatorControlLoops/actuatorControlLoop07/actuatorPositionActualFiltered"
+          },
+          "Destination": {
+            "Path": "root/UdpComm/Outgoing/actualActuatorPositionsFiltered",
+            "Index": 6
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/AxesControl/actuatorControlLoops/actuatorControlLoop08/actuatorPositionActualFiltered"
+          },
+          "Destination": {
+            "Path": "root/UdpComm/Outgoing/actualActuatorPositionsFiltered",
+            "Index": 7
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/AxesControl/actuatorControlLoops/actuatorControlLoop09/actuatorPositionActualFiltered"
+          },
+          "Destination": {
+            "Path": "root/UdpComm/Outgoing/actualActuatorPositionsFiltered",
+            "Index": 8
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/Logic/state"
+          },
+          "Destination": {
+            "Path": "root/UdpComm/Outgoing/state"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/Logic/mode"
+          },
+          "Destination": {
+            "Path": "root/UdpComm/Outgoing/mode"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/Logic/activeErrorsEs"
+          },
+          "Destination": {
+            "Path": "root/UdpComm/Outgoing/activeErrorsEs"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/Logic/activeErrorsFd"
+          },
+          "Destination": {
+            "Path": "root/UdpComm/Outgoing/activeErrorsFd"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/Logic/activeErrorsSd"
+          },
+          "Destination": {
+            "Path": "root/UdpComm/Outgoing/activeErrorsSd"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/Logic/activeErrorsWarn"
+          },
+          "Destination": {
+            "Path": "root/UdpComm/Outgoing/activeErrorsWa"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/ManipulatorControl/instrumentToolPoseActual"
+          },
+          "Destination": {
+            "Path": "root/UdpComm/Outgoing/actualToolCoordinates"
+          }
+        },
+        {
+          "Source": {
+            "Path": "root/ManipulatorControl/instrument/fulcrumPose"
+          },
+          "Destination": {
+            "Path": "root/UdpComm/Outgoing/fulcrumPose"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,165 @@
+{
+  "createdAt": "2024-01-19T09:17:36+00:00",
+  "directory": {
+    "type": "config",
+    "hash": "0pjl3w2x",
+    "name": {
+      "original": "meril-robot-template-dobot_v1-homing",
+      "composed": "meril-robot-template-dobot_v1-homing-1.3.0-1-1705655394"
+    },
+    "version": "1.3.0-1",
+    "createdAt": "2023-12-01T14:31:39+00:00"
+  },
+  "files": [
+    {
+      "name": "config-noudp.json",
+      "filesize": 2462,
+      "path": "meril-robot-template-dobot_v1-homing-1.3.0-1-1705655394/config-noudp.json",
+      "url": "https://s3.eu-central-1.amazonaws.com/eu-central.assets.motorcortex.io/4g/tx2y/hskn/cdkagblxfp.json?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD\u0026X-Amz-Algorithm=AWS4-HMAC-SHA256\u0026X-Amz-Credential=AKIAXEUDFZIRQMHEAXOR%2F20240119%2Feu-central-1%2Fs3%2Faws4_request\u0026X-Amz-Date=20240119T091736Z\u0026X-Amz-SignedHeaders=host\u0026X-Amz-Expires=21600\u0026X-Amz-Signature=233b99ac62c416f71bd46c13757486db22f8699f2f0dd9d78b45cebaec7dcb55",
+      "mode": 0
+    },
+    {
+      "name": "config-udp.json",
+      "filesize": 2461,
+      "path": "meril-robot-template-dobot_v1-homing-1.3.0-1-1705655394/config-udp.json",
+      "url": "https://s3.eu-central-1.amazonaws.com/eu-central.assets.motorcortex.io/6d/xc6t/0mtd/nvefrdde5j.json?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD\u0026X-Amz-Algorithm=AWS4-HMAC-SHA256\u0026X-Amz-Credential=AKIAXEUDFZIRQMHEAXOR%2F20240119%2Feu-central-1%2Fs3%2Faws4_request\u0026X-Amz-Date=20240119T091736Z\u0026X-Amz-SignedHeaders=host\u0026X-Amz-Expires=21600\u0026X-Amz-Signature=3add8c7d147a8a5238b60f5a612c80f59a0326fd4fd0e93acbe485bb91af9734",
+      "mode": 0
+    },
+    {
+      "name": "motorcortex.conf",
+      "filesize": 112,
+      "path": "meril-robot-template-dobot_v1-homing-1.3.0-1-1705655394/motorcortex.conf",
+      "url": "https://s3.eu-central-1.amazonaws.com/eu-central.assets.motorcortex.io/rl/uzlp/j2zl/imrlge5nch.conf?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD\u0026X-Amz-Algorithm=AWS4-HMAC-SHA256\u0026X-Amz-Credential=AKIAXEUDFZIRQMHEAXOR%2F20240119%2Feu-central-1%2Fs3%2Faws4_request\u0026X-Amz-Date=20240119T091736Z\u0026X-Amz-SignedHeaders=host\u0026X-Amz-Expires=21600\u0026X-Amz-Signature=f68407218b9aa6038eedc2c38401ee2eda44d5f94b35475df1de773f04d85beb",
+      "mode": 0
+    },
+    {
+      "name": "control.xml",
+      "filesize": 330544,
+      "path": "meril-robot-template-dobot_v1-homing-1.3.0-1-1705655394/control/control.xml",
+      "url": "https://s3.eu-central-1.amazonaws.com/eu-central.assets.motorcortex.io/oh/02lj/rk7a/cu48lbsy02.xml?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD\u0026X-Amz-Algorithm=AWS4-HMAC-SHA256\u0026X-Amz-Credential=AKIAXEUDFZIRQMHEAXOR%2F20240119%2Feu-central-1%2Fs3%2Faws4_request\u0026X-Amz-Date=20240119T091736Z\u0026X-Amz-SignedHeaders=host\u0026X-Amz-Expires=21600\u0026X-Amz-Signature=0a5623feb06fd8d1f0ee103a3018985ae93d341e52f4db7566aa7ca057d0a20c",
+      "mode": 0
+    },
+    {
+      "name": "persistence.bin",
+      "filesize": 864,
+      "path": "meril-robot-template-dobot_v1-homing-1.3.0-1-1705655394/control/persistence.bin",
+      "url": "https://s3.eu-central-1.amazonaws.com/eu-central.assets.motorcortex.io/u1/n76d/ulql/z89kvq180v.bin?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD\u0026X-Amz-Algorithm=AWS4-HMAC-SHA256\u0026X-Amz-Credential=AKIAXEUDFZIRQMHEAXOR%2F20240119%2Feu-central-1%2Fs3%2Faws4_request\u0026X-Amz-Date=20240119T091736Z\u0026X-Amz-SignedHeaders=host\u0026X-Amz-Expires=21600\u0026X-Amz-Signature=653d12aaa5220bb6017f1292d20329eb68c82f02296452b35a50f576239b3a74",
+      "mode": 0
+    },
+    {
+      "name": "master.xml",
+      "filesize": 267739,
+      "path": "meril-robot-template-dobot_v1-homing-1.3.0-1-1705655394/io/master.xml",
+      "url": "https://s3.eu-central-1.amazonaws.com/eu-central.assets.motorcortex.io/rv/rnse/axar/umnqqsoacd.xml?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD\u0026X-Amz-Algorithm=AWS4-HMAC-SHA256\u0026X-Amz-Credential=AKIAXEUDFZIRQMHEAXOR%2F20240119%2Feu-central-1%2Fs3%2Faws4_request\u0026X-Amz-Date=20240119T091736Z\u0026X-Amz-SignedHeaders=host\u0026X-Amz-Expires=21600\u0026X-Amz-Signature=73e9f77d0f85fc970730becf6af7e5ba5e3e103dd2113689961845186dd18ae2",
+      "mode": 0
+    },
+    {
+      "name": "master_Dobot_v1.xml",
+      "filesize": 267805,
+      "path": "meril-robot-template-dobot_v1-homing-1.3.0-1-1705655394/io/master_Dobot_v1.xml",
+      "url": "https://s3.eu-central-1.amazonaws.com/eu-central.assets.motorcortex.io/ht/zobc/bxnn/irzixlgteu.xml?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD\u0026X-Amz-Algorithm=AWS4-HMAC-SHA256\u0026X-Amz-Credential=AKIAXEUDFZIRQMHEAXOR%2F20240119%2Feu-central-1%2Fs3%2Faws4_request\u0026X-Amz-Date=20240119T091737Z\u0026X-Amz-SignedHeaders=host\u0026X-Amz-Expires=21599\u0026X-Amz-Signature=bc3bcff8c9c320fd21b2544e90c51627d92c6e16801ee427a5cf0753a455fa5b",
+      "mode": 0
+    },
+    {
+      "name": "base.link.json",
+      "filesize": 10736,
+      "path": "meril-robot-template-dobot_v1-homing-1.3.0-1-1705655394/linking/base.link.json",
+      "url": "https://s3.eu-central-1.amazonaws.com/eu-central.assets.motorcortex.io/pl/ihsr/q6an/uiwttafatg.json?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD\u0026X-Amz-Algorithm=AWS4-HMAC-SHA256\u0026X-Amz-Credential=AKIAXEUDFZIRQMHEAXOR%2F20240119%2Feu-central-1%2Fs3%2Faws4_request\u0026X-Amz-Date=20240119T091737Z\u0026X-Amz-SignedHeaders=host\u0026X-Amz-Expires=21600\u0026X-Amz-Signature=6891da98f7db50db6fa9f65be03300b587137ea091dbca114df2b0c72e757aad",
+      "mode": 0
+    },
+    {
+      "name": "base.link_copy.json",
+      "filesize": 10765,
+      "path": "meril-robot-template-dobot_v1-homing-1.3.0-1-1705655394/linking/base.link_copy.json",
+      "url": "https://s3.eu-central-1.amazonaws.com/eu-central.assets.motorcortex.io/cz/ueup/s5k5/7esvlxb5eb.json?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD\u0026X-Amz-Algorithm=AWS4-HMAC-SHA256\u0026X-Amz-Credential=AKIAXEUDFZIRQMHEAXOR%2F20240119%2Feu-central-1%2Fs3%2Faws4_request\u0026X-Amz-Date=20240119T091737Z\u0026X-Amz-SignedHeaders=host\u0026X-Amz-Expires=21600\u0026X-Amz-Signature=a59ec5f3cbb7c6e3cfdc644213a76777f8decddbab1a2558546eddd25db717dc",
+      "mode": 0
+    },
+    {
+      "name": "homing.link.json",
+      "filesize": 754,
+      "path": "meril-robot-template-dobot_v1-homing-1.3.0-1-1705655394/linking/homing.link.json",
+      "url": "https://s3.eu-central-1.amazonaws.com/eu-central.assets.motorcortex.io/a1/ih8c/jebf/8wpxbreufz.json?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD\u0026X-Amz-Algorithm=AWS4-HMAC-SHA256\u0026X-Amz-Credential=AKIAXEUDFZIRQMHEAXOR%2F20240119%2Feu-central-1%2Fs3%2Faws4_request\u0026X-Amz-Date=20240119T091737Z\u0026X-Amz-SignedHeaders=host\u0026X-Amz-Expires=21600\u0026X-Amz-Signature=b1707f8073e548fa2c1249e7a82e5d8b4ea4d7d6ef4b440ef4d0b2b7b2f90ddd",
+      "mode": 0
+    },
+    {
+      "name": "setpoint-generator.link.json",
+      "filesize": 497,
+      "path": "meril-robot-template-dobot_v1-homing-1.3.0-1-1705655394/linking/setpoint-generator.link.json",
+      "url": "https://s3.eu-central-1.amazonaws.com/eu-central.assets.motorcortex.io/c6/wmhd/euwm/u3c7llervb.json?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD\u0026X-Amz-Algorithm=AWS4-HMAC-SHA256\u0026X-Amz-Credential=AKIAXEUDFZIRQMHEAXOR%2F20240119%2Feu-central-1%2Fs3%2Faws4_request\u0026X-Amz-Date=20240119T091737Z\u0026X-Amz-SignedHeaders=host\u0026X-Amz-Expires=21600\u0026X-Amz-Signature=41d549aafa2a33ba215cf27afa12efea0aea9a8dd20bce4823827d73cc8de44d",
+      "mode": 0
+    },
+    {
+      "name": "signal-generator.link.json",
+      "filesize": 989,
+      "path": "meril-robot-template-dobot_v1-homing-1.3.0-1-1705655394/linking/signal-generator.link.json",
+      "url": "https://s3.eu-central-1.amazonaws.com/eu-central.assets.motorcortex.io/z8/vrzg/5iwh/pbsdinakoo.json?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD\u0026X-Amz-Algorithm=AWS4-HMAC-SHA256\u0026X-Amz-Credential=AKIAXEUDFZIRQMHEAXOR%2F20240119%2Feu-central-1%2Fs3%2Faws4_request\u0026X-Amz-Date=20240119T091737Z\u0026X-Amz-SignedHeaders=host\u0026X-Amz-Expires=21600\u0026X-Amz-Signature=b01dcc86b03d3ff442418811bf71bbafc26046a780878d6cd3c92becff57b418",
+      "mode": 0
+    },
+    {
+      "name": "base.link.json",
+      "filesize": 11230,
+      "path": "meril-robot-template-dobot_v1-homing-1.3.0-1-1705655394/linking_old/base.link.json",
+      "url": "https://s3.eu-central-1.amazonaws.com/eu-central.assets.motorcortex.io/rx/gl2s/6jzq/xenockxuay.json?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD\u0026X-Amz-Algorithm=AWS4-HMAC-SHA256\u0026X-Amz-Credential=AKIAXEUDFZIRQMHEAXOR%2F20240119%2Feu-central-1%2Fs3%2Faws4_request\u0026X-Amz-Date=20240119T091737Z\u0026X-Amz-SignedHeaders=host\u0026X-Amz-Expires=21600\u0026X-Amz-Signature=d973e05b322b893ee1a69050baa433f99128d27e1f17e247724b7e8702f25bd0",
+      "mode": 0
+    },
+    {
+      "name": "base.link_copy.json",
+      "filesize": 10765,
+      "path": "meril-robot-template-dobot_v1-homing-1.3.0-1-1705655394/linking_old/base.link_copy.json",
+      "url": "https://s3.eu-central-1.amazonaws.com/eu-central.assets.motorcortex.io/9o/7bnh/mxh7/oi5y6lplhg.json?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD\u0026X-Amz-Algorithm=AWS4-HMAC-SHA256\u0026X-Amz-Credential=AKIAXEUDFZIRQMHEAXOR%2F20240119%2Feu-central-1%2Fs3%2Faws4_request\u0026X-Amz-Date=20240119T091737Z\u0026X-Amz-SignedHeaders=host\u0026X-Amz-Expires=21600\u0026X-Amz-Signature=2f7f6619e9d50ce306650712da05c318b3c08c3b1e450c75a0134b4d1a439823",
+      "mode": 0
+    },
+    {
+      "name": "setpoint-generator.link.json",
+      "filesize": 497,
+      "path": "meril-robot-template-dobot_v1-homing-1.3.0-1-1705655394/linking_old/setpoint-generator.link.json",
+      "url": "https://s3.eu-central-1.amazonaws.com/eu-central.assets.motorcortex.io/bz/mf3c/fqsq/2syxiv9zgu.json?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD\u0026X-Amz-Algorithm=AWS4-HMAC-SHA256\u0026X-Amz-Credential=AKIAXEUDFZIRQMHEAXOR%2F20240119%2Feu-central-1%2Fs3%2Faws4_request\u0026X-Amz-Date=20240119T091737Z\u0026X-Amz-SignedHeaders=host\u0026X-Amz-Expires=21600\u0026X-Amz-Signature=d9336f5fbef1b8903ea6d2ec5611e7a19a936b36fdf3c2fb77edbd5d5dfac909",
+      "mode": 0
+    },
+    {
+      "name": "signal-generator.link.json",
+      "filesize": 989,
+      "path": "meril-robot-template-dobot_v1-homing-1.3.0-1-1705655394/linking_old/signal-generator.link.json",
+      "url": "https://s3.eu-central-1.amazonaws.com/eu-central.assets.motorcortex.io/2x/ujdm/pqql/vdhjcv1kma.json?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD\u0026X-Amz-Algorithm=AWS4-HMAC-SHA256\u0026X-Amz-Credential=AKIAXEUDFZIRQMHEAXOR%2F20240119%2Feu-central-1%2Fs3%2Faws4_request\u0026X-Amz-Date=20240119T091737Z\u0026X-Amz-SignedHeaders=host\u0026X-Amz-Expires=21600\u0026X-Amz-Signature=95eafe57c47170b93960ee8133a90906d80f0771205656d184c20f768f303fd4",
+      "mode": 0
+    },
+    {
+      "name": "Dobot-CR5.old.xml",
+      "filesize": 4431,
+      "path": "meril-robot-template-dobot_v1-homing-1.3.0-1-1705655394/mech/Dobot-CR5.old.xml",
+      "url": "https://s3.eu-central-1.amazonaws.com/eu-central.assets.motorcortex.io/qb/n1ex/1suq/liisgwros7.xml?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD\u0026X-Amz-Algorithm=AWS4-HMAC-SHA256\u0026X-Amz-Credential=AKIAXEUDFZIRQMHEAXOR%2F20240119%2Feu-central-1%2Fs3%2Faws4_request\u0026X-Amz-Date=20240119T091737Z\u0026X-Amz-SignedHeaders=host\u0026X-Amz-Expires=21600\u0026X-Amz-Signature=f1bacdab6f7233c250d4d29ba317fe5db0641e0ca2583fecb7c729d5a0d0906e",
+      "mode": 0
+    },
+    {
+      "name": "Dobot-CR5.xml",
+      "filesize": 4427,
+      "path": "meril-robot-template-dobot_v1-homing-1.3.0-1-1705655394/mech/Dobot-CR5.xml",
+      "url": "https://s3.eu-central-1.amazonaws.com/eu-central.assets.motorcortex.io/vz/b7wz/yfvi/ntphzrii0x.xml?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD\u0026X-Amz-Algorithm=AWS4-HMAC-SHA256\u0026X-Amz-Credential=AKIAXEUDFZIRQMHEAXOR%2F20240119%2Feu-central-1%2Fs3%2Faws4_request\u0026X-Amz-Date=20240119T091737Z\u0026X-Amz-SignedHeaders=host\u0026X-Amz-Expires=21600\u0026X-Amz-Signature=f02492cf6bac165d868d4077cdf1d7438d3b91afeda214295439218aed99c3e1",
+      "mode": 0
+    },
+    {
+      "name": "udp.links.json",
+      "filesize": 6141,
+      "path": "meril-robot-template-dobot_v1-homing-1.3.0-1-1705655394/udp/udp.links.json",
+      "url": "https://s3.eu-central-1.amazonaws.com/eu-central.assets.motorcortex.io/n0/isbz/m3gs/3ndnusedwo.json?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD\u0026X-Amz-Algorithm=AWS4-HMAC-SHA256\u0026X-Amz-Credential=AKIAXEUDFZIRQMHEAXOR%2F20240119%2Feu-central-1%2Fs3%2Faws4_request\u0026X-Amz-Date=20240119T091737Z\u0026X-Amz-SignedHeaders=host\u0026X-Amz-Expires=21600\u0026X-Amz-Signature=286a32822c1c895e9c2f5c03f867f9eb5d889a43a5e104c1244b424e11a8116d",
+      "mode": 0
+    },
+    {
+      "name": "udp.packets.json",
+      "filesize": 2786,
+      "path": "meril-robot-template-dobot_v1-homing-1.3.0-1-1705655394/udp/udp.packets.json",
+      "url": "https://s3.eu-central-1.amazonaws.com/eu-central.assets.motorcortex.io/1d/x8c0/ak4f/jmqycd8ufy.json?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD\u0026X-Amz-Algorithm=AWS4-HMAC-SHA256\u0026X-Amz-Credential=AKIAXEUDFZIRQMHEAXOR%2F20240119%2Feu-central-1%2Fs3%2Faws4_request\u0026X-Amz-Date=20240119T091737Z\u0026X-Amz-SignedHeaders=host\u0026X-Amz-Expires=21600\u0026X-Amz-Signature=920f54559d450e90d56be870e4cf60ac82bd67c9a3db2106018796eada09592c",
+      "mode": 0
+    },
+    {
+      "name": "parameters.json",
+      "filesize": 1712,
+      "path": "meril-robot-template-dobot_v1-homing-1.3.0-1-1705655394/user/parameters.json",
+      "url": "https://s3.eu-central-1.amazonaws.com/eu-central.assets.motorcortex.io/fd/dz04/7bnh/2ubsivb620.json?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD\u0026X-Amz-Algorithm=AWS4-HMAC-SHA256\u0026X-Amz-Credential=AKIAXEUDFZIRQMHEAXOR%2F20240119%2Feu-central-1%2Fs3%2Faws4_request\u0026X-Amz-Date=20240119T091737Z\u0026X-Amz-SignedHeaders=host\u0026X-Amz-Expires=21600\u0026X-Amz-Signature=858ac3da090ee9ff0f0d13c5fa76e6129a92eca6bc0d87ca4fffdc96548bfc3f",
+      "mode": 0
+    }
+  ],
+  "project": {
+    "title": "P0173 - MerilLife"
+  }
+}

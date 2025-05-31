@@ -1,0 +1,162 @@
+{
+  "Outgoing": {
+    "frameCounter": {
+      "Id": 1,
+      "Type": "uint32"
+    },
+    "state": {
+      "Id": 2,
+      "Type": "int32"
+    },
+    "mode": {
+      "Id": 3,
+      "Type": "int32"
+    },
+    "activeErrorsEs": {
+      "Id": 4,
+      "Type": "uint32[42]"
+    },
+    "activeErrorsFd": {
+      "Id": 5,
+      "Type": "uint32[42]"
+    },
+    "activeErrorsSd": {
+      "Id": 6,
+      "Type": "uint32[42]"
+    },
+    "activeErrorsWa": {
+      "Id": 7,
+      "Type": "uint32[42]"
+    },
+    "actualJointPositionsFiltered": {
+      "Id": 8,
+      "Type": "float[9]"
+    },
+    "actualActuatorPositionsFiltered": {
+      "Id": 9,
+      "Type": "float[9]"
+    },
+    "actualToolCoordinates": {
+      "Id": 10,
+      "Type": "float[6]"
+    },
+    "fulcrumPose": {
+      "Id": 11,
+      "Type": "float[6]"
+    },
+    "RFID:Status_word": {
+      "Type": "uint8",
+      "Id": 0
+    },
+    "RFID:Header": {
+      "Type": "uint8",
+      "Id": 0
+    },
+    "RFID:Instrument_type": {
+      "Type": "uint8",
+      "Id": 0
+    },
+    "RFID:Usage_limit": {
+      "Type": "uint8",
+      "Id": 0
+    },
+    "RFID:Instrument_version": {
+      "Type": "uint16",
+      "Id": 0
+    },
+    "RFID:Mfg_Country_code": {
+      "Type": "uint8",
+      "Id": 0
+    },
+    "RFID:Mfg_Plant_code": {
+      "Type": "uint8",
+      "Id": 0
+    },
+    "RFID:Mfg_Date": {
+      "Type": "uint8",
+      "Id": 0
+    },
+    "RFID:Mfg_Month": {
+      "Type": "uint8",
+      "Id": 0
+    },
+    "RFID:Mfg_year": {
+      "Type": "uint8",
+      "Id": 0
+    },
+    "RFID:QC_Status": {
+      "Type": "uint8",
+      "Id": 0
+    },
+    "RFID:Used_hsptl_code": {
+      "Type": "uint16",
+      "Id": 0
+    },
+    "RFID:Number_of_usage": {
+      "Type": "uint8",
+      "Id": 0
+    },
+    "RFID:Last_used_Date": {
+      "Type": "uint8",
+      "Id": 0
+    },
+    "RFID:Last_used_Month": {
+      "Type": "uint8",
+      "Id": 0
+    },
+    "RFID:Last_used_Year": {
+      "Type": "uint8",
+      "Id": 0
+    },
+    "RFID:Last_used_Hour": {
+      "Type": "uint8",
+      "Id": 0
+    }
+  },
+  "Incoming": {
+    "frameCounter": {
+      "Id": 1,
+      "Type": "uint32"
+    },
+    "stateCommand": {
+      "Id": 2,
+      "Type": "int32"
+    },
+    "modeCommand": {
+      "Id": 3,
+      "Type": "int32"
+    },
+    "position": {
+      "Id": 4,
+      "Type": "float[3]"
+    },
+    "eulerZYX": {
+      "Id": 5,
+      "Type": "float[3]"
+    },
+    "quaternion": {
+      "Id": 6,
+      "Type": "float[4]"
+    },
+    "positionEnable": {
+      "Id": 7,
+      "Type": "bool"
+    },
+    "orientationEnable": {
+      "Id": 8,
+      "Type": "bool"
+    },
+    "positionScale": {
+      "Id": 9,
+      "Type": "float"
+    },
+    "orientationScale": {
+      "Id": 10,
+      "Type": "float"
+    },
+    "pinch": {
+      "Id": 11,
+      "Type": "float"
+    }
+  }
+}

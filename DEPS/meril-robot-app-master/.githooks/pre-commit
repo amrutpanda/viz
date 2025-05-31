@@ -1,0 +1,23 @@
+#!/bin/sh
+#
+# pre-commit hook to save the "last known previous commit version" into
+# the git repo itself, so when we use subtrees atleast we have the
+# "last known previous commit version" (lkpcv) of the sub-treed project
+
+# no --dirty, because it is last know previous commit version:
+lkpcv=$(git describe --tags --long --always)
+if [ $? -ne 0 ]
+then
+exit -1 # failed
+fi
+
+echo $lkpcv > .mcx-lkpcv
+git add .mcx-lkpcv
+
+# keep our .mcx-lkpcv file when merging
+git config --local merge.mcx_ours.driver true
+grep -qxF '.mcx-lkpcv merge=mcx_ours' .gitattributes || echo '.mcx-lkpcv merge=mcx_ours' >> .gitattributes
+git add .gitattributes
+
+echo "\nUpdated .mcx-lkpcv to $lkpcv\n"
+exit 0

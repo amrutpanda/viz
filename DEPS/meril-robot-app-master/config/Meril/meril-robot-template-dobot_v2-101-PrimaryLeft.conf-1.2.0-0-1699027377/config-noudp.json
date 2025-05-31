@@ -1,0 +1,124 @@
+{
+  "Mode": "Production",
+  "Mode_": "Simulation",
+  "Drive": "cia402",
+  "Path": {
+    "Fieldbus": "io/master.xml",
+    "Control": "control/control.xml",
+    "UserParameters": "user/parameters.json",
+    "Linking": "linking/base.link.json",
+    "Link": "",
+    "Mechanism": "mech/Dobot-CR5.xml",
+    "License": "/etc/motorcortex/license.lic",
+    "Log": "/var/www/motorcortex/log",
+    "Persistence": "control/persistence.bin"
+  },
+  "AxesControl": {
+    "Enable": true,
+    "NumberOfAxes": 9,
+    "NumberOfActuators": 9
+  },
+  "ManipulatorControl": {
+    "Enable": true,
+    "NumberOfJoints": 9
+  },
+  "UserFrame": {
+    "Enable": false,
+    "Amount": 1
+  },
+  "Joystick": {
+    "Enable": false,
+    "Amount": 1
+  },
+  "Tool6DofAdmittance": {
+    "Enable": false,
+    "Amount": 1
+  },
+  "Bartending": {
+    "Enable": false,
+    "Amount": 1
+  },
+  "SafetyChannelSelector": {
+    "Enable": false,
+    "NumberOfChannels": 1
+  },
+  "CollisionDetector": {
+    "Enable": true,
+    "Amount": 6,
+    "Linking": "linking/collision-detector.link.json"
+  },
+  "SignalGenerator": {
+    "Enable": false,
+    "Amount": 3,
+    "Linking": "linking/signal-generator.link.json"
+  },
+  "SetpointGenerator": {
+    "Enable": false,
+    "Amount": 1,
+    "Linking": "linking/setpoint-generator.link.json"
+  },
+  "UdpComm": {
+    "Enable": false,
+    "Amount": 1,
+    "ListenOnPort": 16386,
+    "ReplyToSource": true,
+    "SendCycleTime": 0,
+    "SendToHost": "",
+    "SendToPort": 0,
+    "Packets": "udp/udp.packets.json",
+    "Linking": "udp/udp.links.json"
+  },
+  "Server": {
+    "Default": {
+      "URL": "wss://*:5568:5567",
+      "Direction": "listen",
+      "Login": "disable",
+      "Certificate": "/etc/ssl/certs/motorcortex.pem"
+    }
+  },
+  "Realtime": {
+    "Isolate": [
+      0,
+      1
+    ],
+    "Allocate": 16
+  },
+  "Task": {
+    "Control_task": {
+      "Sched": "Realtime",
+      "Cpu": [
+        0
+      ],
+      "Prio": 80,
+      "Dt": 1000
+    },
+    "Fieldbus_task": {
+      "Sched": "Realtime",
+      "Cpu": [
+        1
+      ],
+      "Prio": 80,
+      "Dt": 1000
+    },
+    "Simulator_task": {
+      "Sched": "Realtime",
+      "Dt": 1000
+    },
+    "Logic_task": {
+      "Sched": "Realtime",
+      "Dt": 10000
+    },
+    "Logger_task": {
+      "Sched": "Normal",
+      "Dt": 1000
+    },
+    "IO_task": {
+      "Sched": "Realtime",
+      "Dt": 1000
+    },
+    "Comm_task": {
+      "Sched": "Normal",
+      "Dt": 1000
+    }
+  }
+}
