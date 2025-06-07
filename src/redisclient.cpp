@@ -65,7 +65,14 @@ std::string RedisClient::get(const std::string& key) {
     return reply->str;
 }
 
-void RedisClient::set(const std::string& key, std::string& value) {
+void RedisClient::set(const std::string& key,std::string& value) {
+    std::unique_ptr < redisReply, redisReplyDeleter> reply;
+    reply = command("SET %s %s", key.c_str(), value.c_str());
+    if (!reply || reply->type == REDIS_REPLY_ERROR )
+        throw std::runtime_error("Error while reading from server with key: " + key );
+}
+
+void RedisClient::set(const std::string& key, const std::string& value) {
     std::unique_ptr < redisReply, redisReplyDeleter> reply;
     reply = command("SET %s %s", key.c_str(), value.c_str());
     if (!reply || reply->type == REDIS_REPLY_ERROR )
@@ -497,9 +504,9 @@ void RedisClient::StringToDoubleArray(std::string& str, char delimiter, double* 
 
     *ptr = std::stod(tstr);
     len += 1;
-
+    
     if (len != arr_len )
-        throw std::runtime_error("Number of elements to convert to double doesn't match the given array length. " + std::to_string(len)+" != " + std::to_string(arr_len));    
+        throw std::runtime_error("Number of elements to convert to double doesn't match the given array length. " + std::to_string(len) + " != " + std::to_string(arr_len));    
 }
 
 void RedisClient::DoubleArrayToString(double* dbarr, int arr_len, std::string& str, char delimiter) {
@@ -523,7 +530,6 @@ void RedisClient::executeAllReadCallbacks() {
     {
         std::string retval;
         retval =  get(_reads.keys[callback_num]);
-        
         switch (_reads.dtypes[callback_num])
         {
         case STR:
@@ -563,8 +569,9 @@ void RedisClient::executeAllReadCallbacks() {
                 else
                 {
                     *ptr = std::stod(retval);
-                }        
+                }
             }
+            break; 
         case EIGEN:
             {
                 double* ptr = (double*) _reads.objects[callback_num];
@@ -572,6 +579,7 @@ void RedisClient::executeAllReadCallbacks() {
                 // double dbarr[n];
                 StringToDoubleArray(retval,',',ptr,n);
             }
+            break;
         
         default:
             break;
@@ -618,12 +626,14 @@ void RedisClient::executeAllWriteCallbacks() {
                     str = std::to_string(*ptr); 
                 }
             }
+            break;
         case EIGEN:
             {
                 double* ptr = (double*) _writes.objects[callback_num];
                 int n = _writes.size_pair[callback_num].first * _writes.size_pair[callback_num].second;
                 DoubleArrayToString(ptr,n,str,',');
             }
+            break;
         default:
             break;
         }

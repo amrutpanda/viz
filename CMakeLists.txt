@@ -32,6 +32,12 @@ list(APPEND CMAKE_PREFIX_PATH "/home/merai/Files/C++/urdfdom/install/lib/urdfdom
 find_package(urdfdom REQUIRED)
 include_directories(${urdfdom_INCLUDE_DIRS} ${console_bridge_INCLUDE_DIRS} ${OGRE_INCLUDE_DIRS})
 
+# chai3d library.
+list(APPEND CMAKE_PREFIX_PATH "/home/merai/Files/C++/chai3d/build")
+find_package(chai3d REQUIRED)
+include_directories(${CHAI3D_INCLUDE_DIRS})
+link_directories(${CHAI3D_LIBRARY_DIRS})
+
 # SDL2 library
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})
@@ -116,4 +122,5 @@ add_subdirectory(simulation)
 add_subdirectory(model)
 add_subdirectory(primitives)
 add_subdirectory(examples)
+add_subdirectory(Haptics)
 

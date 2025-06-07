@@ -386,7 +386,17 @@ void simMultiBodyDynamicsWorld::getRobotJointTorque(mMultiBody* _robot,Eigen::Ve
     }
 }
 
-void simMultiBodyDynamicsWorld::setRobotJointTorque(mMultiBody* _robot,Eigen::VectorXd& _q)
+void simMultiBodyDynamicsWorld::resetJointPos(mMultiBody* _robot, const Eigen::VectorXd& _q)
+{
+    if (_q.size() != _robot->_multibody->getNumDofs())
+        throw std::runtime_error("vector size doesnot match with the no. of joints.Inside: resetJointPos function\n");
+    for (int i = 0; i < _robot->_multibody->getNumDofs() ; i++)
+    {
+        _robot->_multibody->setJointPos(i,_q[i]);
+    }
+}
+
+void simMultiBodyDynamicsWorld::setRobotJointTorque(mMultiBody* _robot,const Eigen::VectorXd& _q)
 {
     if (_q.size() != _robot->_multibody->getNumDofs())
         throw std::runtime_error("vector size doesnot match with the no. of joints.Inside: setRobotJointTorque function\n");

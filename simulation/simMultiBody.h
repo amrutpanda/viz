@@ -56,7 +56,10 @@ public:
     void getRobotJointVel(int index, Eigen::VectorXd& _qd);
     void getRobotJointPos(mMultiBody*,Eigen::VectorXd& _q);
     void getRobotJointVel(mMultiBody*, Eigen::VectorXd& _dq);
-    void setRobotJointTorque(mMultiBody*, Eigen::VectorXd& _t);
+
+    void resetJointPos(mMultiBody*, const Eigen::VectorXd& _q);
+
+    void setRobotJointTorque(mMultiBody*, const Eigen::VectorXd& _t);
     void getRobotJointTorque(mMultiBody*, Eigen::VectorXd& _t);
     void getForceSensorOutput(int _index, Eigen::Vector3d& _force, Eigen::Vector3d& _moment);
 

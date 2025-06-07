@@ -280,6 +280,7 @@ void BulletURDFImporter::createMultiBodyCompFromURDFLink(int linkIndex, int pare
 bool BulletURDFImporter::createMultiBodyLinkCollisionShapes(int linkIndex, urdf::Link* _link)
 {
     std::cout << "Processing collision mesh for link: " << _link->name << std::endl;
+    float _margin = -0.01;
     if (_link->collision_array.size() == 0)
     {
         m_multibody->_colShapes.push_back(nullptr);
@@ -311,7 +312,7 @@ bool BulletURDFImporter::createMultiBodyLinkCollisionShapes(int linkIndex, urdf:
                 btVector3 dim(boxptr->dim.x/2, boxptr->dim.y/2,boxptr->dim.z/2); // TO-DO: need to verify the box size.
                 // btVector3 dim(boxptr->dim.x, boxptr->dim.y,boxptr->dim.z);
                 shape = new btBoxShape(dim);
-                shape->setMargin(0);
+                shape->setMargin(_margin);
                 break;
             }
         case urdf::Geometry::CYLINDER :
@@ -329,7 +330,7 @@ bool BulletURDFImporter::createMultiBodyLinkCollisionShapes(int linkIndex, urdf:
             {
                 urdf::Sphere* sptr = dynamic_cast<urdf::Sphere*>(cptr->geometry.get());
                 shape = new btSphereShape(btScalar(sptr->radius));
-                shape->setMargin(0);
+                shape->setMargin(_margin);
                 break;
             }
         case urdf::Geometry::MESH :
@@ -367,7 +368,7 @@ bool BulletURDFImporter::createMultiBodyLinkCollisionShapes(int linkIndex, urdf:
                     tshape->recalcLocalAabb();
                 }
                 // experimental: set margin to be zero.
-                tshape->setMargin(0);
+                tshape->setMargin(_margin);
                 // create a shapehull builder.
                 btShapeHull* hull = new btShapeHull(tshape);
                 std::cout << "Margin: " << tshape->getMargin() << std::endl;

@@ -65,6 +65,7 @@ public:
 
     std::string get(const std::string& key);
     void set(const std::string& key, std::string& value);
+    void set(const std::string& key, const std::string& value);
     void ping();
     bool keyExists(const std::string& key);
 
@@ -73,14 +74,34 @@ public:
     void pipeset(const std::vector<std::string> &keys, std::vector<std::string>& values);
 
     int createStringReadCallback( const std::string& key, std::string& object); 
+    /**
+     * @brief creates a callback for reading int value or array.
+     * @param arr_len: size of the array if you want to read a array.
+     *                 For a single value arr_len = 1
+    */
     int createIntReadCallback( const std::string& key, int& object, int arr_size);
+    /**
+     * @brief creates a callback for reading double value or array.
+     * @param arr_len: size of the array if you want to read a array.
+     *                 For a single value arr_len = 1
+    */
     int createDoubleReadCallback( const std::string& key, double& object, int arr_size);
     
     template< typename _Scalar,int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols >
     int createEigenReadCallback(const std::string& key, Eigen::Matrix<_Scalar,_Rows, _Cols, _Options, _MaxRows, _MaxCols >& object);
 
     int createStringWriteCallback( const std::string& key, std::string& object);
+    /**
+     * @brief creates a callback for writing int value or array.
+     * @param arr_len: size of the array if you want to write a array.
+     *                 For a single value arr_len = 1
+    */
     int createIntWriteCallback( const std::string& key, int& object, int arr_size);
+    /**
+     * @brief creates a callbac for writing double value or array.
+     * @param arr_len: size of the array if you want to write a array.
+     *                 For a single value arr_len = 1
+    */
     int createDoubleWriteCallback( const std::string& key, double& object, int arr_size);
 
     // template< typename _Scalar,int rows, int cols, int options, int maxrows, int maxcols >
@@ -103,9 +124,10 @@ public:
     void DoubleArrayToString(double* dbarr, int arr_len, std::string& str, char delimiter);
 
     template< typename _Scalar,int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols >
-    void getEigenMatrix(const std::string& key, Eigen::Matrix< _Scalar,_Rows, _Cols, _Options,_MaxRows,_MaxCols>& matrix);
-    template< typename _Scalar,int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols >
-    void setEigenMatrix(const std::string& key, Eigen::Matrix< _Scalar,_Rows, _Cols, _Options,_MaxRows,_MaxCols>& matrix);
+    void getEigenMatrix(const std::string& key, const Eigen::Matrix< _Scalar,_Rows, _Cols, _Options,_MaxRows,_MaxCols>& matrix);
+    
+    template< typename _Scalar,int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+    void setEigenMatrix(const std::string& key, const Eigen::Matrix< _Scalar,_Rows, _Cols, _Options,_MaxRows,_MaxCols>& matrix);
 
 
     RedisClient(std::string hostname = "127.0.0.1", int port = 6379);
@@ -180,7 +202,7 @@ int RedisClient::createEigenWriteCallback(const std::string& key, Eigen::Matrix<
 }
 
 template< typename _Scalar,int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols >
-void RedisClient::getEigenMatrix(const std::string& key, Eigen::Matrix< _Scalar,_Rows, _Cols, _Options,_MaxRows,_MaxCols>& matrix) {
+void RedisClient::getEigenMatrix(const std::string& key, const Eigen::Matrix< _Scalar,_Rows, _Cols, _Options,_MaxRows,_MaxCols>& matrix) {
     int n = _reads.callback_indices.size();
     int key_index = 0;
 
@@ -205,12 +227,32 @@ void RedisClient::getEigenMatrix(const std::string& key, Eigen::Matrix< _Scalar,
     std::string str;
     str = get(key);
     int size = matrix.rows() * matrix.cols();
-    StringToDoubleArray(str,',',matrix.data(),size);
+    // StringToDoubleArray(str,',',matrix.data(),size);
+    // double* _matrix = const_cast<double*>(matrix.data());
+    // StringToDoubleArray(str,',',_matrix,size);
+    
+    if constexpr(std::is_same<_Scalar,double>::value)
+    {
+        double* _matrix = const_cast<double*>(matrix.data());
+        StringToDoubleArray(str,',',_matrix,size);
+    }
+    else
+    {     
+        if constexpr(std::is_same<_Scalar,int>::value)
+        {
+            int* _matrix = const_cast<int*>(matrix.data());
+            StringToIntArray(str,',',_matrix,size);
+        }
+        else
+        {
+            throw std::runtime_error("getEigen:: Unknown Scalar type. Only supports double and int");
+        }
+    }
     
 }
 
 template< typename _Scalar,int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols >
-void RedisClient::setEigenMatrix(const std::string& key, Eigen::Matrix< _Scalar,_Rows, _Cols, _Options,_MaxRows,_MaxCols>& matrix) {
+void RedisClient::setEigenMatrix(const std::string& key,const Eigen::Matrix< _Scalar,_Rows, _Cols, _Options,_MaxRows,_MaxCols>& matrix) {
 
     int n = _writes.callback_indices.size();
     int key_index = 0;
@@ -235,6 +277,28 @@ void RedisClient::setEigenMatrix(const std::string& key, Eigen::Matrix< _Scalar,
 
     std::string str;
     int size = matrix.rows() * matrix.cols();
-    DoubleArrayToString(matrix.data(),size,str,',');
+    // DoubleArrayToString(matrix.data(),size,str,',');
+    // double* _matrix = const_cast<double*>(matrix.data());
+    // DoubleArrayToString(_matrix,size,str,',');
+
+    if constexpr(std::is_same<_Scalar,double>::value)
+    {
+        double* _matrix = const_cast<double*>(matrix.data());
+        DoubleArrayToString(_matrix,size,str,',');
+    }
+    else
+    {
+        if constexpr(std::is_same<_Scalar,int>::value)
+        {
+            int* _matrix = const_cast<int*>(matrix.data());
+            IntArrayToString(_matrix,size,str,',');
+        }
+        else
+        {
+            throw std::runtime_error("setEigen:: Unknown Scalar type. Only supports double and int");
+        }
+    }
+    
+    
     set(key,str);
 }

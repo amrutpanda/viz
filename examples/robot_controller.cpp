@@ -33,6 +33,7 @@ int main(int argc, char const *argv[])
     _q.resize(nDof);
     _dq.resize(nDof);
     _command_torques.resize(nDof);
+    _command_torques.setZero();
 
     Eigen::VectorXd pos(6);
     pos.setZero();
@@ -44,6 +45,9 @@ int main(int argc, char const *argv[])
     int r1 = redis_client.createEigenReadCallback(ROBOT_JOINT_POSITION_KEY,robot_model->_q);
     int r2 = redis_client.createEigenReadCallback(ROBOT_JOINT_VELOCITY_KEY,robot_model->_dq);
     int w1 = redis_client.createEigenWriteCallback(ROBOT_JOINT_TORQUE_KEY,_command_torques);
+
+    // just for testing.
+    redis_client.setEigenMatrix(ROBOT_JOINT_TORQUE_KEY,_command_torques);
 
     Eigen::VectorXd _gravity(n);
     Eigen::VectorXd b(nDof), g(nDof);
@@ -67,8 +71,8 @@ int main(int argc, char const *argv[])
         jointTask->computeTorque(_command_torques);
         // _command_torques = g;
     
-        // std::cout << "command torque: \n" << _command_torques << std::endl;
-        std::cout << "q: \n" << robot_model->_q << std::endl; 
+        std::cout << "command torque: \n" << _command_torques << std::endl;
+        // std::cout << "q: \n" << robot_model->_q << std::endl; 
         redis_client.executeAllWriteCallbacks();
         if (jointTask->HasReachedTarget())
             break;

@@ -48,6 +48,7 @@ int main(int argc, char const *argv[])
     viz.attachFlagVariable(&runloop);
     viz.initApp();
     viz.createRobotObject(robot_name,robot_file);
+
     // viz.createBox("box1",l,b,h);
     // viz.setObjectPoseAndRotation("box1",boxpos,boxrot);
 
@@ -60,6 +61,12 @@ int main(int argc, char const *argv[])
     while (runloop & timer.WaitForNextLoop())
     {
         viz.updateRobotGraphics(robot_name,_q);
+
+        // boxpos = boxpos + Eigen::Vector3d(0.1,0,0);
+        // std::cout << boxpos.transpose() << std::endl;
+        // viz.setBasePoseAndRotation(robot_name,boxpos,boxrot);
+
+        // viz.updateRobotGraphics(robot_name,_q,boxpos,boxrot);
         // viz.setObjectPoseAndRotation("box1",boxpos,boxrot);
         viz.RenderOneFrame();
         if (!runloop)
@@ -85,7 +92,7 @@ void simulation(std::string& _robot_file)
     std::unique_ptr<simMultiBodyDynamicsWorld> sim = std::make_unique<simMultiBodyDynamicsWorld>();
     sim->LoadRobotFromURDFFile(_robot_file);
     sim->setGravity(0, 0, -9.81);
-    // int boxid = sim->addBodyBox(l,b,h,0,boxpos,boxrot); // if mass = 0, the object will be static.
+    int boxid = sim->addBodyBox(l,b,h,0,boxpos,boxrot); // if mass = 0, the object will be static.
     
     RobotObject* robot = sim->getMultiBodyObject(robot_name);
     sim->printRobotJointsInfo(robot);
@@ -98,6 +105,9 @@ void simulation(std::string& _robot_file)
     Eigen::VectorXd pos(6);
     pos.setZero();
     pos(0) = 0.5;
+    pos(1) = 0.5;
+
+    sim->setRobotBasePose(robot_name,boxpos.x(),boxpos.y(),boxpos.z());
 
     LoopTimer timer;
     timer.setLoopFrequency(500);
@@ -111,14 +121,13 @@ void simulation(std::string& _robot_file)
         
         if (_controller_running == "1")
         {   
-            // redis_client.executeAllReadCallbacks();
-            // std::cout << "command torque: " << command_torques << std::endl;
             // add some damping to the robot joints.
             command_torques = command_torques - 0.1*_dq;
             sim->setRobotJointTorque(robot,command_torques);
-            sim->stepSimulation(0.001);
+            sim->stepSimulation(0.002);
 
             // sim->getBodyPoseAndRotation(boxid,boxpos,boxrot);
+            std::cout << "simulation running\n";
         } 
         redis_client.executeAllWriteCallbacks();
     }
