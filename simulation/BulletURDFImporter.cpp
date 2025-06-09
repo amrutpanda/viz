@@ -280,7 +280,7 @@ void BulletURDFImporter::createMultiBodyCompFromURDFLink(int linkIndex, int pare
 bool BulletURDFImporter::createMultiBodyLinkCollisionShapes(int linkIndex, urdf::Link* _link)
 {
     std::cout << "Processing collision mesh for link: " << _link->name << std::endl;
-    float _margin = -0.01;
+    float _margin = 0.01;
     if (_link->collision_array.size() == 0)
     {
         m_multibody->_colShapes.push_back(nullptr);
@@ -323,7 +323,7 @@ bool BulletURDFImporter::createMultiBodyLinkCollisionShapes(int linkIndex, urdf:
                 // printVector(dim,"Cylinder dims: ");
                 shape = new btCylinderShape(dim);
                 // shape = new btCylinderShapeZ(dim);
-                shape->setMargin(0);
+                shape->setMargin(_margin);
                 break;
             }
         case urdf::Geometry::SPHERE :

@@ -70,7 +70,7 @@ int main(int argc, char const *argv[])
         robot_model->updateModel();
         jointTask->computeTorque(_command_torques);
         // _command_torques = g;
-    
+       
         std::cout << "command torque: \n" << _command_torques << std::endl;
         // std::cout << "q: \n" << robot_model->_q << std::endl; 
         redis_client.executeAllWriteCallbacks();

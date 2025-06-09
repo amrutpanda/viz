@@ -7,7 +7,7 @@ include_directories(ruckig/include)
 set(LINK_LIBRARIES ${DYNAMICS_LIBRARY})
 include_directories(${PROJECT_SOURCE_DIR}/primitives)
 
-add_library(primitives SHARED JointTask.cpp)
+add_library(primitives SHARED JointTask.cpp HapticController.cpp)
 target_link_libraries(primitives ${LINK_LIBRARIES} ruckig)
 target_include_directories(primitives PUBLIC ${PROJECT_SOURCE_DIR}/primitives)
 

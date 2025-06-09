@@ -223,9 +223,9 @@ public:
             {
                 if (_colliders[i] != nullptr)
                 {
-                    _colliders[i]->setCollisionFlags(btCollisionObject::CF_NO_CONTACT_RESPONSE);
+                    // _colliders[i]->setCollisionFlags(btCollisionObject::CF_NO_CONTACT_RESPONSE);
+                    _colliders[0]->setCollisionFlags(btCollisionObject::CF_DYNAMIC_OBJECT);
                 }
-                // _colliders[0]->setCollisionFlags(btCollisionObject::CF_DYNAMIC_OBJECT);
                 // _colliders[_colliders.size() - 2]->setCollisionFlags(btCollisionObject::CF_DYNAMIC_OBJECT);
                 // _colliders[_colliders.size() - 1]->setCollisionFlags(btCollisionObject::CF_DYNAMIC_OBJECT);
             }

@@ -393,7 +393,9 @@ void simMultiBodyDynamicsWorld::resetJointPos(mMultiBody* _robot, const Eigen::V
     for (int i = 0; i < _robot->_multibody->getNumDofs() ; i++)
     {
         _robot->_multibody->setJointPos(i,_q[i]);
+        _robot->_multibody->setJointVel(i,0);
     }
+    _robot->updateTransforms();
 }
 
 void simMultiBodyDynamicsWorld::setRobotJointTorque(mMultiBody* _robot,const Eigen::VectorXd& _q)

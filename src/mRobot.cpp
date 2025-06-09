@@ -467,7 +467,9 @@ namespace mviz
 
     void mRobot::ParseBaseLink(mRobotLink* _rlink)
     {
-
+        // set _rlink type to be unknown.
+        _rlink->type = urdf::Joint::UNKNOWN;
+        // set _rlink position and rotation.
         _rlink->setPosition(Ogre::Vector3(base_pos.x(), base_pos.y(), base_pos.z()));
         _rlink->setRotation(base_rot.w(), base_rot.x(), base_rot.y(), base_rot.z());
 
@@ -488,7 +490,7 @@ namespace mviz
         {
             mRobotLinkPtr = object_ptrs[i];
             type = mRobotLinkPtr->type;
-
+        
             if (type == urdf::Joint::REVOLUTE || type == urdf::Joint::CONTINUOUS)
             {   
                 mRobotLinkPtr->setRotationLocal(Ogre::Quaternion(Ogre::Radian(mRobotLinkPtr->joint_variable),mRobotLinkPtr->_axis));   
@@ -498,10 +500,16 @@ namespace mviz
                 mRobotLinkPtr->setPositionLocal(mRobotLinkPtr->_axis * Ogre::Vector3(mRobotLinkPtr->joint_variable));
             }
 
-            else if((type == urdf::Joint::FIXED) && (i == 0))
+            else if((type == urdf::Joint::FIXED) && (i == 0)) // Not used at this moment. Will be changed in future versions.
             {
                 mRobotLinkPtr->setPosition(Ogre::Vector3(base_pos.x(), base_pos.y(), base_pos.z()));
                 mRobotLinkPtr->setRotation(base_rot.w(), base_rot.x(), base_rot.y(), base_rot.z());
+            }
+            else if((type == urdf::Joint::UNKNOWN) && (i == 0))
+            {
+                // std::cout << "Seems to be the base link\n" << std::endl;
+                mRobotLinkPtr->setPositionLocal(Ogre::Vector3(base_pos.x(), base_pos.y(), base_pos.z()));
+                mRobotLinkPtr->setRotationLocal(Ogre::Quaternion(base_rot.w(), base_rot.x(), base_rot.y(), base_rot.z()));
             }
         }     
     }
