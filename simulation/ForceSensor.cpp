@@ -11,6 +11,6 @@ ForceSensor::ForceSensor(btDynamicsWorld* m_world,mMultiBody* _robot,int _link_i
 void ForceSensor::updateForceTorque(Eigen::Vector3d& _force, Eigen::Vector3d& _moment)
 {
     int numManifolds = m_dynamicsWorld->getDispatcher()->getNumManifolds();
-       
+    std::cout << numManifolds << std::endl;
     
 }
