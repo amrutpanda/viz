@@ -106,6 +106,7 @@ namespace mviz{
         void createSphere(std::string _name, float r, std::string parent="");
         void createCylinder(std::string _name, float r, float h, std::string parent="");
         void createScene();
+        void setObjectColor(std::string _name,float r, float g, float b);
         /**
          * CreateLine:
          * input args: 

@@ -141,6 +141,7 @@ namespace mviz
           cmat->getTechnique(0)->getPass(0)->setAmbient(_color);
           cmat->getTechnique(0)->getPass(0)->setDiffuse(_color);
           // pmat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTexture();
+          std::cout << entityPtr << std::endl; // found null entityPtr here.
           entityPtr->setMaterial(cmat);
 
      }
@@ -208,7 +209,7 @@ namespace mviz
                {
                     return true;
                }
-               
+               ;
           }
           return false;
           

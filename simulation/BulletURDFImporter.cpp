@@ -440,10 +440,13 @@ bool BulletURDFImporter::createMultiBodyLinkCollisionShapes(int linkIndex, urdf:
     // setup collsion group and mask.
 
     bool isDynamic = (p_multibody->getLinkMass(linkIndex) == 0) ? false : true;
+    // int collisionfiltergroup = isDynamic ? int(btBroadphaseProxy::DefaultFilter) : int(btBroadphaseProxy::StaticFilter);
     int collisionfiltergroup = isDynamic ? int(btBroadphaseProxy::DefaultFilter) : int(btBroadphaseProxy::StaticFilter);
     int collisionfiltermask = isDynamic ? int(btBroadphaseProxy::AllFilter) : int(btBroadphaseProxy::AllFilter ^ btBroadphaseProxy::StaticFilter);
-    m_world->addCollisionObject(col,collisionfiltergroup, collisionfiltermask); // TO-DO: Need to evaluate other two arguments which are filter masks.
-    // m_world->addCollisionObject(col);
+    // m_world->addCollisionObject(col,collisionfiltergroup, collisionfiltermask); // TO-DO: Need to evaluate other two arguments which are filter masks.
+    m_world->addCollisionObject(col);
+    // m_world->addCollisionObject(col,2,1+2); // for testing.
+    col->setFriction(0.1); // just for testing.
     
     if (p_multibody->getLink(linkIndex).m_jointFeedback == nullptr)
     {

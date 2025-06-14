@@ -450,6 +450,51 @@ namespace mviz
         object->attachChildMesh(scnMgr,mesh_file,Ogre::Vector3(0),Ogre::Quaternion(1,0,0,0),Ogre::Vector3(r,r,r));
     }
 
+    void mGraphics::setObjectColor(std::string _Objname,float r, float g, float b)
+    {
+        Ogre::ColourValue _color = Ogre::ColourValue(r,g,b);
+        Ogre::SceneNode* _node;
+        std::string mesh_name;
+        std::vector<std::string> _mesh_list;
+        _mesh_list.push_back("mCube.mesh");
+        _mesh_list.push_back("mCylinder.mesh");
+        _mesh_list.push_back("mSphere.mesh");
+        // search the node.
+        try
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                _node = getGraphicalObject(_Objname)->getChildMeshNode(_mesh_list[i]);
+                if (_node != nullptr)
+                {
+                    mesh_name = _mesh_list[i];
+                    break;
+                }
+            }
+            
+        }
+        catch(const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+            std::cout << "Inside setObjectColor function" << std::endl;
+        }
+        
+        // add color to the object.
+        Ogre::MaterialPtr pmat = Ogre::MaterialManager::getSingleton().getByName(_Objname);
+        if (pmat == nullptr)
+        {
+            std::cout << "creating new material " << std::endl;
+            pmat = Ogre::MaterialManager::getSingleton().create(_Objname,"UserData");
+        }
+        
+        pmat->getTechnique(0)->getPass(0)->setAmbient(_color);
+        pmat->getTechnique(0)->getPass(0)->setDiffuse(_color*0);
+        pmat->getTechnique(0)->getPass(0)->setSpecular(_color*0);
+        
+        Ogre::Entity* ent = static_cast<Ogre::Entity*>(_node->getAttachedObject(0));
+        ent->getSubEntity(0)->setMaterialName(_Objname,"UserData");
+    }
+
     // ********** +++++++++++++ ***************
     // Graphics related Methods.
 

@@ -196,6 +196,10 @@ void simMultiBodyDynamicsWorld::LoadRobotFromURDFFile(std::string _filename, Eig
     
     _multibody_name_map.at(importer.getName())->_multibody->setHasSelfCollision(_has_selfcollision); // flag for checking self-collision.
     
+    // updating the tranforms (testing)
+    // _multibody_name_map.at(importer.getName())->updateTransforms();
+    _multibody_name_map.at(importer.getName())->setupCollisionFlags();
+
     setRobotBasePose(importer.getName(),_base_pose.x(), _base_pose.y(), _base_pose.z());
     setRobotBaseOrientation(importer.getName(),_base_rotation.x(), _base_rotation.y(), _base_rotation.z(), _base_rotation.w());
     
@@ -447,7 +451,11 @@ unsigned int simMultiBodyDynamicsWorld::addBodyBox(double l, double b, double h,
     btRigidBody* body = new btRigidBody(rbinfo);
     _rigidBodyList.push_back(body);
     m_dynamicsWorld->addRigidBody(body);
-    // body->setRestitution(0.5);
+    // if (isDynamics)
+    //     m_dynamicsWorld->addRigidBody(body);
+    // else
+    //     m_dynamicsWorld->addRigidBody(body,1,1+2);
+    body->setRestitution(0.5);
     return _rigidBodyList.size() - 1;
 }
 
@@ -659,6 +667,15 @@ unsigned int simMultiBodyDynamicsWorld::attachForceSensorToRobot(unsigned int _r
     return _force_sensors.size() - 1;   
 }
 
+void simMultiBodyDynamicsWorld::getForceSensorOutput(mMultiBody* _robotObject ,int _ind, Eigen::Vector3d& Force, Eigen::Vector3d& moment)
+{
+    RobotObject* _robot = _robotObject;
+    btSpatialForceVector _f = _robot->_jointFeedbackIndexList.at(_ind).second->m_reactionForces;
+    // btSpatialForceVector _g = _robot->_jointFeedbackIndexList.
+    Force << _f.m_topVec.x(), _f.m_topVec.y(), _f.m_topVec.z();
+    moment << _f.m_bottomVec.x(), _f.m_bottomVec.y(), _f.m_bottomVec.z(); 
+}
+
 void simMultiBodyDynamicsWorld::stepSimulation(float _ts, float _fixedStep)
 {
     float _t_fixed;
@@ -674,6 +691,12 @@ void simMultiBodyDynamicsWorld::stepSimulation(float _ts, float _fixedStep)
         _t_fixed = _fixedStep;
     }
     m_dynamicsWorld->stepSimulation(_ts,_numSteps,_t_fixed);
+    // update robot transforms.
+    // for (auto it = _multibody_name_map.begin(); it != _multibody_name_map.end(); it++)
+    // {
+    //     // it->second->updateTransforms();
+    // }
+    
     
 }
 

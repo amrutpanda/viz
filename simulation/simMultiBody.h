@@ -61,7 +61,7 @@ public:
 
     void setRobotJointTorque(mMultiBody*, const Eigen::VectorXd& _t);
     void getRobotJointTorque(mMultiBody*, Eigen::VectorXd& _t);
-    void getForceSensorOutput(int _index, Eigen::Vector3d& _force, Eigen::Vector3d& _moment);
+    void getForceSensorOutput(mMultiBody*, int _index, Eigen::Vector3d& _force, Eigen::Vector3d& _moment);
 
     unsigned int addBodyBox(double l, double b, double h, double m, Eigen::Vector3d& _pose, Eigen::Quaterniond& _q);
     unsigned int addBodySphere(double r, double m, Eigen::Vector3d& _pose, Eigen::Quaterniond& _q);

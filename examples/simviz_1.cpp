@@ -23,7 +23,7 @@ Eigen::VectorXd _q,_dq, command_torques;
 
 double l = 0.3;
 double b = 0.3;
-double h = 0.02;
+double h = 0.1;
 Eigen::Vector3d boxpos, boxpos2;
 Eigen::Quaterniond boxrot, boxrot2;
 
@@ -44,7 +44,7 @@ int main(int argc, char const *argv[])
     boxpos << 0.3,-0.3,0.65;
     boxrot = Eigen::Quaterniond(1,0,0,0);
 
-    boxpos2 = boxpos + Eigen::Vector3d(0,0,0.5);
+    boxpos2 = 1*boxpos + Eigen::Vector3d(-0.4,0.4,3.6);
     boxrot2 = boxrot;
 
     mviz::mVisualizer viz("simviz");
@@ -54,7 +54,16 @@ int main(int argc, char const *argv[])
 
     viz.createBox("box1",l,b,h);
     viz.setObjectPoseAndRotation("box1",boxpos,boxrot);
+    viz.setObjectColor("box1",0.4,0.5,0.7);
 
+    viz.createBox("box2",0.82,0.82,0.02);
+    viz.setObjectPoseAndRotation("box2",boxpos2,boxrot2);
+    viz.setObjectColor("box2",0.0,0.1,1.0);
+
+    viz.createGraphicalObject("/home/merai/Downloads/DOBOT - J6 removal_v1.2.dae","sp1",boxpos,boxrot);
+
+    // viz.createSphere("sp1",0.05);
+    // viz.setObjectPoseAndRotation("sp1",boxpos2,boxrot2);
 
     std::thread sim_thread(simulation,std::ref(robot_file));
 
@@ -70,19 +79,22 @@ int main(int argc, char const *argv[])
         // viz.setBasePoseAndRotation(robot_name,boxpos,boxrot);
 
         // viz.updateRobotGraphics(robot_name,_q,boxpos,boxrot);
-        // viz.setObjectPoseAndRotation("box1",boxpos,boxrot);
+        viz.setObjectPoseAndRotation("box1",boxpos,boxrot);
+        viz.setObjectPoseAndRotation("box2",boxpos2,boxrot2);
+
         viz.RenderOneFrame();
         if (!runloop)
             std::cout << "runloop flag is false. Exiting..." << std::endl;
     }
     std::cout << "Visualization" << std::endl;
     timer.printTimerHistory();
-    // sim_thread.join();
+    sim_thread.join();
     return 0;
 }
 
 void simulation(std::string& _robot_file)
 {
+    double loop_rate = 200;
     int rind = redis_client.createEigenWriteCallback(ROBOT_JOINT_POSITION_KEY,_q);
     int vind = redis_client.createEigenWriteCallback(ROBOT_JOINT_VELOCITY_KEY,_dq);
     int cind = redis_client.createStringReadCallback(CONTROLLER_RUNNING_KEY,_controller_running);
@@ -95,8 +107,11 @@ void simulation(std::string& _robot_file)
     std::unique_ptr<simMultiBodyDynamicsWorld> sim = std::make_unique<simMultiBodyDynamicsWorld>();
     sim->LoadRobotFromURDFFile(_robot_file);
     sim->setGravity(0, 0, -9.81);
-    int boxid = sim->addBodyBox(l,b,h,0,boxpos,boxrot); // if mass = 0, the object will be static.
-    int boxid2 = sim->addBodyBox(l,b,h,0.1,boxpos,boxrot);
+
+    // int boxid = sim->addBodyBox(l,b,h,0,boxpos,boxrot); // if mass = 0, the object will be static.
+    // int spid = sim->addBodySphere(0.05,0.1,boxpos2,boxrot2);
+    int bid = sim->addBodyBox(0.82, 0.82, 0.02,100.8,boxpos2,boxrot2);
+
     RobotObject* robot = sim->getMultiBodyObject(robot_name);
     sim->printRobotJointsInfo(robot);
     Eigen::Vector<double,6> _q_init;
@@ -107,6 +122,8 @@ void simulation(std::string& _robot_file)
     // {
     //     std::cout << "Link_name: " << it.second << " " << "Index: " << it.first << std::endl;
     // }
+
+    Eigen::Vector3d Force, Moment;
     
     Eigen::VectorXd pos(6);
     pos.setZero();
@@ -116,9 +133,10 @@ void simulation(std::string& _robot_file)
     // sim->setRobotBasePose(robot_name,boxpos.x(),boxpos.y(),boxpos.z()); // this causes nan value in joint reading.
     
     LoopTimer timer;
-    timer.setLoopFrequency(500);
+    timer.setLoopFrequency(loop_rate);
     timer.InitializeTimer();
     std::cout << "DOF: "  << robot->_jointNameIndexList.size() << std::endl;
+    std::cout << "JointFeedbacks: " << robot->_jointFeedbackIndexList.size() << std::endl;
     while (runloop & timer.WaitForNextLoop())
     {   
         redis_client.executeAllReadCallbacks();
@@ -130,9 +148,13 @@ void simulation(std::string& _robot_file)
             // add some damping to the robot joints.
             command_torques = command_torques - 0.1*_dq;
             sim->setRobotJointTorque(robot,command_torques);
-            sim->stepSimulation(0.002);
+            sim->stepSimulation(0.001);
+            // robot->updateTransforms();
 
             // sim->getBodyPoseAndRotation(boxid,boxpos,boxrot);
+            sim->getBodyPoseAndRotation(bid,boxpos2,boxrot2);
+            sim->getForceSensorOutput(robot,6,Force,Moment);
+            std::cout << Force.transpose() << std::endl;
             // std::cout << "simulation running\n";
         }
         redis_client.executeAllWriteCallbacks();
