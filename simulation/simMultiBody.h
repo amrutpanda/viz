@@ -9,6 +9,7 @@
 // #include <BulletDynamics/btBulletDynamicsCommon.h>
 #include <BulletURDFImporter.h>
 #include <BulletInverseDynamics/btBulletCollisionCommon.h>
+#include <ForceSensor.h>
 #include <pugixml.hpp>
 #include <sstream>
 
@@ -30,6 +31,10 @@ private:
     std::vector<btMotionState*> _rigidBodyMotionStates;
 
     std::vector<std::pair<unsigned int, btMultiBodyJointFeedback*>> _force_sensors;
+    std::vector<ForceSensor*> _ft_sensors;
+
+    // Define a force sensor object pointer.
+    // ForceSensor* ft_sensor = nullptr;
 
     void convertStringTobtVector3(std::string _vstr, btVector3& _v, std::string _del = " ");
     void convertStringTobtQuaternion(std::string _qstr, btQuaternion& _q, std::string _del = " ");
@@ -62,15 +67,16 @@ public:
     void setRobotJointTorque(mMultiBody*, const Eigen::VectorXd& _t);
     void getRobotJointTorque(mMultiBody*, Eigen::VectorXd& _t);
     void getForceSensorOutput(mMultiBody*, int _index, Eigen::Vector3d& _force, Eigen::Vector3d& _moment);
-
+    void getForceSensorOutput(int _sensor_ind, Eigen::Vector3d&, Eigen::Vector3d& );
+    
     unsigned int addBodyBox(double l, double b, double h, double m, Eigen::Vector3d& _pose, Eigen::Quaterniond& _q);
     unsigned int addBodySphere(double r, double m, Eigen::Vector3d& _pose, Eigen::Quaterniond& _q);
     unsigned int addBodyCylinder(double r, double h, double m, Eigen::Vector3d& _pose, Eigen::Quaterniond& _q);
     unsigned int addBodyConvexHull(std::string _filename,double m, Eigen::Vector3d& _inertia, Eigen::Vector3d _pose,
                          Eigen::Quaterniond _q,Eigen::Vector3d _scale);
     void getBodyPoseAndRotation(unsigned int bodyindex, Eigen::Vector3d& _pos, Eigen::Quaterniond& _q);
-    unsigned int attachForceSensorToRobot(std::string _robotName, std::string _linkName);
-    unsigned int attachForceSensorToRobot(unsigned int _robotIndex, unsigned int _ind);
+    // unsigned int attachForceSensorToRobot(std::string _robotName, std::string _linkName);
+    unsigned int attachForceSensorToRobot(RobotObject* _robot, unsigned int _ind);
 
     bool getForceMomentFromForceSensor(unsigned int _ind, Eigen::Vector3d&, Eigen::Quaterniond&);
 

@@ -635,36 +635,41 @@ void simMultiBodyDynamicsWorld::getBodyPoseAndRotation(unsigned int bodyIndex, E
                             trans.getRotation().getY(), trans.getRotation().getZ());
 }
 
-unsigned int simMultiBodyDynamicsWorld::attachForceSensorToRobot(std::string _robotName, std::string _linkName)
-{
-    bool _found = false;
-    RobotObject* _robot = _multibody_name_map[_robotName];
-    btMultiBody* p_multibody;
-    unsigned int _linkIndex;
-    for (int i = 0; i < _robot->_linkNameIndexList.size(); i++)
-    {
-        if ( _robot->_linkNameIndexList[i].second == _linkName)
-        {
-            _linkIndex = i;
-            _found = true;
-            break;
-        }
+// unsigned int simMultiBodyDynamicsWorld::attachForceSensorToRobot(std::string _robotName, std::string _linkName)
+// {
+//     bool _found = false;
+//     RobotObject* _robot = _multibody_name_map[_robotName];
+//     btMultiBody* p_multibody;
+//     unsigned int _linkIndex;
+//     for (int i = 0; i < _robot->_linkNameIndexList.size(); i++)
+//     {
+//         if ( _robot->_linkNameIndexList[i].second == _linkName)
+//         {
+//             _linkIndex = i;
+//             _found = true;
+//             break;
+//         }
         
-    }
-    if (!_found)
-        std::runtime_error("Could find linkname in Robot object. _robotName: " + _robotName + " _linkName: "+ _linkName);
+//     }
+//     if (!_found)
+//         std::runtime_error("Could find linkname in Robot object. _robotName: " + _robotName + " _linkName: "+ _linkName);
     
-    _force_sensors.push_back(std::pair<unsigned int, btMultiBodyJointFeedback*>(_force_sensors.size(),
-                                    _robot->_jointFeedbackIndexList[_linkIndex].second));
-    return _force_sensors.size() - 1;
-}
+//     _force_sensors.push_back(std::pair<unsigned int, btMultiBodyJointFeedback*>(_force_sensors.size(),
+//                                     _robot->_jointFeedbackIndexList[_linkIndex].second));
+//     return _force_sensors.size() - 1;
+// }
 
-unsigned int simMultiBodyDynamicsWorld::attachForceSensorToRobot(unsigned int _robotIndex, unsigned int _ind)
+/**
+ * @brief Can attach 1 force sensor(experimental).
+*/
+unsigned int simMultiBodyDynamicsWorld::attachForceSensorToRobot(RobotObject* _robot, unsigned int _ind)
 {
-    RobotObject* _robot = getMultiBodyObject(_robotIndex);
-    _force_sensors.push_back(std::pair<unsigned int, btMultiBodyJointFeedback*>(_force_sensors.size(),
-                        _robot->_jointFeedbackIndexList[_ind].second));
-    return _force_sensors.size() - 1;   
+    ForceSensor* ft_sensor = new ForceSensor(m_dynamicsWorld,_robot,_ind);
+    if (_ft_sensors.size() == 0 && _ft_sensors.size() < 1)
+        _ft_sensors.push_back(ft_sensor);
+    else
+        throw std::runtime_error("Cannot attach more than 1 force sensors.\n");
+    return _ft_sensors.size();
 }
 
 void simMultiBodyDynamicsWorld::getForceSensorOutput(mMultiBody* _robotObject ,int _ind, Eigen::Vector3d& Force, Eigen::Vector3d& moment)
@@ -674,6 +679,14 @@ void simMultiBodyDynamicsWorld::getForceSensorOutput(mMultiBody* _robotObject ,i
     // btSpatialForceVector _g = _robot->_jointFeedbackIndexList.
     Force << _f.m_topVec.x(), _f.m_topVec.y(), _f.m_topVec.z();
     moment << _f.m_bottomVec.x(), _f.m_bottomVec.y(), _f.m_bottomVec.z(); 
+}
+
+
+void simMultiBodyDynamicsWorld::getForceSensorOutput(int _sensor_ind,Eigen::Vector3d& _force,
+                                                            Eigen::Vector3d& _moment)
+{
+    ForceSensor* _ft_sensor = _ft_sensors.at(_sensor_ind);
+    _ft_sensor->getForceMoment(_force,_moment);
 }
 
 void simMultiBodyDynamicsWorld::stepSimulation(float _ts, float _fixedStep)
@@ -691,12 +704,6 @@ void simMultiBodyDynamicsWorld::stepSimulation(float _ts, float _fixedStep)
         _t_fixed = _fixedStep;
     }
     m_dynamicsWorld->stepSimulation(_ts,_numSteps,_t_fixed);
-    // update robot transforms.
-    // for (auto it = _multibody_name_map.begin(); it != _multibody_name_map.end(); it++)
-    // {
-    //     // it->second->updateTransforms();
-    // }
-    
     
 }
 

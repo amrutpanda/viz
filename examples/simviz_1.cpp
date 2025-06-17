@@ -60,7 +60,7 @@ int main(int argc, char const *argv[])
     viz.setObjectPoseAndRotation("box2",boxpos2,boxrot2);
     viz.setObjectColor("box2",0.0,0.1,1.0);
 
-    viz.createGraphicalObject("/home/merai/Downloads/DOBOT - J6 removal_v1.2.dae","sp1",boxpos,boxrot);
+    // viz.createGraphicalObject("/home/merai/Downloads/DOBOT - J6 removal_v1.2.dae","sp1",boxpos,boxrot);
 
     // viz.createSphere("sp1",0.05);
     // viz.setObjectPoseAndRotation("sp1",boxpos2,boxrot2);
@@ -136,7 +136,8 @@ void simulation(std::string& _robot_file)
     timer.setLoopFrequency(loop_rate);
     timer.InitializeTimer();
     std::cout << "DOF: "  << robot->_jointNameIndexList.size() << std::endl;
-    std::cout << "JointFeedbacks: " << robot->_jointFeedbackIndexList.size() << std::endl;
+    // force sensor attachment.
+    sim->attachForceSensorToRobot(robot,9);
     while (runloop & timer.WaitForNextLoop())
     {   
         redis_client.executeAllReadCallbacks();
@@ -153,7 +154,7 @@ void simulation(std::string& _robot_file)
 
             // sim->getBodyPoseAndRotation(boxid,boxpos,boxrot);
             sim->getBodyPoseAndRotation(bid,boxpos2,boxrot2);
-            sim->getForceSensorOutput(robot,6,Force,Moment);
+            sim->getForceSensorOutput(robot,8,Force,Moment);
             std::cout << Force.transpose() << std::endl;
             // std::cout << "simulation running\n";
         }

@@ -235,6 +235,7 @@ void BulletURDFImporter::createMultiBodyCompFromURDFLink(int linkIndex, int pare
                 m_multibody->_jointNameIndexList.push_back(std::pair<int,std::string>(linkIndex,_pJoint->name));
                 // m_multibody->_jointNameIndexList.push_back(std::pair<int,std::string>(_jointNum,_pJoint->name));
                 m_multibody->_multibody->getLink(linkIndex).m_jointFriction = 0.1;
+                m_multibody->_multibody->setJointPos(linkIndex,2.5);
                 std::cout << "Got a revolute joint" << std::endl;
                 break;
             }
@@ -244,6 +245,7 @@ void BulletURDFImporter::createMultiBodyCompFromURDFLink(int linkIndex, int pare
                                                     parentComToThisPivotOffset,thisLinkPivotToThisLinkComOffset);
                 // m_multibody->_jointNameIndexMap[_pJoint->name] = linkIndex;
                 m_multibody->_jointNameIndexList.push_back(std::pair<int,std::string>(linkIndex,_pJoint->name));
+                m_multibody->_multibody->setJointPos(linkIndex,2.5);
                 // m_multibody->_jointNameIndexList.push_back(std::pair<int,std::string>(_jointNum,_pJoint->name));
                 break;
             }
@@ -274,6 +276,15 @@ void BulletURDFImporter::createMultiBodyCompFromURDFLink(int linkIndex, int pare
     // m_multibody->_linkNameIndexMap[_link->name] = linkIndex;
     m_multibody->_linkNameIndexList.push_back(std::pair<int, std::string>(linkIndex,_link->name));
     // create collision shapes.size_t
+
+    // add joint feedback.
+    if (p_multibody->getLink(linkIndex).m_jointFeedback == nullptr)
+    {
+        std::cout << "No jointfeedback pointer set. Setting now..\n";
+        btMultiBodyJointFeedback* _jointfb = new btMultiBodyJointFeedback();
+        p_multibody->getLink(linkIndex).m_jointFeedback = _jointfb;
+        m_multibody->_jointFeedbackIndexList.push_back(std::pair<int,btMultiBodyJointFeedback*>(linkIndex,_jointfb));
+    }
 
 }
 

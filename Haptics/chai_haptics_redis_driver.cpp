@@ -49,7 +49,8 @@ int main(int argc, char const *argv[])
     signal(SIGINT, sighandler);
 
     // start redis client.
-    RedisClient* redis_client = new RedisClient();
+    // RedisClient* redis_client = new RedisClient();
+    RedisClient* redis_client = new RedisClient("10.11.2.107");
     redis_client->connect();
 
     // find and initialize connected hapic devices.
