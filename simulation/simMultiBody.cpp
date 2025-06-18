@@ -136,6 +136,12 @@ simMultiBodyDynamicsWorld::~simMultiBodyDynamicsWorld()
         if(_rigidBodyMotionStates[i] != nullptr)
             delete _rigidBodyMotionStates[i];
     }
+
+    // clear forcesensor objects.
+    for (auto it : _ft_sensors)
+    {
+        delete it;
+    }
     
     std::cout << "cleared simMultiBodyDynamicsWorld\n";
     
@@ -394,10 +400,12 @@ void simMultiBodyDynamicsWorld::resetJointPos(mMultiBody* _robot, const Eigen::V
 {
     if (_q.size() != _robot->_multibody->getNumDofs())
         throw std::runtime_error("vector size doesnot match with the no. of joints.Inside: resetJointPos function\n");
-    for (int i = 0; i < _robot->_multibody->getNumDofs() ; i++)
+    
+    int count = 0;
+    for (auto it : _robot->_jointNameIndexList)
     {
-        _robot->_multibody->setJointPos(i,_q[i]);
-        _robot->_multibody->setJointVel(i,0);
+        _robot->_multibody->setJointPos(it.first,_q[count]);
+        ++count;
     }
     _robot->updateTransforms();
 }
@@ -662,13 +670,15 @@ void simMultiBodyDynamicsWorld::getBodyPoseAndRotation(unsigned int bodyIndex, E
 /**
  * @brief Can attach 1 force sensor(experimental).
 */
-unsigned int simMultiBodyDynamicsWorld::attachForceSensorToRobot(RobotObject* _robot, unsigned int _ind)
+unsigned int simMultiBodyDynamicsWorld::attachForceSensorToRobot(RobotObject* _robot, unsigned int _ind, double _alpha)
 {
     ForceSensor* ft_sensor = new ForceSensor(m_dynamicsWorld,_robot,_ind);
     if (_ft_sensors.size() == 0 && _ft_sensors.size() < 1)
         _ft_sensors.push_back(ft_sensor);
     else
         throw std::runtime_error("Cannot attach more than 1 force sensors.\n");
+    // enable filter.
+    ft_sensor->enableFilter(_alpha);
     return _ft_sensors.size();
 }
 

@@ -28,7 +28,7 @@ public:
     int link_ind;
     ForceSensor(btDynamicsWorld* m_world, mMultiBody* _robot,int _link_ind);
     ForceSensor():m_dynamicsWorld(nullptr),robot(nullptr) {} ;
-    ~ForceSensor();
+    ~ForceSensor() {};
 
     /**
      * @brief At this moment the filter used is exponential moving average(EMA)

@@ -108,15 +108,15 @@ void simulation(std::string& _robot_file)
     sim->LoadRobotFromURDFFile(_robot_file);
     sim->setGravity(0, 0, -9.81);
 
-    // int boxid = sim->addBodyBox(l,b,h,0,boxpos,boxrot); // if mass = 0, the object will be static.
+    int boxid = sim->addBodyBox(l,b,h,0,boxpos,boxrot); // if mass = 0, the object will be static.
     // int spid = sim->addBodySphere(0.05,0.1,boxpos2,boxrot2);
     int bid = sim->addBodyBox(0.82, 0.82, 0.02,100.8,boxpos2,boxrot2);
 
     RobotObject* robot = sim->getMultiBodyObject(robot_name);
     sim->printRobotJointsInfo(robot);
     Eigen::Vector<double,6> _q_init;
-    _q_init << 0,0.5,0,0,0,0;
-    sim->resetJointPos(robot,_q_init);
+    _q_init << 1.6,0.3,1.6,0,-1.5,0;
+    // sim->resetJointPos(robot,_q_init);
     robot->updateTransforms();
     // for (auto it : robot->_linkNameIndexList)
     // {
@@ -137,7 +137,7 @@ void simulation(std::string& _robot_file)
     timer.InitializeTimer();
     std::cout << "DOF: "  << robot->_jointNameIndexList.size() << std::endl;
     // force sensor attachment.
-    sim->attachForceSensorToRobot(robot,9);
+    sim->attachForceSensorToRobot(robot,9,0.1);
     while (runloop & timer.WaitForNextLoop())
     {   
         redis_client.executeAllReadCallbacks();
@@ -152,7 +152,7 @@ void simulation(std::string& _robot_file)
             sim->stepSimulation(0.001);
             // robot->updateTransforms();
 
-            // sim->getBodyPoseAndRotation(boxid,boxpos,boxrot);
+            sim->getBodyPoseAndRotation(boxid,boxpos,boxrot);
             sim->getBodyPoseAndRotation(bid,boxpos2,boxrot2);
             sim->getForceSensorOutput(robot,8,Force,Moment);
             std::cout << Force.transpose() << std::endl;

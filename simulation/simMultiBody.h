@@ -76,7 +76,7 @@ public:
                          Eigen::Quaterniond _q,Eigen::Vector3d _scale);
     void getBodyPoseAndRotation(unsigned int bodyindex, Eigen::Vector3d& _pos, Eigen::Quaterniond& _q);
     // unsigned int attachForceSensorToRobot(std::string _robotName, std::string _linkName);
-    unsigned int attachForceSensorToRobot(RobotObject* _robot, unsigned int _ind);
+    unsigned int attachForceSensorToRobot(RobotObject* _robot, unsigned int _ind,double _alpha);
 
     bool getForceMomentFromForceSensor(unsigned int _ind, Eigen::Vector3d&, Eigen::Quaterniond&);
 
