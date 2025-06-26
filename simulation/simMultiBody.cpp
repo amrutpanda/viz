@@ -202,8 +202,8 @@ void simMultiBodyDynamicsWorld::LoadRobotFromURDFFile(std::string _filename, Eig
     
     _multibody_name_map.at(importer.getName())->_multibody->setHasSelfCollision(_has_selfcollision); // flag for checking self-collision.
     
-    // updating the tranforms (testing)
-    // _multibody_name_map.at(importer.getName())->updateTransforms();
+    // updating the collisionflags (testing)
+    _multibody_name_map.at(importer.getName())->updateTransforms();
     _multibody_name_map.at(importer.getName())->setupCollisionFlags();
 
     setRobotBasePose(importer.getName(),_base_pose.x(), _base_pose.y(), _base_pose.z());
@@ -458,12 +458,13 @@ unsigned int simMultiBodyDynamicsWorld::addBodyBox(double l, double b, double h,
     btRigidBody::btRigidBodyConstructionInfo rbinfo(mass,myMotionState,boxShape,localInertia);
     btRigidBody* body = new btRigidBody(rbinfo);
     _rigidBodyList.push_back(body);
-    m_dynamicsWorld->addRigidBody(body);
-    // if (isDynamics)
-    //     m_dynamicsWorld->addRigidBody(body);
-    // else
-    //     m_dynamicsWorld->addRigidBody(body,1,1+2);
-    body->setRestitution(0.5);
+    // m_dynamicsWorld->addRigidBody(body);
+    if (isDynamics)
+        m_dynamicsWorld->addRigidBody(body,GROUP_DYNAMIC, GROUP_MULTIBODY | GROUP_STATIC);
+    else
+        m_dynamicsWorld->addRigidBody(body,GROUP_STATIC,GROUP_MULTIBODY | GROUP_DYNAMIC);
+    body->setRestitution(0.2);
+    body->setFriction(0.2);
     return _rigidBodyList.size() - 1;
 }
 
@@ -495,9 +496,14 @@ unsigned int simMultiBodyDynamicsWorld::addBodySphere(double r, double m, Eigen:
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, sphereShape, localInertia);
     btRigidBody* body = new btRigidBody(rbInfo);
 
-    body->setRestitution(0.5);
+    body->setRestitution(0.2);
 
-    m_dynamicsWorld->addRigidBody(body);
+    if (isDynamics)
+        m_dynamicsWorld->addRigidBody(body,GROUP_DYNAMIC, GROUP_MULTIBODY | GROUP_STATIC);
+    else
+        m_dynamicsWorld->addRigidBody(body,GROUP_STATIC,GROUP_MULTIBODY | GROUP_DYNAMIC);
+
+    // m_dynamicsWorld->addRigidBody(body);
     _rigidBodyList.push_back(body);
      // return the index of the object.
     return _rigidBodyList.size() - 1 ;
@@ -531,9 +537,13 @@ unsigned int simMultiBodyDynamicsWorld::addBodyCylinder(double r, double h, doub
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, CylinderShape, localInertia);
     btRigidBody* body = new btRigidBody(rbInfo);
 
-    body->setRestitution(0.5);
+    body->setRestitution(0.2);
+    if (isDynamics)
+        m_dynamicsWorld->addRigidBody(body,GROUP_DYNAMIC, GROUP_MULTIBODY | GROUP_STATIC);
+    else
+        m_dynamicsWorld->addRigidBody(body,GROUP_STATIC,GROUP_MULTIBODY | GROUP_DYNAMIC);
 
-    m_dynamicsWorld->addRigidBody(body);
+    // m_dynamicsWorld->addRigidBody(body);
     _rigidBodyList.push_back(body);
      // return the index of the object.
     return _rigidBodyList.size() - 1 ;
@@ -612,7 +622,7 @@ unsigned int simMultiBodyDynamicsWorld::addBodyConvexHull(std::string _filename,
 
     btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, myMotionState, _convexhullshape, localInertia);
     btRigidBody* body = new btRigidBody(rbInfo);
-    body->setRestitution(0.5);
+    body->setRestitution(0.2);
 
     m_dynamicsWorld->addRigidBody(body);
     _rigidBodyList.push_back(body);
@@ -682,20 +692,20 @@ unsigned int simMultiBodyDynamicsWorld::attachForceSensorToRobot(RobotObject* _r
     return _ft_sensors.size();
 }
 
-void simMultiBodyDynamicsWorld::getForceSensorOutput(mMultiBody* _robotObject ,int _ind, Eigen::Vector3d& Force, Eigen::Vector3d& moment)
-{
-    RobotObject* _robot = _robotObject;
-    btSpatialForceVector _f = _robot->_jointFeedbackIndexList.at(_ind).second->m_reactionForces;
-    // btSpatialForceVector _g = _robot->_jointFeedbackIndexList.
-    Force << _f.m_topVec.x(), _f.m_topVec.y(), _f.m_topVec.z();
-    moment << _f.m_bottomVec.x(), _f.m_bottomVec.y(), _f.m_bottomVec.z(); 
-}
+// void simMultiBodyDynamicsWorld::getForceSensorOutput(mMultiBody* _robotObject ,int _ind, Eigen::Vector3d& Force, Eigen::Vector3d& moment)
+// {
+//     RobotObject* _robot = _robotObject;
+//     btSpatialForceVector _f = _robot->_jointFeedbackIndexList.at(_ind).second->m_reactionForces;
+//     // btSpatialForceVector _g = _robot->_jointFeedbackIndexList.
+//     Force << _f.m_topVec.x(), _f.m_topVec.y(), _f.m_topVec.z();
+//     moment << _f.m_bottomVec.x(), _f.m_bottomVec.y(), _f.m_bottomVec.z(); 
+// }
 
 
 void simMultiBodyDynamicsWorld::getForceSensorOutput(int _sensor_ind,Eigen::Vector3d& _force,
                                                             Eigen::Vector3d& _moment)
 {
-    ForceSensor* _ft_sensor = _ft_sensors.at(_sensor_ind);
+    ForceSensor* _ft_sensor = _ft_sensors.at(_sensor_ind - 1);
     _ft_sensor->getForceMoment(_force,_moment);
 }
 

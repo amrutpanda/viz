@@ -74,7 +74,7 @@ namespace mviz
                     {
                         double l,b,h;
                         mesh_name = "mCube.mesh";
-                        
+
                         urdf::Box* box_ptr = dynamic_cast<urdf::Box*>(vptr->geometry.get());
                         l = box_ptr->dim.x;
                         b = box_ptr->dim.y;
@@ -229,7 +229,7 @@ namespace mviz
                     {
                         double l,b,h;
                         mesh_name = "mCube.mesh";
-                        
+
                         urdf::Box* box_ptr = dynamic_cast<urdf::Box*>(cptr->geometry.get());
                         l = box_ptr->dim.x;
                         b = box_ptr->dim.y;

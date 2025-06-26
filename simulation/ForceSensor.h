@@ -15,7 +15,7 @@ class ForceSensor
 private:
     btDynamicsWorld* m_dynamicsWorld;
     mMultiBody* robot;
-    btMultiBodyJointFeedback* _sensor;
+    btMultiBodyJointFeedback* _sensor = nullptr;
     double _dt = 0.001;
     double alpha = 0;
     Eigen::Vector3d _f_prev;
@@ -38,6 +38,7 @@ public:
     Eigen::Vector3d getForce();
     Eigen::Vector3d getMoment();
     void getForceMoment(Eigen::Vector3d& _force, Eigen::Vector3d& _moment);
+    void getContactForce();
 };
 
 #endif

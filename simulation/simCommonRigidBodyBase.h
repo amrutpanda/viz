@@ -203,8 +203,8 @@ public:
                 _col->setWorldTransform(tr);
                 
             }
+            
         }
-        
     }
 
     void setupCollisionFlags()
@@ -214,6 +214,7 @@ public:
             if (i == 0)
             {
                 _colliders[i]->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT);
+                continue;
             }
             if ((i == _colliders.size() - 1))
             {
@@ -227,7 +228,7 @@ public:
                 if (_colliders[i] != nullptr)
                 {
                     // _colliders[i]->setCollisionFlags(btCollisionObject::CF_NO_CONTACT_RESPONSE);
-                    // _colliders[0]->setCollisionFlags(btCollisionObject::CF_DYNAMIC_OBJECT);
+                    // _colliders[i]->setCollisionFlags(_colliders[i]->getCollisionFlags() & ~btCollisionObject::CF_NO_CONTACT_RESPONSE);
                     _colliders[i]->setCollisionFlags(btCollisionObject::CF_DYNAMIC_OBJECT);
                 }
             }
@@ -264,5 +265,12 @@ public:
 };
 
 typedef mMultiBody RobotObject;
+
+enum CollisionGroups {
+    GROUP_STATIC = 1 << 0,
+    GROUP_DYNAMIC = 1 << 1,
+    GROUP_MULTIBODY = 1 << 2
+};
+
 
 #endif

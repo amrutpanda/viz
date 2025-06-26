@@ -2,8 +2,8 @@
 
 namespace Dynamics
 {
-    DModel::DModel(std::string _robot_file, Eigen::Vector3d& _bpose,
-                    Eigen::Quaterniond& _brot, bool floating_base ,bool _verbose)
+    DModel::DModel(std::string _robot_file, Eigen::Vector3d& _bpose, 
+                                Eigen::Quaterniond& _brot, bool floating_base ,bool _verbose)
     {
         _rbdl_model = new Model();
         bool result = URDFReadFromFile(_robot_file.c_str(),_rbdl_model,floating_base,_verbose);
@@ -42,20 +42,20 @@ namespace Dynamics
     void DModel::setGravity(Eigen::Vector3d& _g)
     {
         _rbdl_model->gravity = _g;
+        _gravity = _g;
     }
 
-    unsigned int DModel::linkId(std::string& _link_name)
+    unsigned int DModel::linkId(const std::string& _link_name)
     {
         for (auto it : _rbdl_model->mBodyNameMap)
         {
             if (it.first == _link_name)
                 return it.second;
         }
-        
         throw std::runtime_error("Cannot find a link with name: " + _link_name);
     }
 
-    unsigned int DModel::jointId(std::string& _joint_name)
+    unsigned int DModel::jointId(const std::string& _joint_name)
     {
         
         for ( auto it : _rbdl_model->mBodyNameMap )
@@ -137,8 +137,7 @@ namespace Dynamics
         
     }
 
-    void DModel::position(Eigen::Vector3d& _pos, std::string& link_name, const Eigen::Vector3d& pos_in_link)
-
+    void DModel::position(Eigen::Vector3d& _pos, const std::string& link_name, const Eigen::Vector3d& pos_in_link)
     {
         Eigen::Affine3d _T_link_to_base;
 
@@ -152,7 +151,7 @@ namespace Dynamics
 
     }
 
-    void DModel::positionInWorld(Eigen::Vector3d& _pos, std::string& link_name, const Eigen::Vector3d& pos_in_link)
+    void DModel::positionInWorld(Eigen::Vector3d& _pos, const std::string& link_name, const Eigen::Vector3d& pos_in_link)
     {
         Eigen::Affine3d _T_link_to_base;
 
@@ -245,10 +244,33 @@ namespace Dynamics
         _accel = _T_world.linear() * CalcPointAcceleration(*_rbdl_model,_q,_dq,_ddq,linkInd,pos_in_link,false);
     }
 
+    void DModel::linearAcceleration6D(Eigen::Vector3d& _laccel, Eigen::Vector3d& _aaccel, std::string& link_name,
+                    const Eigen::Vector3d& pos_in_link)
+    {
+        int linkInd = linkId(link_name);
+        Eigen::VectorXd a_tmp(6);
+
+        a_tmp = CalcPointAcceleration6D(*_rbdl_model,_q,_dq,_ddq,linkInd,pos_in_link,false);
+        _aaccel = a_tmp.head(3); // first 3 components are rotational.
+        _laccel = a_tmp.tail(3);
+    }
+
+    void DModel::linearAccelerationWorld6D(Eigen::Vector3d& _laccel, Eigen::Vector3d& _aaccel, std::string& link_name,
+                    const Eigen::Vector3d& pos_in_link)
+    {
+        int linkInd = linkId(link_name);
+        Eigen::VectorXd a_tmp(6);
+
+        a_tmp = CalcPointAcceleration6D(*_rbdl_model,_q,_dq,_ddq,linkInd,pos_in_link,false);
+        _aaccel = _T_world.linear() * a_tmp.head(3); // first 3 components are rotational.
+        _laccel = _T_world.linear() * a_tmp.tail(3);
+    }
+
     void DModel::angularAcceleration(Eigen::Vector3d& _aaccel, std::string& link_name, const Eigen::Vector3d& pos_in_link)
     {
-        std::string _link_name = link_name;
-        int linkInd = linkId(_link_name);
+        // std::string _link_name = link_name;
+        // int linkInd = linkId(_link_name);
+        int linkInd = linkId(link_name);
         Eigen::VectorXd a_tmp(6);
 
         a_tmp = CalcPointAcceleration6D(*_rbdl_model,_q,_dq,_ddq,linkInd,pos_in_link,false);
@@ -406,6 +428,66 @@ namespace Dynamics
         InverseKinematicsConstraintSet CS;
         CS.AddFullConstraint(linkId(link_name),pos_in_link,target_pos,target_rot);
         InverseKinematics(*_rbdl_model,_q,CS,_jposes);
+    }
+
+   
+    // Force sensor related methods.
+
+    void DModel::setForceSensorLink(const std::string sensor_link, double _pMass, Eigen::Vector3d& _pCOM,
+                                 Eigen::Vector3d sensor_pos_in_link, Eigen::Matrix3d R_link_sensor)
+    {
+        _force_sensor_link = sensor_link;
+        _sensor_link_id = linkId(sensor_link);
+        _sensor_pos_in_link = sensor_pos_in_link;
+        _R_link_sensor = R_link_sensor;
+        _payload_mass = _pMass;
+        _payload_COM = _pCOM;
+    }
+
+    void DModel::getForceSensorOutput(Eigen::Vector3d& _force, Eigen::Vector3d& _moment)
+    {
+        Eigen::Matrix3d _R_world_sensor;
+        rotation(_R_world_sensor,_force_sensor_link);
+        // compute the force and moment due to gravity and remove it.
+        Eigen::Vector3d _f_local_frame,_m_local_frame;
+        _f_local_frame =  _payload_mass * _rbdl_model->gravity;
+        _m_local_frame = _sensor_pos_in_link.cross(_f_local_frame);
+         
+        _force = _R_world_sensor.transpose() * (_sensed_force_raw + _f_local_frame);
+        _moment = _R_world_sensor.transpose() * (_sensed_moment_raw + _m_local_frame);
+        // round off the force to three digits after decimal.
+        _force = _force.unaryExpr([](double x){return std::round(x*100)/1000;});
+        _moment = _moment.unaryExpr([](double x){return std::round(x*1000)/1000;});
+    }
+
+
+     void orientationError(Eigen::Vector3d& orientation_error, Eigen::Matrix3d& _desired_orientation,
+                                                                Eigen::Matrix3d& _current_orientation)
+    {
+        //check for valid rotation.
+        Eigen::Matrix3d Q1 = _desired_orientation*_desired_orientation.transpose() - Eigen::Matrix3d::Identity();
+        Eigen::Matrix3d Q2 = _current_orientation*_current_orientation.transpose() - Eigen::Matrix3d::Identity();
+
+        if (Q1.norm() >0.001 || Q2.norm() > 0.001)
+        {
+            std::cout << "Desired Orientation: " << _desired_orientation << std::endl;
+            std::cout << "Current Orientation: " <<_current_orientation << std::endl;
+            std::cout << "Q1 norm: " << Q1.norm() << std::endl;
+            std::cout << "Q2 norm: " << Q2.norm() << std::endl;
+            throw std::invalid_argument("Invalid rotation matrices. DModel orientation error\n");
+            return; 
+        }
+        else
+        {
+            Eigen::Vector3d rc1 = _current_orientation.block<3,1>(0,0);
+            Eigen::Vector3d rc2 = _current_orientation.block<3,1>(0,1);
+            Eigen::Vector3d rc3 = _current_orientation.block<3,1>(0,2);
+            Eigen::Vector3d rd1 = _desired_orientation.block<3,1>(0,0);
+            Eigen::Vector3d rd2 = _desired_orientation.block<3,1>(0,1);
+            Eigen::Vector3d rd3 = _desired_orientation.block<3,1>(0,2);
+            orientation_error = (-1/2)*(rc1.cross(rd1) + rc2.cross(rd2) + rc3.cross(rd3));
+        }
+        
     }
 
 } // namespace Dynamics

@@ -54,6 +54,8 @@ private:
     
     // container structure usage.
     containter _reads, _writes;
+    std::vector< std::pair<int,std::vector<int>> >_group_reads;
+    std::vector< std::pair<int,std::vector<int>> > _group_writes;
     
 public:
 
@@ -110,11 +112,21 @@ public:
     template< typename _Scalar,int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols >
     int createEigenWriteCallback(const std::string& key, Eigen::Matrix< _Scalar,_Rows, _Cols, _Options,_MaxRows,_MaxCols>& object);
 
+    void createIntGroupReadCallback(int _group_num, const std::string& key, int& object, int arr_size);
+    void createIntGroupWriteCallback(int _group_num, const std::string& key, int& object, int arr_size);
+
+    void createDoubleGroupReadCallback(int _group_num, const std::string& key, double& object, int arr_size);
+    void createDoubleGroupWriteCallback(int _group_num,const std::string& key, double& object, int arr_size);
+
+
     void executeReadCallback(int callback_number);
     void executeWriteCallback( int callback_number);
 
     void executeAllReadCallbacks();
     void executeAllWriteCallbacks();
+
+    void executeGroupReadCallbacks(int _group_num);
+    void executeGroupWriteCallbacks(int _group_num);
 
 
     void StringToIntArray(std::string& str,char delimiter, int* intarr, int arr_len);
@@ -129,7 +141,12 @@ public:
     template< typename _Scalar,int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
     void setEigenMatrix(const std::string& key, const Eigen::Matrix< _Scalar,_Rows, _Cols, _Options,_MaxRows,_MaxCols>& matrix);
 
+    template< typename _Scalar,int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+    void createEigenGroupReadCallback(int _group_num, const std::string& key,Eigen::Matrix< _Scalar,_Rows, _Cols, _Options,_MaxRows,_MaxCols>& matrix);
 
+    template< typename _Scalar,int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+    void createEigenGroupWriteCallback(int _group_num, const std::string& key,Eigen::Matrix< _Scalar,_Rows, _Cols, _Options,_MaxRows,_MaxCols>& matrix);
+    
     RedisClient(std::string hostname = "127.0.0.1", int port = 6379);
     // ~RedisClient();
 };
@@ -301,4 +318,67 @@ void RedisClient::setEigenMatrix(const std::string& key,const Eigen::Matrix< _Sc
     
     
     set(key,str);
+}
+
+
+template< typename _Scalar,int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+void RedisClient::createEigenGroupReadCallback(int _group_num, const std::string& key,Eigen::Matrix< _Scalar,_Rows, _Cols, _Options,_MaxRows,_MaxCols>& matrix)
+{
+    int n = createEigenReadCallback(key,matrix);
+    // find the group_num from _group read.
+    bool _found = false;
+    int index = 0;
+    for (int i = 0; i < _group_reads.size(); i++)
+    {
+        if (_group_reads[i].first == _group_num)
+        {
+            _found = true;
+            index = i;  
+        }
+    }
+
+    if (!_found)
+    {
+        // create a new one.
+        std::vector<int> _callback_nums;
+        _callback_nums.push_back(n);  // save the callback num to group read.
+        std::pair<int, std::vector<int> > _pair(_group_num,_callback_nums);
+        _group_reads.push_back(_pair);
+    }
+    else
+    {
+        // if found. save the callback number to group reads.
+        _group_reads[index].second.push_back(n);
+    }  
+}
+
+template< typename _Scalar,int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+void RedisClient::createEigenGroupWriteCallback(int _group_num, const std::string& key,Eigen::Matrix< _Scalar,_Rows, _Cols, _Options,_MaxRows,_MaxCols>& matrix)
+{
+    int n = createEigenReadCallback(key,matrix);
+    // find the group_num from _group read.
+    bool _found = false;
+    int index = 0;
+    for (int i = 0; i < _group_writes.size(); i++)
+    {
+        if (_group_writes[i].first == _group_num)
+        {
+            _found = true;
+            index = i;  
+        }
+    }
+
+    if (!_found)
+    {
+        // create a new one.
+        std::vector<int> _callback_nums;
+        _callback_nums.push_back(n);  // save the callback num to group read.
+        std::pair<int, std::vector<int> > _pair(_group_num,_callback_nums);
+        _group_writes.push_back(_pair);
+    }
+    else
+    {
+        // if found. save the callback number to group reads.
+        _group_writes[index].second.push_back(n);
+    }  
 }

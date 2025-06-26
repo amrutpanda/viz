@@ -49,8 +49,8 @@ int main(int argc, char const *argv[])
     signal(SIGINT, sighandler);
 
     // start redis client.
-    // RedisClient* redis_client = new RedisClient();
-    RedisClient* redis_client = new RedisClient("10.11.2.107");
+    RedisClient* redis_client = new RedisClient();
+    // RedisClient* redis_client = new RedisClient("10.11.2.107");
     redis_client->connect();
 
     // find and initialize connected hapic devices.
@@ -105,6 +105,7 @@ int main(int argc, char const *argv[])
         // send zero force feedback to haptic devices.
         current_device_ptr->setForceAndTorqueAndGripperForce(Eigen::Vector3d(0,0,0),
                                                         Eigen::Vector3d(0,0,0),0);
+        
         // save haptic device pointers.
         haptic_devices_ptr.push_back(current_device_ptr);
         redis_client->setEigenMatrix(createRedisKey(MAX_STIFFNESS_KEY_SUFFIX,i),
@@ -115,6 +116,12 @@ int main(int argc, char const *argv[])
                                     Eigen::Vector3d(current_device_info.m_maxLinearDamping,
                                     current_device_info.m_maxAngularDamping,
                                     current_device_info.m_maxGripperAngularDamping));
+
+        redis_client->setEigenMatrix(createRedisKey(MAX_FORCE_KEY_SUFFIX,i),
+                                    Eigen::Vector3d(current_device_info.m_maxLinearForce,
+                                                    current_device_info.m_maxAngularTorque,
+                                                    current_device_info.m_maxGripperForce));
+
         redis_client->set(createRedisKey(MAX_GRIPPER_ANGLE,i),
                           std::to_string(current_device_info.m_gripperMaxAngleRad));
         // populate the vectors.

@@ -642,3 +642,177 @@ void RedisClient::executeAllWriteCallbacks() {
     }
     
 }
+
+//*********************** Group callbacks. ************** */
+
+void RedisClient::executeGroupReadCallbacks(int _group_num)
+{
+    bool _found = false;
+    int index = 0;
+    for (int i = 0; i < _group_reads.size(); i++)
+    {
+        if (_group_reads[i].first == _group_num)
+        {
+            _found = true;
+            index = i;
+        }
+    }
+
+    if (!_found)
+        throw std::runtime_error("Inside groupReadCallback. Invalid group number: " + _group_num );
+    else
+    {
+        for (int i = 0; i < _group_reads[index].second.size(); i++)
+        {
+            executeReadCallback(_group_reads[index].second[i]);
+        }
+        
+    }
+    
+}
+
+void RedisClient::executeGroupWriteCallbacks(int _group_num)
+{
+    bool _found = false;
+    int index = 0;
+    for (int i = 0; i < _group_writes.size(); i++)
+    {
+        if (_group_writes[i].first == _group_num)
+        {
+            _found = true;
+            index = i;
+        }
+    }
+
+    if (!_found)
+        throw std::runtime_error("Inside groupReadCallback. Invalid group number: " + _group_num );
+    else
+    {
+        for (int i = 0; i < _group_writes[index].second.size(); i++)
+        {
+            executeReadCallback(_group_writes[index].second[i]);
+        }
+        
+    }
+    
+}
+
+void RedisClient::createDoubleGroupReadCallback(int _group_num, const std::string& key, double& object, int arr_size)
+{
+    int n = createDoubleReadCallback(key,object,arr_size);
+     // find the group_num from _group read.
+    bool _found = false;
+    int index = 0;
+    for (int i = 0; i < _group_reads.size(); i++)
+    {
+        if (_group_reads[i].first == _group_num)
+        {
+            _found = true;
+            index = i;  
+        }
+    }
+
+    if (!_found)
+    {
+        // create a new one.
+        std::vector<int> _callback_nums;
+        _callback_nums.push_back(n);  // save the callback num to group read.
+        std::pair<int, std::vector<int> > _pair(_group_num,_callback_nums);
+        _group_reads.push_back(_pair);
+    }
+    else
+    {
+        // if found. save the callback number to group reads.
+        _group_reads[index].second.push_back(n);
+    }  
+}
+
+void RedisClient::createDoubleGroupWriteCallback(int _group_num, const std::string& key, double& object, int arr_size)
+{
+    int n = createDoubleWriteCallback(key,object,arr_size);
+     // find the group_num from _group read.
+    bool _found = false;
+    int index = 0;
+    for (int i = 0; i < _group_writes.size(); i++)
+    {
+        if (_group_writes[i].first == _group_num)
+        {
+            _found = true;
+            index = i;  
+        }
+    }
+
+    if (!_found)
+    {
+        // create a new one.
+        std::vector<int> _callback_nums;
+        _callback_nums.push_back(n);  // save the callback num to group read.
+        std::pair<int, std::vector<int> > _pair(_group_num,_callback_nums);
+        _group_writes.push_back(_pair);
+    }
+    else
+    {
+        // if found. save the callback number to group reads.
+        _group_writes[index].second.push_back(n);
+    }  
+}
+
+void RedisClient::createIntGroupReadCallback(int _group_num, const std::string& key, int& object, int arr_size)
+{
+    int n = createIntReadCallback(key,object,arr_size);
+     // find the group_num from _group read.
+    bool _found = false;
+    int index = 0;
+    for (int i = 0; i < _group_reads.size(); i++)
+    {
+        if (_group_reads[i].first == _group_num)
+        {
+            _found = true;
+            index = i;  
+        }
+    }
+
+    if (!_found)
+    {
+        // create a new one.
+        std::vector<int> _callback_nums;
+        _callback_nums.push_back(n);  // save the callback num to group read.
+        std::pair<int, std::vector<int> > _pair(_group_num,_callback_nums);
+        _group_reads.push_back(_pair);
+    }
+    else
+    {
+        // if found. save the callback number to group reads.
+        _group_reads[index].second.push_back(n);
+    }  
+}
+
+void RedisClient::createIntGroupWriteCallback(int _group_num, const std::string& key, int& object, int arr_size)
+{
+    int n = createIntWriteCallback(key,object,arr_size);
+     // find the group_num from _group read.
+    bool _found = false;
+    int index = 0;
+    for (int i = 0; i < _group_writes.size(); i++)
+    {
+        if (_group_writes[i].first == _group_num)
+        {
+            _found = true;
+            index = i;  
+        }
+    }
+
+    if (!_found)
+    {
+        // create a new one.
+        std::vector<int> _callback_nums;
+        _callback_nums.push_back(n);  // save the callback num to group read.
+        std::pair<int, std::vector<int> > _pair(_group_num,_callback_nums);
+        _group_writes.push_back(_pair);
+    }
+    else
+    {
+        // if found. save the callback number to group reads.
+        _group_writes[index].second.push_back(n);
+    }  
+}

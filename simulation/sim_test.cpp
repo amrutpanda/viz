@@ -103,13 +103,13 @@ int main(int argc, char const *argv[])
 {
     std::string _urdf_file_name = "../src/kuka.urdf";
     _urdf_file_name = "/home/merai/Files/resources/CR5_ROS/dobot_description/urdf/cr5_robot.urdf";
-    // _urdf_file_name = "/home/amrut/Files/resources/urdf_files_dataset/urdf_files/oems/anymal_anybotics/anymal_b_simple_description/urdf/anymal.urdf";
-    // _urdf_file_name = "/home/amrut/Files/resources/baxter_common/baxter_description/urdf/baxter.urdf";
-    // _urdf_file_name = "/home/amrut/Files/resources/urdf_files_dataset/urdf_files/oems/xacro_generated/franka_emika/franka_description/robots/dual_panda/dual_panda.urdf";
-    // _urdf_file_name = "/home/amrut/Files/sai2/OpenSai/core/sai2-model/urdf_models/panda/panda_arm.urdf";
-    // _urdf_file_name = "/home/amrut/Files/resources/baxter_common/baxter_description/urdf/baxter.urdf";
-    // _urdf_file_name = "/home/amrut/Files/sai2/OpenSai/core/sai2-model/urdf_models/iiwa7/kuka_iiwa.urdf";
-    // _urdf_file_name = "/home/amrut/Files/sai2/OpenSai/core/sai2-model/urdf_models/HRP4C/HRP4C_custom_v1.urdf";
+    // _urdf_file_name = "/home/merai/Files/resources/urdf_files_dataset/urdf_files/oems/anymal_anybotics/anymal_b_simple_description/urdf/anymal.urdf";
+    // _urdf_file_name = "/home/merai/Files/resources/baxter_common/baxter_description/urdf/baxter.urdf";
+    // _urdf_file_name = "/home/merai/Files/resources/urdf_files_dataset/urdf_files/oems/xacro_generated/franka_emika/franka_description/robots/dual_panda/dual_panda.urdf";
+    // _urdf_file_name = "/home/merai/Files/sai2/OpenSai/core/sai2-model/urdf_models/panda/panda_arm.urdf";
+    // _urdf_file_name = "/home/merai/Files/resources/baxter_common/baxter_description/urdf/baxter.urdf";
+    // _urdf_file_name = "/home/merai/Files/sai2/OpenSai/core/sai2-model/urdf_models/iiwa7/kuka_iiwa.urdf";
+    // _urdf_file_name = "/home/merai/Files/sai2/OpenSai/core/sai2-model/urdf_models/HRP4C/HRP4C_custom_v1.urdf";
     simMultiBodyDynamicsWorld* sim = new simMultiBodyDynamicsWorld();
     sim->InitialiseDynamicsWorld();
     sim->LoadRobotFromURDFFile(_urdf_file_name);

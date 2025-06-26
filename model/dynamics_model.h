@@ -20,6 +20,7 @@ namespace Dynamics
         Model* _rbdl_model;
         unsigned int _dof;
         int _q_size;
+        Eigen::Vector3d _gravity;
     public:
         
         DModel(std::string, Eigen::Vector3d& , Eigen::Quaterniond& ,
@@ -28,9 +29,9 @@ namespace Dynamics
 
         void setGravity(Eigen::Vector3d& _g);
 
-        unsigned int linkId(std::string& _link_name);
+        unsigned int linkId(const std::string& _link_name);
 
-        unsigned int jointId(std::string& _joint_name);
+        unsigned int jointId(const std::string& _joint_name);
 
         void updateKinematics();
 
@@ -88,12 +89,12 @@ namespace Dynamics
          * @brief It will calculate the pos of the link with respect to base frame.
         */
 
-        void position(Eigen::Vector3d& _pos, std::string& link_name,
+        void position(Eigen::Vector3d& _pos, const std::string& link_name,
                         const Eigen::Vector3d& pos_in_link = Eigen::Vector3d::Zero());
         /**
          * @brief It will calculate the pos of the link with respect to world frame.
         */
-        void positionInWorld(Eigen::Vector3d& _pos, std::string& link_name,
+        void positionInWorld(Eigen::Vector3d& _pos, const std::string& link_name,
                         const Eigen::Vector3d& pos_in_link = Eigen::Vector3d::Zero());
 
         void rotation(Eigen::Matrix3d& _rot, std::string& link_name,
@@ -115,6 +116,11 @@ namespace Dynamics
                     const Eigen::Vector3d& pos_in_link = Eigen::Vector3d::Zero());
         void linearAccelerationWorld(Eigen::Vector3d& _accel, std::string& link_name,
                     const Eigen::Vector3d& pos_in_link = Eigen::Vector3d::Zero());
+
+        void linearAcceleration6D(Eigen::Vector3d& _laccel, Eigen::Vector3d& _aaccel, std::string& link_name,
+                    const Eigen::Vector3d& pos_in_link = Eigen::Vector3d::Zero());
+        void linearAccelerationWorld6D(Eigen::Vector3d& _laccel, Eigen::Vector3d& _aaccel, std::string& link_name,
+                    const Eigen::Vector3d& pos_in_link = Eigen::Vector3d::Zero());
         
         void angularAcceleration(Eigen::Vector3d& _aaccel, std::string& link_name,
                 const Eigen::Vector3d& pos_in_link = Eigen::Vector3d::Zero());
@@ -127,6 +133,14 @@ namespace Dynamics
                                 Eigen::Vector3d& target_pos,
                                 Eigen::Matrix3d& target_rot,        
                                 Eigen::Vector3d pos_in_link= Eigen::Vector3d(0,0,0));
+        // Force sensor processing methods.
+        void setForceSensorLink(const std::string _sensor_link, double _pMass, Eigen::Vector3d& _pCOM,
+                                 Eigen::Vector3d _sensor_pos_in_link = Eigen::Vector3d::Zero(),
+                                 Eigen::Matrix3d _R_link_sensor= Eigen::Matrix3d::Identity() );
+        void getForceSensorOutput(Eigen::Vector3d& _force, Eigen::Vector3d& _moment);
+        
+        void orientationError(Eigen::Vector3d& orientation_error, Eigen::Matrix3d& _desired_orientation,
+                                                                Eigen::Matrix3d& _current_orientation);
 
         // class attributes below.
         Eigen::VectorXd _q;
@@ -136,7 +150,19 @@ namespace Dynamics
         Eigen::MatrixXd _M_inv;
 
         Eigen::Affine3d _T_world;
+        // specific to force sensor.
+        std::string _force_sensor_link;
+        int _sensor_link_id = -1;
+        Eigen::Vector3d _sensor_pos_in_link;
+        Eigen::Matrix3d _R_link_sensor;
+        Eigen::Vector3d _sensed_force_raw = Eigen::Vector3d(0,0,0);
+        Eigen::Vector3d _sensed_moment_raw = Eigen::Vector3d(0,0,0);
+        double _payload_mass = 0.0;  // the mass includes the force sensor mass too.
+        Eigen::Vector3d _payload_COM = Eigen::Vector3d(0,0,0);
     };
+
+    void orientationError(Eigen::Vector3d& orientation_error, Eigen::Matrix3d& _desired_orientation,
+                                                                Eigen::Matrix3d& _current_orientation);
 } // namespace Dynamics
 
 

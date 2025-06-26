@@ -1,5 +1,6 @@
 #include <BulletURDFImporter.h>
 
+
 void printVector(btVector3& _v, std::string _str)
 {
     std::cout << _str << ": " << _v.x() <<  " " << _v.y() << " " << _v.z() << std::endl;
@@ -279,11 +280,11 @@ void BulletURDFImporter::createMultiBodyCompFromURDFLink(int linkIndex, int pare
     if (p_multibody->getLink(linkIndex).m_jointFeedback == nullptr)
     {
         std::cout << "No jointfeedback pointer set. Setting now..\n";
+        // joint feedback in world space that I have observed. Might change in future investigation.
         btMultiBodyJointFeedback* _jointfb = new btMultiBodyJointFeedback();
-        p_multibody->getLink(linkIndex).m_jointFeedback = _jointfb;
+        p_multibody->getLink(linkIndex).m_jointFeedback = _jointfb; 
         m_multibody->_jointFeedbackIndexList.push_back(std::pair<int,btMultiBodyJointFeedback*>(linkIndex,_jointfb));
     }
-
 }
 
 bool BulletURDFImporter::createMultiBodyLinkCollisionShapes(int linkIndex, urdf::Link* _link)
@@ -394,7 +395,7 @@ bool BulletURDFImporter::createMultiBodyLinkCollisionShapes(int linkIndex, urdf:
                 // // deallocate the tshape object.
                 delete tshape;
                 shape = chshape;
-                // store the hull pointer for future usage for visualization purpose.
+                // store the hull pointer for future usage i.e. visualization purpose.
                 chshape->setUserPointer(hull);
                 break;
             }
@@ -450,11 +451,14 @@ bool BulletURDFImporter::createMultiBodyLinkCollisionShapes(int linkIndex, urdf:
 
     bool isDynamic = (p_multibody->getLinkMass(linkIndex) == 0) ? false : true;
     // int collisionfiltergroup = isDynamic ? int(btBroadphaseProxy::DefaultFilter) : int(btBroadphaseProxy::StaticFilter);
-    int collisionfiltergroup = isDynamic ? int(btBroadphaseProxy::DefaultFilter) : int(btBroadphaseProxy::StaticFilter);
-    int collisionfiltermask = isDynamic ? int(btBroadphaseProxy::AllFilter) : int(btBroadphaseProxy::AllFilter ^ btBroadphaseProxy::StaticFilter);
-    m_world->addCollisionObject(col,collisionfiltergroup, collisionfiltermask); // TO-DO: Need to evaluate other two arguments which are filter masks.
+    // int collisionfiltergroup = isDynamic ? int(btBroadphaseProxy::DefaultFilter) : int(btBroadphaseProxy::StaticFilter);
+    // int collisionfiltermask = isDynamic ? int(btBroadphaseProxy::DefaultFilter) : int(btBroadphaseProxy::StaticFilter);
+    // m_world->addCollisionObject(col,collisionfiltergroup, collisionfiltermask); // TO-DO: Need to evaluate other two arguments which are filter masks.
     // m_world->addCollisionObject(col);
     // m_world->addCollisionObject(col,2,1+2); // for testing.
+    std::cout << "setting collision group and mask" << std::endl;
+    m_world->addCollisionObject(col, GROUP_MULTIBODY, GROUP_STATIC | GROUP_DYNAMIC | GROUP_MULTIBODY);
+
     col->setFriction(0.1); // just for testing.
     
     // if (p_multibody->getLink(linkIndex).m_jointFeedback == nullptr)

@@ -1,7 +1,7 @@
 #include <iostream>
 // TO-DO: include mGraphics before simMultiBody is causing some include errors.
 // Need to check on this.
-#include <redis_keys.h>
+#include <teleop_redis_keys.h>
 #include <simMultiBody.h>
 #include <mGraphics.h>
 #include <LoopTimer.h>
@@ -43,24 +43,28 @@ int main(int argc, char const *argv[])
 
     redis_client.connect();
 
-    boxpos << 0.3,-0.3,0.65;
+    // boxpos << 0.3,-0.3,0.65;
+    boxpos << 0.1,-0.5,0.08;
     boxrot = Eigen::Quaterniond(1,0,0,0);
 
+    // boxpos2 = 1*boxpos + Eigen::Vector3d(-0.4,0.4,3.6);
     boxpos2 = 1*boxpos + Eigen::Vector3d(-0.4,0.4,3.6);
+
     boxrot2 = boxrot;
 
     mviz::mVisualizer viz("simviz");
     viz.attachFlagVariable(&runloop);
     viz.initApp();
     viz.createRobotObject(robot_name,robot_file);
+    // viz.getRobotObject(robot_name)->setRobotAxisVisible()
 
     viz.createBox("box1",l,b,h);
     viz.setObjectPoseAndRotation("box1",boxpos,boxrot);
     viz.setObjectColor("box1",0.4,0.5,0.7);
 
-    viz.createBox("box2",0.82,0.82,0.02);
-    viz.setObjectPoseAndRotation("box2",boxpos2,boxrot2);
-    viz.setObjectColor("box2",0.0,0.1,1.0);
+    // viz.createBox("box2",0.82,0.82,0.02);
+    // viz.setObjectPoseAndRotation("box2",boxpos2,boxrot2);
+    // viz.setObjectColor("box2",0.0,0.1,1.0);
 
     // viz.createGraphicalObject("/home/merai/Downloads/DOBOT - J6 removal_v1.2.dae","sp1",boxpos,boxrot);
 
@@ -82,7 +86,7 @@ int main(int argc, char const *argv[])
 
         // viz.updateRobotGraphics(robot_name,_q,boxpos,boxrot);
         viz.setObjectPoseAndRotation("box1",boxpos,boxrot);
-        viz.setObjectPoseAndRotation("box2",boxpos2,boxrot2);
+        // viz.setObjectPoseAndRotation("box2",boxpos2,boxrot2);
 
         viz.RenderOneFrame();
         if (!runloop)
@@ -96,7 +100,7 @@ int main(int argc, char const *argv[])
 
 void simulation(std::string& _robot_file)
 {
-    double loop_rate = 200;
+    double loop_rate = 1000;
     redis_client.createEigenWriteCallback(ROBOT_JOINT_POSITION_KEY,_q);
     redis_client.createEigenWriteCallback(ROBOT_JOINT_VELOCITY_KEY,_dq);
     redis_client.createEigenWriteCallback(FORCE_SENSOR_FORCE,_force);
@@ -114,13 +118,13 @@ void simulation(std::string& _robot_file)
 
     int boxid = sim->addBodyBox(l,b,h,0,boxpos,boxrot); // if mass = 0, the object will be static.
     // int spid = sim->addBodySphere(0.05,0.1,boxpos2,boxrot2);
-    int bid = sim->addBodyBox(0.82, 0.82, 0.02,1.0,boxpos2,boxrot2);
+    // int bid = sim->addBodyBox(0.82, 0.82, 0.02,1.0,boxpos2,boxrot2);
 
     RobotObject* robot = sim->getMultiBodyObject(robot_name);
     sim->printRobotJointsInfo(robot);
     Eigen::Vector<double,6> _q_init;
     _q_init << 1.6,0.3,1.6,0,-1.5,0;
-    // sim->resetJointPos(robot,_q_init);
+    sim->resetJointPos(robot,_q_init);
     robot->updateTransforms();
     // for (auto it : robot->_linkNameIndexList)
     // {
@@ -142,7 +146,7 @@ void simulation(std::string& _robot_file)
     std::cout << "DOF: "  << robot->_jointNameIndexList.size() << std::endl;
     std::cout << "Feedback objects: " << robot->_jointFeedbackIndexList.size() << std::endl;
     // force sensor attachment.
-    int fs_id = sim->attachForceSensorToRobot(robot,3,0.1);
+    int fs_id = sim->attachForceSensorToRobot(robot,8,0.1);
     while (runloop & timer.WaitForNextLoop())
     {   
         redis_client.executeAllReadCallbacks();
@@ -159,9 +163,9 @@ void simulation(std::string& _robot_file)
             // std::cout << robot->_multibody->getLinkCollider(8)->getWorldTransform().getOrigin().x() << std::endl;
 
             sim->getBodyPoseAndRotation(boxid,boxpos,boxrot);
-            sim->getBodyPoseAndRotation(bid,boxpos2,boxrot2);
+            // sim->getBodyPoseAndRotation(bid,boxpos2,boxrot2);
             sim->getForceSensorOutput(fs_id,_force,_moment);
-            std::cout << "Force: " << _force.transpose() << std::endl;
+            // std::cout << "Force: " << _force.transpose() << std::endl;
             // std::cout << "Moment: " << _moment.transpose() << std::endl;
             // std::cout << "simulation running\n";
         }
