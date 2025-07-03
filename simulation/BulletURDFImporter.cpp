@@ -459,7 +459,7 @@ bool BulletURDFImporter::createMultiBodyLinkCollisionShapes(int linkIndex, urdf:
     std::cout << "setting collision group and mask" << std::endl;
     m_world->addCollisionObject(col, GROUP_MULTIBODY, GROUP_STATIC | GROUP_DYNAMIC | GROUP_MULTIBODY);
 
-    col->setFriction(0.1); // just for testing.
+    col->setFriction(0.5); // just for testing.
     
     // if (p_multibody->getLink(linkIndex).m_jointFeedback == nullptr)
     // {

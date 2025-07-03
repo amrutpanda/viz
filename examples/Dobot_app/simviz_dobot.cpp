@@ -56,7 +56,7 @@ int main(int argc, char const *argv[])
     viz.attachFlagVariable(&runloop);
     viz.initApp();
     viz.createRobotObject(robot_name,robot_file);
-    // viz.getRobotObject(robot_name)->setRobotAxisVisible()
+    viz.getRobotObject(robot_name)->setRobotAxisVisible(false);
 
     viz.createBox("box1",l,b,h);
     viz.setObjectPoseAndRotation("box1",boxpos,boxrot);
@@ -165,8 +165,8 @@ void simulation(std::string& _robot_file)
             sim->getBodyPoseAndRotation(boxid,boxpos,boxrot);
             // sim->getBodyPoseAndRotation(bid,boxpos2,boxrot2);
             sim->getForceSensorOutput(fs_id,_force,_moment);
-            // std::cout << "Force: " << _force.transpose() << std::endl;
-            // std::cout << "Moment: " << _moment.transpose() << std::endl;
+            std::cout << "Force: " << _force.transpose() << std::endl;
+            std::cout << "Moment: " << _moment.transpose() << std::endl;
             // std::cout << "simulation running\n";
         }
         redis_client.executeAllWriteCallbacks();

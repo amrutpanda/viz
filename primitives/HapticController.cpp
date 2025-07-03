@@ -1,5 +1,7 @@
+/**
+ * HapticController class implementation.
+*/
 #include <HapticController.h>
-
 namespace Primitives
 {
     HapticController::HapticController(const Eigen::Vector3d center_position_robot,const Eigen::Matrix3d center_rotation_robot,

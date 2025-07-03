@@ -59,20 +59,21 @@ int main(int argc, char const *argv[])
         redis_client.executeAllReadCallbacks();
         bool _success = true;
         int count = 0;
-        while (count < 3)
+        while (count < 3 && runloop)
         {
             ssize_t bytes = read(fd,&evt,sizeof(evt));
+            std::cout << evt.code << std::endl;
             if (bytes != sizeof(evt) || evt.value != 1)
             {
                 _success = false;
-                break;
+                // break;
             }
             // if error in reading 
-            if (!_success)
-            {
-                std::cout << "error while reading from keyboard. Read no. : " << count << std::endl;
-                continue;;
-            }
+            // if (!_success)
+            // {
+            //     std::cout << "error while reading from keyboard. Read no. : " << count << std::endl;
+            //     continue;;
+            // }
             count++;
             switch (count)
             {
@@ -104,6 +105,12 @@ int main(int argc, char const *argv[])
             }
         }
         // if not success continue;
+        if (!_success)
+        {
+            std::cout << "detected error. Continuing.." << std::endl;
+            count = 0;
+            continue;
+        }
          
         // check whether state is valid.
         if (state > 4 || robot_num <1 || robot_num > robots)
@@ -140,6 +147,7 @@ int main(int argc, char const *argv[])
         }
         
         _confirmer = 0;
+        count = 0;
 
         // ssize_t bytes = read(fd,&evt,sizeof(evt));
         // if (bytes != sizeof(evt) || evt.value != 1)

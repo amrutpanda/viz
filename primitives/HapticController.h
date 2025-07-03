@@ -136,6 +136,4 @@ namespace Primitives
 
 } // namespace Primitives
 
-
-
 #endif

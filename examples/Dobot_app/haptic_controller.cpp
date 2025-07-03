@@ -34,7 +34,7 @@ int main(int argc, char const *argv[])
     signal(SIGINT,sig_handler);
     RedisClient redis_client;
     redis_client.connect();
-    
+
     int device_z_rotation = 90; // relative rotation of haptic w.r.t to robot frame.
     // setup state 
     int state = INIT;
@@ -200,7 +200,7 @@ int main(int argc, char const *argv[])
             
             teleop_task->computeHapticCommand6d(_robot_proxy,_robot_proxy_rot);
 
-            Eigen::Vector3d desired_force = 0.5 * teleop_task->_Rotation_Matrix_DeviceToRobot * (_sensed_force_robot_frame);
+            Eigen::Vector3d desired_force = 0.5 * teleop_task->_Rotation_Matrix_DeviceToRobot * (_sensed_force_robot_frame) +(-10.0)* teleop_task->_current_trans_velocity_device;
             // Eigen::Vector3d desired_force_diff = desired_force - prev_desired_force;
 
             // if (desired_force_diff.norm() > max_force_diff)
@@ -231,12 +231,18 @@ int main(int argc, char const *argv[])
             // std::cout << "desired torque: " << desired_torque.transpose() << std::endl;
             // send desired force to command force device.
             teleop_task->_commanded_force_device = desired_force;
-            // teleop_task->_commanded_torque_device = desired_torque; // ignoring force feedback at this moment.
+            teleop_task->_commanded_torque_device = desired_torque; // ignoring force feedback at this moment.
 
             prev_desired_force = desired_force;
             prev_desired_torque = desired_torque;
             // std::cout << "commanded torque: " << teleop_task->_commanded_torque_device.transpose() << std::endl;
         }
+        else if (state == SURGICAL)
+        {
+            teleop_task->setRobotCenter(_robot_proxy,_robot_proxy_rot);
+            teleop_task->computeHapticCommand6d(_robot_proxy,_robot_proxy_rot);
+        }
+
         redis_client.executeAllWriteCallbacks();
     }
     std::cout << "Exited haptic control loop " << std::endl;

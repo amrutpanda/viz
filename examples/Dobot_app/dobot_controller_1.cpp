@@ -5,6 +5,16 @@
 #include <teleop_redis_keys.h>
 #include <JointTask.h>
 
+double clampVal(double val, double ll, double ul)
+{
+    if (val < ll)
+        return ll;
+    else if (val > ul)
+        return ul;
+    else
+        return val;
+}
+
 enum State {
     INIT = 0,
     FREE,
@@ -90,7 +100,6 @@ int main(int argc, char const *argv[])
     redis_client.createEigenWriteCallback(ROBOT_JOINT_TORQUE_KEY,_command_torques);
     // to haptic device.
     redis_client.createEigenWriteCallback(ROBOT_SENSED_FORCE_KEY,_force);
-    redis_client.createEigenWriteCallback(ROBOT_SENSED_TORQUE_KEY,_moment);
     redis_client.createEigenWriteCallback(ROBOT_CURRENT_POS_KEY,robot_pos);
     redis_client.createEigenWriteCallback(ROBOT_CURRENT_ROT_KEY,robot_rot);
     redis_client.createIntWriteCallback(ROBOT_READY_STATE_KEY,robot_ready,1);
@@ -103,14 +112,15 @@ int main(int argc, char const *argv[])
     Eigen::MatrixXd M(nDof, nDof);
     Eigen::Vector3d _x;
 
-    int state = INIT;
+
+    int state = FREE;
     int prev_state = state;
     bool _surgical_first_loop = true;
-    
+
     Eigen::Vector3d _fulcrum_pos = Eigen::Vector3d::Zero();
     Eigen::Matrix3d _fulcrum_rot = Eigen::Matrix3d::Identity();
     Eigen::Vector3d _fulcrum_offset = Eigen::Vector3d(0,0,0.05);
-
+        
     Primitives::JointTask* jointTask = new Primitives::JointTask(robot_model);
     jointTask->_target_position = pos;
     jointTask->_target_position = jointTask->_current_position;
@@ -143,13 +153,35 @@ int main(int argc, char const *argv[])
         // Eigen::Vector3d desired_position;
         //compute IK;
         // std::cout << "robot proxy: " << _robot_proxy << std::endl;
+         if (state == SURGICAL)
+        {
+            if (_surgical_first_loop)
+            {
+                // set fulcrum.
+                robot_model->position(_fulcrum_pos,control_link_name,control_pos_in_link + _fulcrum_offset);
+                robot_model->rotation(_fulcrum_rot,control_link_name);
+                _surgical_first_loop = false;
+            }
+            
+            // compute angle along x and y direction.
+            // Eigen::Vector3d diff = _robot_proxy - _fulcrum_pos;
+            // Eigen::AngleAxisd angles(diff.x(), Eigen::Vector3d::UN)
+            // keep the rotation as fulcrum rotation that will be sent to haptics.
+            
 
-        robot_model->computeIK(jointTask->_target_position,control_link_name,_robot_proxy,_robot_proxy_rot,control_pos_in_link);
-        
-        jointTask->computeTorque(_command_torques);
-        // _command_torques = g;
-        robot_model->position(robot_pos,control_link_name,control_pos_in_link);
-        robot_model->rotation(robot_rot,control_link_name);
+
+        }
+
+        else if (state = FREE)
+        {
+            robot_model->computeIK(jointTask->_target_position,control_link_name,_robot_proxy,_robot_proxy_rot);
+            
+            jointTask->computeTorque(_command_torques);
+            // _command_torques = g;
+            robot_model->position(robot_pos,control_link_name,control_pos_in_link);
+            robot_model->rotation(robot_rot,control_link_name);
+        }
+
         
         // std::cout << "force: " << _force.transpose() << std::endl; 
         redis_client.executeAllWriteCallbacks();
