@@ -355,7 +355,7 @@ void RedisClient::createEigenGroupReadCallback(int _group_num, const std::string
 template< typename _Scalar,int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
 void RedisClient::createEigenGroupWriteCallback(int _group_num, const std::string& key,Eigen::Matrix< _Scalar,_Rows, _Cols, _Options,_MaxRows,_MaxCols>& matrix)
 {
-    int n = createEigenReadCallback(key,matrix);
+    int n = createEigenWriteCallback(key,matrix);
     // find the group_num from _group read.
     bool _found = false;
     int index = 0;

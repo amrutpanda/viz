@@ -37,6 +37,8 @@ Eigen::VectorXd _q,_dq;
 Eigen::VectorXd _command_torques;
 // force sensor variables.
 Eigen::Vector3d _force, _moment;
+// robot number.
+int robot_num = 1;
 
 int main(int argc, char const *argv[])
 {
@@ -60,52 +62,55 @@ int main(int argc, char const *argv[])
     redis_client.set(HAPTIC_READY_STATE_KEY, "0");
 
     int robot_ready = 0;
-    redis_client.set(ROBOT_READY_STATE_KEY, std::to_string(robot_ready));
+    redis_client.set(createRobotRedisKey(ROBOT_READY_STATE_KEY,robot_num), std::to_string(robot_ready));
 
     Eigen::Vector3d _robot_proxy = Eigen::Vector3d::Zero();
     Eigen::Matrix3d _robot_proxy_rot = Eigen::Matrix3d::Identity();
-    redis_client.setEigenMatrix(ROBOT_TARGET_POS_KEY,_robot_proxy);
-    redis_client.setEigenMatrix(ROBOT_TARGET_ROT_KEY,_robot_proxy_rot);
+    redis_client.setEigenMatrix(createRobotRedisKey(ROBOT_TARGET_POS_KEY,robot_num),_robot_proxy);
+    redis_client.setEigenMatrix(createRobotRedisKey(ROBOT_TARGET_ROT_KEY,robot_num),_robot_proxy_rot);
 
     Eigen::Vector3d robot_pos = Eigen::Vector3d::Zero();
     Eigen::Matrix3d robot_rot = Eigen::Matrix3d::Identity();
 
     // read from simulator.
-    redis_client.getEigenMatrix(ROBOT_JOINT_POSITION_KEY,robot_model->_q);
+    redis_client.getEigenMatrix(createRobotRedisKey(ROBOT_JOINT_POSITION_KEY,robot_num),robot_model->_q);
     robot_model->updateModel();
     // send default robot pos and rot to redis.
     Eigen::Vector3d _pos_default = Eigen::Vector3d::Zero();
     Eigen::Matrix3d _rot_default = Eigen::Matrix3d::Identity();
     robot_model->position(_pos_default,control_link_name,control_pos_in_link);
     robot_model->rotation(_rot_default,control_link_name);
-    redis_client.setEigenMatrix(ROBOT_DEFAULT_POS_KEY,_pos_default);
-    redis_client.setEigenMatrix(ROBOT_DEFAULT_ROT_KEY,_rot_default);
+    redis_client.setEigenMatrix(createRobotRedisKey(ROBOT_DEFAULT_POS_KEY,robot_num),_pos_default);
+    redis_client.setEigenMatrix(createRobotRedisKey(ROBOT_DEFAULT_ROT_KEY,robot_num),_rot_default);
 
     Eigen::VectorXd pos(6);
     pos.setZero();
     // pos(0) = 0.1;
-    pos << 0.1,0.4,-2.0,-0.32,0,0;
+    // pos << 0.1,0.4,-2.0,-0.32,0,0;
+    pos << 1.6,0.3,1.6,0,-1.5,0;
 
     RedisClient redis_client;
     redis_client.connect();
-    redis_client.createEigenReadCallback(ROBOT_JOINT_POSITION_KEY,robot_model->_q);
-    redis_client.createEigenReadCallback(ROBOT_JOINT_VELOCITY_KEY,robot_model->_dq);
-    redis_client.createEigenReadCallback(FORCE_SENSOR_FORCE,_force);
-    redis_client.createEigenReadCallback(FORCE_SENSOR_MOMENT,_moment);
+    redis_client.createEigenReadCallback(createRobotRedisKey(ROBOT_JOINT_POSITION_KEY,robot_num),robot_model->_q);
+    redis_client.createEigenReadCallback(createRobotRedisKey(ROBOT_JOINT_VELOCITY_KEY,robot_num),robot_model->_dq);
+    redis_client.createEigenReadCallback(createRobotRedisKey(FORCE_SENSOR_FORCE,robot_num),_force);
+    redis_client.createEigenReadCallback(createRobotRedisKey(FORCE_SENSOR_MOMENT,robot_num),_moment);
 
     // read from haptic device.
-    redis_client.createEigenReadCallback(ROBOT_TARGET_POS_KEY,_robot_proxy);
-    redis_client.createEigenReadCallback(ROBOT_TARGET_ROT_KEY,_robot_proxy_rot);
+    redis_client.createEigenReadCallback(createRobotRedisKey(ROBOT_TARGET_POS_KEY,robot_num),_robot_proxy);
+    redis_client.createEigenReadCallback(createRobotRedisKey(ROBOT_TARGET_ROT_KEY,robot_num),_robot_proxy_rot);
 
-    redis_client.createEigenWriteCallback(ROBOT_JOINT_TORQUE_KEY,_command_torques);
+    redis_client.createEigenWriteCallback(createRobotRedisKey(ROBOT_JOINT_TORQUE_KEY,robot_num),_command_torques);
     // to haptic device.
-    redis_client.createEigenWriteCallback(ROBOT_SENSED_FORCE_KEY,_force);
-    redis_client.createEigenWriteCallback(ROBOT_CURRENT_POS_KEY,robot_pos);
-    redis_client.createEigenWriteCallback(ROBOT_CURRENT_ROT_KEY,robot_rot);
+    redis_client.createEigenWriteCallback(createRobotRedisKey(ROBOT_SENSED_FORCE_KEY,robot_num),_force);
+    redis_client.createEigenWriteCallback(createRobotRedisKey(ROBOT_SENSED_TORQUE_KEY,robot_num),_moment);
+
+    redis_client.createEigenWriteCallback(createRobotRedisKey(ROBOT_CURRENT_POS_KEY,robot_num),robot_pos);
+    redis_client.createEigenWriteCallback(createRobotRedisKey(ROBOT_CURRENT_ROT_KEY,robot_num),robot_rot);
     redis_client.createIntWriteCallback(ROBOT_READY_STATE_KEY,robot_ready,1);
 
     // set command torque keys to zero in the beginning.
-    redis_client.setEigenMatrix(ROBOT_JOINT_TORQUE_KEY,_command_torques);
+    redis_client.setEigenMatrix(createRobotRedisKey(ROBOT_JOINT_TORQUE_KEY,robot_num),_command_torques);
 
     Eigen::VectorXd _gravity(n);
     Eigen::VectorXd b(nDof), g(nDof);
@@ -123,15 +128,22 @@ int main(int argc, char const *argv[])
         
     Primitives::JointTask* jointTask = new Primitives::JointTask(robot_model);
     jointTask->_target_position = pos;
-    jointTask->_target_position = jointTask->_current_position;
+    // jointTask->_target_position = jointTask->_current_position;
     
     // get ee pose from robot model and write to proxies.
+    // robot_model->_q = pos;
+    robot_model->updateModel();
+
     robot_model->position(robot_pos,control_link_name,control_pos_in_link);
     robot_model->rotation(robot_rot,control_link_name);
     _robot_proxy = robot_pos;
     _robot_proxy_rot = robot_rot;
-    redis_client.setEigenMatrix(ROBOT_TARGET_POS_KEY,_robot_proxy);
-    redis_client.setEigenMatrix(ROBOT_TARGET_ROT_KEY,_robot_proxy_rot);
+    redis_client.setEigenMatrix(createRobotRedisKey(ROBOT_TARGET_POS_KEY,robot_num),_robot_proxy);
+    redis_client.setEigenMatrix(createRobotRedisKey(ROBOT_TARGET_ROT_KEY,robot_num),_robot_proxy_rot);
+
+    // just for testing.
+    Eigen::Vector3d _init_pos;
+    _init_pos = robot_pos;
 
     // force sensor setup.
     double mass = 0.1;
@@ -143,43 +155,40 @@ int main(int argc, char const *argv[])
     timer.InitializeTimer();
     // set the controller key.
     std::string _controller_running = "1";
-    redis_client.set(CONTROLLER_RUNNING_KEY,_controller_running);
+    redis_client.set(createRobotRedisKey(CONTROLLER_RUNNING_KEY,robot_num),_controller_running);
     while (runloop && timer.WaitForNextLoop())
     {
         redis_client.executeAllReadCallbacks();
         // Do not forget to update the robot model.
         robot_model->updateModel();
         // set robot target position.
-        // Eigen::Vector3d desired_position;
-        //compute IK;
-        // std::cout << "robot proxy: " << _robot_proxy << std::endl;
-         if (state == SURGICAL)
+        // std::cout << "target angles: " << jointTask->_target_position << std::endl;
+        // std::cout << "current angles: " << jointTask->_current_position << std::endl;
+        if (state == INIT)
         {
-            if (_surgical_first_loop)
+            robot_model->position(robot_pos,control_link_name,control_pos_in_link);
+            robot_model->rotation(robot_rot,control_link_name);
+            jointTask->computeTorque(_command_torques);
+            if (jointTask->HasReachedTarget())
             {
-                // set fulcrum.
-                robot_model->position(_fulcrum_pos,control_link_name,control_pos_in_link + _fulcrum_offset);
-                robot_model->rotation(_fulcrum_rot,control_link_name);
-                _surgical_first_loop = false;
+                jointTask->reInitializeTask();
+                break;
             }
-            
-            // compute angle along x and y direction.
-            // Eigen::Vector3d diff = _robot_proxy - _fulcrum_pos;
-            // Eigen::AngleAxisd angles(diff.x(), Eigen::Vector3d::UN)
-            // keep the rotation as fulcrum rotation that will be sent to haptics.
-            
-
 
         }
 
         else if (state = FREE)
         {
             robot_model->computeIK(jointTask->_target_position,control_link_name,_robot_proxy,_robot_proxy_rot);
-            
-            jointTask->computeTorque(_command_torques);
+            // std::cout << "robot proxy: " << _robot_proxy << std::endl;
+            // std::cout << "_command_torques: " << _command_torques << std::endl;
+            // std::cout << "robot joint angles: " << robot_model->_q << std::endl;
             // _command_torques = g;
+            robot_model->updateModel();
             robot_model->position(robot_pos,control_link_name,control_pos_in_link);
             robot_model->rotation(robot_rot,control_link_name);
+            // std::cout << "robot pos: " << robot_pos << std::endl;
+            jointTask->computeTorque(_command_torques);
         }
 
         
@@ -189,7 +198,7 @@ int main(int argc, char const *argv[])
         //     break;
     }
     _controller_running = "0";
-    redis_client.set(CONTROLLER_RUNNING_KEY,_controller_running);
+    redis_client.set(createRobotRedisKey(CONTROLLER_RUNNING_KEY,robot_num),_controller_running);
     std::cout << "Controller history: " << std::endl;
     timer.printTimerHistory();
     return 0;

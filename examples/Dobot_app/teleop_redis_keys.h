@@ -13,7 +13,7 @@ std::string ROBOT_DEFAULT_POS_KEY = "robot::ee::pose::default::current_pose";
 std::string ROBOT_DEFAULT_ROT_KEY = "robot::ee::pose::default::current_rotation";
 
 std::string ROBOT_CURRENT_POS_KEY = ROBOT_DEFAULT_POS_KEY;
-std::string ROBOT_CURRENT_ROT_KEY = ROBOT_CURRENT_ROT_KEY;
+std::string ROBOT_CURRENT_ROT_KEY = ROBOT_DEFAULT_ROT_KEY;
 
 // robot force key
 std::string ROBOT_SENSED_FORCE_KEY = "robot::ee::sensed_force";
@@ -48,12 +48,10 @@ const std::string DEVICE_GRIPPER_POSITION_KEY_SUFFIX =
 	"sensors::current_position_gripper";
 const std::string DEVICE_LINEAR_VELOCITY_KEY_SUFFIX = "sensors::current_trans_velocity";
 const std::string DEVICE_ANGULAR_VELOCITY_KEY_SUFFIX = "sensors::current_rot_velocity";
-const std::string DEVICE_GRIPPER_VELOCITY_KEY_SUFFIX =
-	"sensors::current_velocity_gripper";
+const std::string DEVICE_GRIPPER_VELOCITY_KEY_SUFFIX = "sensors::current_velocity_gripper";
 const std::string DEVICE_SENSED_FORCE_KEY_SUFFIX = "sensors::sensed_force";
 const std::string DEVICE_SENSED_TORQUE_KEY_SUFFIX = "sensors::sensed_torque";
-const std::string DEVICE_USE_GRIPPER_AS_SWITCH_KEY_SUFFIX =
-	"parametrization::use_gripper_as_switch";
+const std::string DEVICE_USE_GRIPPER_AS_SWITCH_KEY_SUFFIX = "parametrization::use_gripper_as_switch";
 const std::string DEVICE_SWITCH_PRESSED_KEY_SUFFIX = "sensors::switch_pressed";
 const std::string DRIVER_RUNNING_KEY_SUFFIX = "driver_running";
 

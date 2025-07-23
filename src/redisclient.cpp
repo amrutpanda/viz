@@ -306,7 +306,7 @@ void RedisClient::executeReadCallback(int callback_num) {
 
 // ****************** Write callbacks ********************
 int RedisClient::createStringWriteCallback( const std::string& key, std::string& object) {
-    int n = _reads.callback_indices.size();
+    int n = _writes.callback_indices.size();
 
     bool key_found = false;
     if (n != 0)
@@ -334,7 +334,7 @@ int RedisClient::createStringWriteCallback( const std::string& key, std::string&
 }
 
 int RedisClient::createIntWriteCallback( const std::string& key, int& object, int arr_size) {
-    int n = _reads.callback_indices.size();
+    int n = _writes.callback_indices.size();
 
     bool key_found = false;
     if (n != 0)
@@ -362,7 +362,7 @@ int RedisClient::createIntWriteCallback( const std::string& key, int& object, in
 }
 
 int RedisClient::createDoubleWriteCallback( const std::string& key, double& object, int arr_size) {
-    int n = _reads.callback_indices.size();
+    int n = _writes.callback_indices.size();
 
     bool key_found = false;
     if (n != 0)

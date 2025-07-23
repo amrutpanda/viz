@@ -8,13 +8,16 @@ add_executable(dobot_controller_1 dobot_controller_1.cpp)
 target_link_libraries(dobot_controller_1 ${LINK_LIBRARIES})
 
 add_executable(dobot_controller_2 dobot_controller_2.cpp)
-target_link_libraries(dobot_controller_1 ${LINK_LIBRARIES})
+target_link_libraries(dobot_controller_2 ${LINK_LIBRARIES})
 
 add_executable(haptic_controller haptic_controller.cpp)
 target_link_libraries(haptic_controller ${LINK_LIBRARIES})
 
-add_executable(simviz_dobot simviz_dobot.cpp)
-target_link_libraries(simviz_dobot ${LINK_LIBRARIES})
+add_executable(simviz_multi_dobot simviz_multi_dobot.cpp)
+target_link_libraries(simviz_multi_dobot ${LINK_LIBRARIES})
+
+add_executable(collision_detection collisionDetection.cpp)
+target_link_libraries(collision_detection ${LINK_LIBRARIES})
 
 add_executable(state_control state_control.cpp)
 target_link_libraries(state_control ${LINK_LIBRARIES})

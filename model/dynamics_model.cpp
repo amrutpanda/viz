@@ -146,7 +146,6 @@ namespace Dynamics
         std::string _link_name = link_name;
         int linkInd = linkId(_link_name);
        
-        // _pos = CalcBaseToBodyCoordinates(*_rbdl_model, _q, linkInd, pos_in_link, false);
         _pos = CalcBodyToBaseCoordinates(*_rbdl_model,_q, linkInd, pos_in_link,false);
 
     }

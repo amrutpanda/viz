@@ -17,6 +17,9 @@ target_link_libraries(simviz_1 ${LINK_LIBRARIES})
 add_executable(robot_controller robot_controller.cpp)
 target_link_libraries(robot_controller ${LINK_LIBRARIES})
 
+# add_executable(haptic_controller haptic_controller.cpp)
+# target_link_libraries(haptic_controller ${LINK_LIBRARIES})
+
 add_subdirectory(Dobot_app)
 
 # add_executable(jogging_controller ${CMAKE_CURRENT_LIST_DIR}/Keyboard_jogging/jogging_controller.cpp)

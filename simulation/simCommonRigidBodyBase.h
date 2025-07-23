@@ -220,16 +220,24 @@ public:
             {
                 if (_colliders[i] != nullptr)
                 {
-                    _colliders[i]->setCollisionFlags(btCollisionObject::CF_DYNAMIC_OBJECT);
+                    int flags = _colliders[i]->getCollisionFlags();
+                    flags |= btCollisionObject::CF_DYNAMIC_OBJECT;
+                    flags &= ~btCollisionObject::CF_NO_CONTACT_RESPONSE;
+                    _colliders[i]->setCollisionFlags(flags);
+                    // _colliders[i]->setCollisionFlags(btCollisionObject::CF_DYNAMIC_OBJECT);
                 } 
             }
             else
             {
                 if (_colliders[i] != nullptr)
                 {
-                    // _colliders[i]->setCollisionFlags(btCollisionObject::CF_NO_CONTACT_RESPONSE);
+                    int flags = _colliders[i]->getCollisionFlags();
+                    flags |= btCollisionObject::CF_DYNAMIC_OBJECT;
+                    flags &= ~btCollisionObject::CF_NO_CONTACT_RESPONSE;
+                    _colliders[i]->setCollisionFlags(flags);
+                    // _colliders[i]->setCollisionFlags(btCollisionObject::CO_FEATHERSTONE_LINK);
                     // _colliders[i]->setCollisionFlags(_colliders[i]->getCollisionFlags() & ~btCollisionObject::CF_NO_CONTACT_RESPONSE);
-                    _colliders[i]->setCollisionFlags(btCollisionObject::CF_DYNAMIC_OBJECT);
+                    // _colliders[i]->setCollisionFlags(btCollisionObject::CF_DYNAMIC_OBJECT);
                 }
             }
 

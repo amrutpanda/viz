@@ -189,34 +189,50 @@ void simMultiBodyDynamicsWorld::InitialiseDynamicsWorld()
     // setGravity(0,0, -10);
 }
 
-void simMultiBodyDynamicsWorld::LoadRobotFromURDFFile(std::string _filename, Eigen::Vector3d _base_pose,
-                                Eigen::Quaterniond _base_rotation, bool _fixedBase, bool _has_selfcollision)
+void simMultiBodyDynamicsWorld::LoadRobotFromURDFFile(const std::string _filename, const Eigen::Vector3d _base_pose,
+                                const Eigen::Quaterniond _base_rotation, bool _fixedBase, bool _has_selfcollision,
+                                                                            const std::string robot_name)
 {
     BulletURDFImporter importer;
     if (!importer.ReadFile(_filename,_fixedBase))
     {
         throw std::runtime_error("Error while reading file: " + _filename);
     }
-    _multibody_name_map[importer.getName()] = importer.getMultiBodyStruct(m_dynamicsWorld);
-    m_dynamicsWorld->addMultiBody(_multibody_name_map.at(importer.getName())->_multibody);
+
+    std::string _robot_name;
+    if (robot_name == "0")
+    {
+        _multibody_name_map[importer.getName()] = importer.getMultiBodyStruct(m_dynamicsWorld);
+        _robot_name = importer.getName();
+    }
+    else
+    {
+        _multibody_name_map[robot_name] = importer.getMultiBodyStruct(m_dynamicsWorld);
+        _robot_name = robot_name;
+    }
+
+    _multibody_name_map[_robot_name] = importer.getMultiBodyStruct(m_dynamicsWorld);
+    m_dynamicsWorld->addMultiBody(_multibody_name_map.at(_robot_name)->_multibody);
     
-    _multibody_name_map.at(importer.getName())->_multibody->setHasSelfCollision(_has_selfcollision); // flag for checking self-collision.
+    _multibody_name_map.at(_robot_name)->_multibody->setHasSelfCollision(_has_selfcollision); // flag for checking self-collision.
     
     // updating the collisionflags (testing)
-    _multibody_name_map.at(importer.getName())->updateTransforms();
-    _multibody_name_map.at(importer.getName())->setupCollisionFlags();
+    _multibody_name_map.at(_robot_name)->updateTransforms();
+    _multibody_name_map.at(_robot_name)->setupCollisionFlags();
 
-    setRobotBasePose(importer.getName(),_base_pose.x(), _base_pose.y(), _base_pose.z());
-    setRobotBaseOrientation(importer.getName(),_base_rotation.x(), _base_rotation.y(), _base_rotation.z(), _base_rotation.w());
+    setRobotBasePose(_robot_name,_base_pose.x(), _base_pose.y(), _base_pose.z());
+    setRobotBaseOrientation(_robot_name,_base_rotation.x(), _base_rotation.y(), _base_rotation.z(), _base_rotation.w());
     
     // _multibody_name_map.at(importer.getName())->_multibody->
     std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" << std::endl;
-    std::cout << "Robot Name: " << importer.getName() << std::endl;
-    std::cout << "Num of DOFs: " <<_multibody_name_map.at(importer.getName())->_multibody->getNumDofs() << std::endl;
-    std::cout << "Num of Links: " << _multibody_name_map.at(importer.getName())->_multibody->getNumLinks() << std::endl;
-    std::cout << "Num of mLinks: " << m_dynamicsWorld->getMultiBody(0)->getNumLinks() << std::endl;
+    std::cout << "Robot Name: " << _robot_name << std::endl;
+    std::cout << "Num of DOFs: " <<_multibody_name_map.at(_robot_name)->_multibody->getNumDofs() << std::endl;
+    std::cout << "Num of Links: " << _multibody_name_map.at(_robot_name)->_multibody->getNumLinks() << std::endl;
     std::cout << "----------------------------------------------------" << std::endl;   
-
+    // setup solver params.
+    m_dynamicsWorld->getSolverInfo().m_splitImpulse = 1;
+    m_dynamicsWorld->getSolverInfo().m_erp = 0.2;
+    m_dynamicsWorld->getSolverInfo().m_globalCfm = 1e-4;
 }
 
 void simMultiBodyDynamicsWorld::setRobotBasePose(std::string _robotName, double _x, double _y, double _z)
@@ -417,6 +433,21 @@ void simMultiBodyDynamicsWorld::setRobotJointTorque(mMultiBody* _robot,const Eig
     for (int i = 0; i < _robot->_multibody->getNumDofs(); i++)
     {
         _robot->_multibody->addJointTorque(_robot->_jointNameIndexList[i].first,btScalar(_q[i]));
+    }
+}
+
+void simMultiBodyDynamicsWorld::clearJointTorques(mMultiBody* _robot)
+{
+    // for (int i = 0 ; i < _robot->_multibody->getNumLinks(); i++)
+    // {
+    //     _robot->_multibody->getLink(i).m_appliedForce = btVector3(0,0,0);
+    //     _robot->_multibody->getLink(i).m_appliedTorque = btVector3(0,0,0);
+    // }
+    _robot->_multibody->clearForcesAndTorques();
+    _robot->_multibody->clearConstraintForces();
+    for (int i = 0 ; i < _robot->_multibody->getNumDofs() ; i++)
+    {
+        _robot->_multibody->addJointTorque(i,0);
     }
 }
 
@@ -725,6 +756,37 @@ void simMultiBodyDynamicsWorld::stepSimulation(float _ts, float _fixedStep)
     }
     m_dynamicsWorld->stepSimulation(_ts,_numSteps,_t_fixed);
     
+}
+
+bool simMultiBodyDynamicsWorld::detectCollisionRobots(RobotObject* robot1,RobotObject* robot2)
+{
+    // this function will just detect collision between robots, but won't identify 
+    // the bodies that are going to collide.
+    double dt = m_dynamicsWorld->getSolverInfo().m_timeStep;
+    int numManifolds = m_dynamicsWorld->getDispatcher()->getNumManifolds();
+
+    std::cout << "NO. of Contact Manifolds: " << numManifolds << std::endl;
+
+    for (int i = 0; i < numManifolds; i++)
+    {
+        btPersistentManifold* manifold = m_dynamicsWorld->getDispatcher()->getManifoldByIndexInternal(i);
+        // check for contacts.
+        if (manifold->getNumContacts() == 0) continue;
+        for (int j = 0; j < robot1->_multibody->getNumLinks() ; j++)
+        {
+            btCollisionObject* colbody1 = robot1->_multibody->getLinkCollider(i);
+            for (int k = 0; k < robot2->_multibody->getNumLinks(); k++)
+            {
+                btCollisionObject* colbody2 = robot2->_multibody->getLinkCollider(i);
+                if (colbody1 == manifold->getBody0() && colbody2 == manifold->getBody1())
+                    return true;
+                else if (colbody2 == manifold->getBody0() && colbody1 == manifold->getBody1())
+                    return true;
+            }
+        }
+        
+    }
+    return false;
 }
 
 void simMultiBodyDynamicsWorld::convertStringTobtVector3(std::string _vstr, btVector3& _v, std::string _del)

@@ -16,3 +16,9 @@ So it is better to use btShapehull and build a hull containing exactly 42 no. of
 
 3. The transformation in little different than the way we used it in Ogre. The rotation part is generally from
 world_to_local. So in order to get rotation/quaternion from local_to_world the quaternion needs to be inversed.
+
+4. If collision meshes overlap the joints value will change with step simulation without any applied torque.
+5. Improper collision filter group and mask can cause crash or joint values as nan. I observed changing the solver
+    setting like enabling the split impulse and global_cfm, erp value changes prevented the joint values from going NaN.
+6. If you add collisionflag, collision filter group or mask to a collisionshape multiple times, it is
+   has beeen observed that the simulation speed reduces.

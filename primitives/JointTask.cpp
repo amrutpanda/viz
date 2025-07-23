@@ -15,8 +15,8 @@ namespace Primitives
         h.resize(_nDof);
 
         // set default _kp and _kv;
-        _Kp = 50 * Eigen::VectorXd::Ones(_nDof);
-        _Kv = 14* Eigen::VectorXd::Ones(_nDof);
+        _Kp = 200 * Eigen::VectorXd::Ones(_nDof);
+        _Kv = 28 * Eigen::VectorXd::Ones(_nDof);
 
         _Kp_mat = _Kp.asDiagonal();
         _Kv_mat = _Kv.asDiagonal();

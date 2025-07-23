@@ -43,9 +43,10 @@ public:
     
     simMultiBodyDynamicsWorld();
     void InitialiseDynamicsWorld();
-    void LoadRobotFromURDFFile(std::string _filename, Eigen::Vector3d _base_pose = Eigen::Vector3d(0,0,0),
-                                Eigen::Quaterniond _base_rotation = Eigen::Quaterniond(1,0,0,0), bool _fixedBase = true,
-                                bool _has_selfcollision = false);
+    void LoadRobotFromURDFFile(const std::string _filename, const Eigen::Vector3d _base_pose = Eigen::Vector3d(0,0,0),
+                                const Eigen::Quaterniond _base_rotation = Eigen::Quaterniond(1,0,0,0), bool _fixedBase = true,
+                                bool _has_selfcollision = false,
+                                const std::string robot_name = "0");
     void LoadFromWorldFile(std::string);
     btConstraintSolver* getSolver();
     btMultiBodyConstraintSolver* getMultiBodySolver();
@@ -63,6 +64,7 @@ public:
     void getRobotJointVel(mMultiBody*, Eigen::VectorXd& _dq);
 
     void resetJointPos(mMultiBody*, const Eigen::VectorXd& _q);
+    void clearJointTorques(mMultiBody*);
 
     void setRobotJointTorque(mMultiBody*, const Eigen::VectorXd& _t);
     void getRobotJointTorque(mMultiBody*, Eigen::VectorXd& _t);
@@ -79,6 +81,8 @@ public:
     unsigned int attachForceSensorToRobot(RobotObject* _robot, unsigned int _ind,double _alpha);
 
     bool getForceMomentFromForceSensor(unsigned int _ind, Eigen::Vector3d&, Eigen::Quaterniond&);
+
+    bool detectCollisionRobots(RobotObject* robot1,RobotObject* robot2);
 
     int getNumRobots() noexcept;
     void stepSimulation(float _ts, float _fixedStep = 0.01);

@@ -1,5 +1,6 @@
 #include <HapticController.h>
-#include <teleop_redis_keys.h>
+#include <Dobot_app/teleop_redis_keys.h>
+// #include <teleop_redis_keys.h>
 #include <redisclient.h>
 #include <LoopTimer.h>
 
@@ -29,13 +30,9 @@ int haptic_ready = 0;
 int robot_ready = 0;
 
 // no. of robots to be controlled.
-int num_robots = 1;
+int num_robots = 2;
 int haptic_group = 0;
 int robot_num = 1;
-
-// some additional variables.
-bool _force_dimension_device = false;
-bool _hd_phantom_device = true;
 
 int main(int argc, char const *argv[])
 {
@@ -43,7 +40,7 @@ int main(int argc, char const *argv[])
     RedisClient redis_client;
     redis_client.connect();
 
-    int device_z_rotation = 0; // relative rotation of haptic w.r.t to robot frame.
+    int device_z_rotation = 90; // relative rotation of haptic w.r.t to robot frame.
     // setup state 
     int state = INIT;
     int prev_state = state;
@@ -58,11 +55,10 @@ int main(int argc, char const *argv[])
     double max_torque_diff = 0.001;
 
     // check whether the robot controller is running.
-    if (redis_client.get(createRobotRedisKey(CONTROLLER_RUNNING_KEY,1)) == "0")
-    // if (redis_client.get(CONTROLLER_RUNNING_KEY) == "0")
+    if (redis_client.get(CONTROLLER_RUNNING_KEY) == "0")
     {
         std::cout << "Run the robot controller before running haptic controller" << std::endl;
-        // return 0;
+        return 0;
     }
 
     Eigen::Vector3d _haptic_proxy = Eigen::Vector3d::Zero();
@@ -124,15 +120,6 @@ int main(int argc, char const *argv[])
     double KsR = 1.0;
     teleop_task->setScalingFactors(Ks,KsR);
 
-    // set scaling factor according to device type.
-    if (_hd_phantom_device)
-    {
-        Ks = 3.0;
-        KsR = 0.5;
-        teleop_task->setScalingFactors(Ks,KsR);
-    }
-
-
     // Vector to store desired force and prev_desired_force;
     Eigen::Vector3d _desired_force = Eigen::Vector3d::Zero();
     Eigen::Vector3d prev_desired_force = Eigen::Vector3d::Zero();
@@ -163,48 +150,47 @@ int main(int argc, char const *argv[])
    
     /* ------------------------------------------------------------------ */
     // Objects to read from redis server.
-    // redis_client.createEigenReadCallback(createRedisKey(DEVICE_POSITION_KEY_SUFFIX,device_num),teleop_task->_current_position_device);
-    // redis_client.createEigenReadCallback(createRedisKey(DEVICE_ROTATION_KEY_SUFFIX,device_num),teleop_task->_current_rotation_device);
-    // redis_client.createEigenReadCallback(createRedisKey(DEVICE_LINEAR_VELOCITY_KEY_SUFFIX,device_num),teleop_task->_current_trans_velocity_device);
-    // redis_client.createEigenReadCallback(createRedisKey(DEVICE_ANGULAR_VELOCITY_KEY_SUFFIX,device_num),teleop_task->_current_rot_velocity_device);
-    // redis_client.createEigenReadCallback(createRedisKey(DEVICE_SENSED_FORCE_KEY_SUFFIX,device_num),teleop_task->_sensed_force_device);
-    // redis_client.createEigenReadCallback(createRedisKey(DEVICE_SENSED_TORQUE_KEY_SUFFIX,device_num),teleop_task->_sensed_torque_device);
-    // redis_client.createDoubleReadCallback(createRedisKey(DEVICE_GRIPPER_POSITION_KEY_SUFFIX,device_num),teleop_task->_current_gripper_position_device,1);
-    // redis_client.createDoubleReadCallback(createRedisKey(DEVICE_GRIPPER_VELOCITY_KEY_SUFFIX,device_num),teleop_task->_current_gripper_velocity_device,1);
-    // // read from robot.
-    // redis_client.createEigenReadCallback(ROBOT_SENSED_FORCE_KEY,_sensed_force_robot_frame);
-    // redis_client.createEigenReadCallback(ROBOT_SENSED_TORQUE_KEY,_sensed_torque_robot_frame);
-    // redis_client.createEigenReadCallback(ROBOT_CURRENT_POS_KEY,robot_pos);
-    // redis_client.createEigenReadCallback(ROBOT_CURRENT_ROT_KEY,robot_rot);
-    // redis_client.createIntReadCallback(ROBOT_READY_STATE_KEY,robot_ready,1);
+    redis_client.createEigenReadCallback(createRedisKey(DEVICE_POSITION_KEY_SUFFIX,device_num),teleop_task->_current_position_device);
+    redis_client.createEigenReadCallback(createRedisKey(DEVICE_ROTATION_KEY_SUFFIX,device_num),teleop_task->_current_rotation_device);
+    redis_client.createEigenReadCallback(createRedisKey(DEVICE_LINEAR_VELOCITY_KEY_SUFFIX,device_num),teleop_task->_current_trans_velocity_device);
+    redis_client.createEigenReadCallback(createRedisKey(DEVICE_ANGULAR_VELOCITY_KEY_SUFFIX,device_num),teleop_task->_current_rot_velocity_device);
+    redis_client.createEigenReadCallback(createRedisKey(DEVICE_SENSED_FORCE_KEY_SUFFIX,device_num),teleop_task->_sensed_force_device);
+    redis_client.createEigenReadCallback(createRedisKey(DEVICE_SENSED_TORQUE_KEY_SUFFIX,device_num),teleop_task->_sensed_torque_device);
+    redis_client.createDoubleReadCallback(createRedisKey(DEVICE_GRIPPER_POSITION_KEY_SUFFIX,device_num),teleop_task->_current_gripper_position_device,1);
+    redis_client.createDoubleReadCallback(createRedisKey(DEVICE_GRIPPER_VELOCITY_KEY_SUFFIX,device_num),teleop_task->_current_gripper_velocity_device,1);
+    // read from robot.
+    redis_client.createEigenReadCallback(ROBOT_SENSED_FORCE_KEY,_sensed_force_robot_frame);
+    redis_client.createEigenReadCallback(ROBOT_SENSED_TORQUE_KEY,_sensed_torque_robot_frame);
+    redis_client.createEigenReadCallback(ROBOT_CURRENT_POS_KEY,robot_pos);
+    redis_client.createEigenReadCallback(ROBOT_CURRENT_ROT_KEY,robot_rot);
+    redis_client.createIntReadCallback(ROBOT_READY_STATE_KEY,robot_ready,1);
 
-    // // objects to write to redis.
-    // redis_client.createEigenWriteCallback(createRedisKey(DEVICE_COMMANDED_FORCE_KEY_SUFFIX,device_num),teleop_task->_commanded_force_device);
-    // redis_client.createEigenWriteCallback(createRedisKey(DEVICE_COMMANDED_TORQUE_KEY_SUFFIX,device_num),teleop_task->_commanded_torque_device);
-    // redis_client.createDoubleWriteCallback(createRedisKey(DEVICE_COMMANDED_GRIPPER_FORCE_KEY_SUFFIX,device_num),teleop_task->_commanded_gripper_force_device,1);
+    // objects to write to redis.
+    redis_client.createEigenWriteCallback(createRedisKey(DEVICE_COMMANDED_FORCE_KEY_SUFFIX,device_num),teleop_task->_commanded_force_device);
+    redis_client.createEigenWriteCallback(createRedisKey(DEVICE_COMMANDED_TORQUE_KEY_SUFFIX,device_num),teleop_task->_commanded_torque_device);
+    redis_client.createDoubleWriteCallback(createRedisKey(DEVICE_COMMANDED_GRIPPER_FORCE_KEY_SUFFIX,device_num),teleop_task->_commanded_gripper_force_device,1);
 
-    // // write to robot keys.
-    // redis_client.createEigenWriteCallback(ROBOT_TARGET_POS_KEY,_robot_proxy);
-    // redis_client.createEigenWriteCallback(ROBOT_TARGET_ROT_KEY,_robot_proxy_rot);
-    // redis_client.createIntWriteCallback(HAPTIC_READY_STATE_KEY,haptic_ready,1);
+    // write to robot keys.
+    redis_client.createEigenWriteCallback(ROBOT_TARGET_POS_KEY,_robot_proxy);
+    redis_client.createEigenWriteCallback(ROBOT_TARGET_ROT_KEY,_robot_proxy_rot);
+    redis_client.createIntWriteCallback(HAPTIC_READY_STATE_KEY,haptic_ready,1);
     /* ------------------------------------------------------------------ */
 
 
     // create redis keys to read and write to robots.
-    for (int i = 1; i <= num_robots; i++)
-    {
-        // robot read keys.
-        redis_client.createEigenGroupReadCallback(i,createRobotRedisKey(ROBOT_SENSED_FORCE_KEY,i),_sensed_force_robot_frame);
-        redis_client.createEigenGroupReadCallback(i,createRobotRedisKey(ROBOT_SENSED_TORQUE_KEY,i),_sensed_torque_robot_frame);
-        redis_client.createEigenGroupReadCallback(i,createRobotRedisKey(ROBOT_CURRENT_POS_KEY,i),robot_pos);
-        redis_client.createEigenGroupReadCallback(i,createRobotRedisKey(ROBOT_CURRENT_ROT_KEY,i),robot_rot);
-        redis_client.createIntGroupReadCallback(i,createRobotRedisKey(ROBOT_READY_STATE_KEY,i),robot_ready,1);
-        // robot write keys.
-        redis_client.createEigenGroupWriteCallback(i,createRobotRedisKey(ROBOT_TARGET_POS_KEY,i),_robot_proxy);
-        redis_client.createEigenGroupWriteCallback(i,createRobotRedisKey(ROBOT_TARGET_ROT_KEY,i),_robot_proxy_rot);
-    }
-    // state specific callbacks.
-
+    // for (int i = 1; i <= num_robots; i++)
+    // {
+    //     // robot read keys.
+    //     redis_client.createEigenGroupReadCallback(i,createRobotRedisKey(ROBOT_SENSED_FORCE_KEY,i),_sensed_force_robot_frame);
+    //     redis_client.createEigenGroupReadCallback(i,createRobotRedisKey(ROBOT_SENSED_TORQUE_KEY,i),_sensed_torque_robot_frame);
+    //     redis_client.createEigenGroupReadCallback(i,createRobotRedisKey(ROBOT_CURRENT_POS_KEY,i),robot_pos);
+    //     redis_client.createEigenGroupReadCallback(i,createRobotRedisKey(ROBOT_CURRENT_ROT_KEY,i),robot_rot);
+    //     redis_client.createIntGroupReadCallback(i,createRobotRedisKey(ROBOT_READY_STATE_KEY,i),robot_ready,1);
+    //     // robot write keys.
+    //     redis_client.createEigenGroupWriteCallback(i,createRobotRedisKey(ROBOT_TARGET_POS_KEY,i),_robot_proxy);
+    //     redis_client.createEigenGroupWriteCallback(i,createRobotRedisKey(ROBOT_TARGET_ROT_KEY,i),_robot_proxy_rot);
+    // }
+    // // state specific callbacks.
     // redis_client.createIntGroupReadCallback(3,STATE_TRANSITION_KEY,state,1);
     // redis_client.createIntGroupReadCallback(3,ROBOT_NAME_KEY,robot_num,1);
 
@@ -217,20 +203,19 @@ int main(int argc, char const *argv[])
     while (runloop && timer.WaitForNextLoop())
     {
         // make the state obtain from redis as prev state.
-        // prev_state = state;
+        prev_state = state;
         // read from redis.
-        redis_client.executeGroupReadCallbacks(1);
         redis_client.executeAllReadCallbacks();
         // use gripper as switch.
         // teleop_task->UseGripperAsSwitch();
         gripper_state_prev = gripper_state;
         gripper_state = teleop_task->gripper_state;
         // handle state transition.
-        // if (state != prev_state)
-        // {
-        //     std::cout << "Transitioning from state " << state_names[prev_state] << " to "
-        //                                     << state_names[state] << std::endl;
-        // }
+        if (state != prev_state)
+        {
+            std::cout << "Transitioning from state " << state_names[prev_state] << " to "
+                                            << state_names[state] << std::endl;
+        }
 
         if (state == INIT)
         {
@@ -258,8 +243,6 @@ int main(int argc, char const *argv[])
         }
         else if (state == FREE)
         {
-            // std::cout << "state: " << state << std::endl;
-        
             device_rot_center = teleop_task->_current_rotation_device;
             
             teleop_task->computeHapticCommand6d(_robot_proxy,_robot_proxy_rot);
@@ -297,14 +280,8 @@ int main(int argc, char const *argv[])
             teleop_task->_commanded_force_device = desired_force;
             teleop_task->_commanded_torque_device = desired_torque; // ignoring force feedback at this moment.
 
-            // Ignore force feedback
-            teleop_task->_commanded_force_device.setZero();
-            teleop_task->_commanded_torque_device.setZero();
-            
             prev_desired_force = desired_force;
             prev_desired_torque = desired_torque;
-            // std::cout << "haptic position: " << teleop_task->_current_trans_velocity_device << std::endl;
-            
             // std::cout << "commanded torque: " << teleop_task->_commanded_torque_device.transpose() << std::endl;
         }
         else if (state == SURGICAL)
@@ -312,7 +289,7 @@ int main(int argc, char const *argv[])
             teleop_task->setRobotCenter(_robot_proxy,_robot_proxy_rot);
             teleop_task->computeHapticCommand6d(_robot_proxy,_robot_proxy_rot);
         }
-        redis_client.executeGroupWriteCallbacks(1);
+
         redis_client.executeAllWriteCallbacks();
     }
     std::cout << "Exited haptic control loop " << std::endl;
