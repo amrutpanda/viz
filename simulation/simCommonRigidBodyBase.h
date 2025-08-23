@@ -213,7 +213,11 @@ public:
         {
             if (i == 0)
             {
-                _colliders[i]->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT);
+                int flags = _colliders[i]->getCollisionFlags();
+                flags |= btCollisionObject::CF_DYNAMIC_OBJECT;
+                flags &= ~btCollisionObject::CF_NO_CONTACT_RESPONSE;
+                _colliders[i]->setCollisionFlags(flags);
+                // _colliders[i]->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT);
                 continue;
             }
             if ((i == _colliders.size() - 1))

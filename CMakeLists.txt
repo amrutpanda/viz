@@ -117,4 +117,4 @@ add_subdirectory(model)
 add_subdirectory(primitives)
 add_subdirectory(examples)
 add_subdirectory(Haptics)
-
+add_subdirectory(hand_controller)

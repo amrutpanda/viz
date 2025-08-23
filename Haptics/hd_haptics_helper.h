@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <ostream>
+#include <memory>
 
 #include <HD/hd.h>
 #include <HDU/hdu.h>
@@ -15,6 +16,10 @@
 */
 #include <Eigen/Core>
 #include <Eigen/Dense>
+
+#include <redisclient.h>
+
+
 
 
 namespace PhantomDevice
@@ -58,6 +63,8 @@ namespace PhantomDevice
 
         // DeviceInfo info;
         HDErrorInfo error;
+        // declare a pointer for redis client.
+        std::unique_ptr<RedisClient> redis_client;
     public:
         hdPhantomDeviceHandler() {device = HD_INVALID_HANDLE;};
         ~hdPhantomDeviceHandler() {};
@@ -65,6 +72,8 @@ namespace PhantomDevice
         static HDCallbackCode HDCALLBACK phantomCallback(void* data)
         {
             hdPhantomDeviceHandler* _handler = static_cast<hdPhantomDeviceHandler*>(data);
+            // read all data from redis.
+            // _handler->redis_client->executeAllReadCallbacks();
             hdBeginFrame(_handler->device);
             hduVector3Dd _v;
             hdGetDoublev(HD_CURRENT_POSITION,_v);
@@ -96,6 +105,8 @@ namespace PhantomDevice
             hdGetDoublev(HD_CURRENT_TORQUE, _v);
             _handler->_sensed_torque << _v[0], _v[1], _v[2];
 
+            // clamp the value.
+            _handler->ClampValue(_handler->_applied_force,-1.0,1.0);
             // set applied force and torque.
             _v[0] = _handler->_applied_force[0];
             _v[1] = _handler->_applied_force[1];
@@ -108,6 +119,9 @@ namespace PhantomDevice
             hdSetDoublev(HD_CURRENT_TORQUE,_v);
             hdEndFrame(_handler->device);
 
+            // write data to redis.
+            // _handler->redis_client->executeAllWriteCallbacks();
+
             HDErrorInfo error;
             if (HD_DEVICE_ERROR(error = hdGetError()))
             {
@@ -116,6 +130,7 @@ namespace PhantomDevice
                 // {
                 //     return HD_CALLBACK_DONE;
                 // }
+                return HD_CALLBACK_DONE;
             }
             return HD_CALLBACK_CONTINUE;
         }
@@ -134,6 +149,7 @@ namespace PhantomDevice
 
         void setForceAndTorque(const Eigen::Vector3d& _F, const Eigen::Vector3d& _T);
         void start();
+        RedisClient* getRedisClient();
     
         Eigen::Vector3d _position;
         Eigen::Vector3d _linear_velocity;
@@ -144,6 +160,7 @@ namespace PhantomDevice
 
         Eigen::Vector3d _applied_force;
         Eigen::Vector3d _applied_torque;
+        void ClampValue(Eigen::Vector3d& _v, double lv, double uv);
 
         // device constants.
         double m_LinearStiffnes;
@@ -154,7 +171,6 @@ namespace PhantomDevice
 
         double m_maxLinearForce;
         double m_maxAngularForce;
-
     };
 
     // void exithandler();

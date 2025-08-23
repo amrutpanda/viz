@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-1-g15f4949  Build Version: 1.6.7594.29634
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot name="hand_controller">
+  <!-- <link name="base_link">
+    <inertial>
+      <origin xyz="-8.0961E-06 0.0019103 0.028995" rpy="0 0 0" />
+      <mass value="0.90882" />
+      <inertia
+        ixx="0.0014545"
+        ixy="4.2968E-08"
+        ixz="-1.8199E-07"
+        iyy="0.001345"
+        iyz="-6.243E-06"
+        izz="0.002155" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://dobot_description/meshes/cr5/base_link.dae" />
+      </geometry>
+      <material
+        name="">
+        <color rgba="0 0 0 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://dobot_description/meshes/cr5/base_link.dae" />
+      </geometry>
+    </collision>
+  </link> -->
+
+  <!-- <joint name="dummy_joint" type="fixed">
+    <parent link="dummy_link" />
+    <child  link="base_link" />
+  </joint> -->
+
+   <link name="dummy_link" />
+  <link name="link0">
+    <inertial>
+        <origin xyz="0 0 0.01" rpy="0 0 0" />
+        <mass value="0.5"/>
+         <inertia
+            ixx="0.0014545"
+            ixy="4.2968E-08"
+            ixz="-1.8199E-07"
+            iyy="0.001345"
+            iyz="-6.243E-06"
+            izz="0.002155" />
+    </inertial>
+    <visual>
+      <geometry>
+        <cylinder length="0.02" radius="0.08"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <joint name="dummy_joint" type="fixed">
+    <parent link="dummy_link" />
+    <child  link="link0" />
+  </joint>
+
+   <link name="link1">
+    <inertial>
+        <origin xyz="0 0 0.05" rpy="0 0 0" />
+        <mass value="2.5"/>
+         <inertia
+            ixx="0.0014545"
+            ixy="4.2968E-08"
+            ixz="-1.8199E-07"
+            iyy="0.001345"
+            iyz="-6.243E-06"
+            izz="0.002155" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0.06" rpy="0 0 0" />
+      <geometry>
+        <box size="0.15 0.15 0.12"/>
+      </geometry> 
+    </visual>
+    <visual>
+      <origin xyz="0 0 0.14" rpy="0 0 0" />
+      <geometry>
+        <box size="0.08 0.06 0.06"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <joint name="joint1" type="revolute">
+    <parent link="link0" />
+    <child  link="link1" />
+    <origin xyz="0 0 0.01" rpy="0 0 0" />
+    <axis xyz="0 0 1"/>
+    <limit lower="-3.14" upper="3.14" effort="0" velocity="0" />
+  </joint>
+
+   <link name="link2">
+    <inertial>
+        <origin xyz="0.05 0 0" rpy="0 0 0" />
+        <mass value="0.25"/>
+         <inertia
+            ixx="0.0014545"
+            ixy="4.2968E-08"
+            ixz="-1.8199E-07"
+            iyy="0.001345"
+            iyz="-6.243E-06"
+            izz="0.002155" />
+    </inertial>
+    <visual>
+      <origin xyz="0.05 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.1 0.02 0.02"/>
+      </geometry> 
+    </visual>
+  </link>
+
+   <joint name="joint2" type="revolute">
+    <parent link="link1" />
+    <child  link="link2" />
+    <origin xyz="0 0.04 0.15" rpy="-1.57 0 0" />
+    <axis xyz="0 0 1"/>
+    <limit lower="-3.14" upper="3.14" effort="0" velocity="0" />
+  </joint>
+
+  <!-- <link name="link3">
+    <inertial>
+        <origin xyz="0.0 -0.15 0" rpy="0 0 0" />
+        <mass value="0.25"/>
+         <inertia
+            ixx="0.0014545"
+            ixy="4.2968E-08"
+            ixz="-1.8199E-07"
+            iyy="0.001345"
+            iyz="-6.243E-06"
+            izz="0.002155" />
+    </inertial>
+    <visual>
+      <origin xyz="0 -0.15 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.04 0.3 0.04"/>
+      </geometry> 
+    </visual>
+  </link>
+  
+    <joint name="joint3" type="revolute">
+    <parent link="link1" />
+    <child  link="link3" />
+    <origin xyz="0 -0.06 0.15" rpy="-1.57 0 0" />
+    <axis xyz="0 0 1"/>
+    <limit lower="-3.14" upper="3.14" effort="0" velocity="0" />
+  </joint> -->
+
+</robot>

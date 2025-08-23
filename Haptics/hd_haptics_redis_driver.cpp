@@ -10,7 +10,6 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
-#include <redisclient.h>
 #include <chai_haptics_driver_redis_keys.h>
 #include <LoopTimer.h>
 
@@ -38,7 +37,9 @@ int main(int argc, char const *argv[])
     hdPhantomDeviceHandler handler;
     handler.open();
     // define a redis_client object.
-    std::unique_ptr<RedisClient> redis_client = std::make_unique<RedisClient>();
+    // std::unique_ptr<RedisClient> redis_client = std::make_unique<RedisClient>();
+
+    RedisClient* redis_client = handler.getRedisClient();
     redis_client->connect();
     // send device parameters to redis.
     redis_client->setEigenMatrix(createRedisKey(MAX_STIFFNESS_KEY_SUFFIX,device_num),
@@ -112,8 +113,8 @@ int main(int argc, char const *argv[])
         while (runloop && timer.WaitForNextLoop())
         {
             redis_client->executeAllReadCallbacks();
-            handler._applied_force.setZero();
-            handler._applied_torque.setZero();
+            // handler._applied_force.setZero();
+            // handler._applied_torque.setZero();
             redis_client->executeAllWriteCallbacks();
         }
         

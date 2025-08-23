@@ -124,7 +124,7 @@ void ForceSensor::getContactForce() // computes force in global frame.
                 }
                 // compute normal forces.
                 _force += _mPoint.m_appliedImpulse/dt;
-                // lateral forces.
+                // lateral(Friction) forces.
                _fForce += (_mPoint.m_appliedImpulseLateral1 * _mPoint.m_lateralFrictionDir1 +
                             _mPoint.m_appliedImpulseLateral2 * _mPoint.m_lateralFrictionDir2)/dt;
 
@@ -137,7 +137,7 @@ void ForceSensor::getContactForce() // computes force in global frame.
         // add the total force computed in a manifold to overall total force.
         _cForce += _force* _normal;
         // testing with friction.
-        _cForce += _force* _normal + _fForce;
+        _cForce += _force* _normal +  _fForce;
         
         btTransform baseToFsLinkTranform = robot->_multibody->getLink(link_ind).m_cachedWorldTransform;
         _cMoment = (baseToFsLinkTranform.getOrigin() - _contactPoints).cross(_cForce);

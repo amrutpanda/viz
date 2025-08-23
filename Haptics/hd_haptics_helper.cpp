@@ -47,6 +47,9 @@ namespace PhantomDevice
 
         m_maxLinearForce = (double) HD_NOMINAL_MAX_FORCE;
         m_maxAngularForce = (double) HD_NOMINAL_MAX_TORQUE_FORCE;
+
+        // setup RedisClient.
+        redis_client = std::make_unique<RedisClient>();
     }
 
     void hdPhantomDeviceHandler::close()
@@ -91,6 +94,22 @@ namespace PhantomDevice
     {
         _applied_force = _f;
         _applied_torque = _t;
+    }
+
+    RedisClient* hdPhantomDeviceHandler::getRedisClient()
+    {
+        return redis_client.get();
+    }
+
+    void hdPhantomDeviceHandler::ClampValue(Eigen::Vector3d& _v, double lv, double uv)
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            if (_v[i] < lv)
+                _v[i] = lv;
+            else if (_v[i] > uv)
+                _v[i] = uv;
+        }
     }
 
 } // namespace PhantomDevice

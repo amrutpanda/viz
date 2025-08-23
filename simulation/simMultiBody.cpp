@@ -207,21 +207,21 @@ void simMultiBodyDynamicsWorld::LoadRobotFromURDFFile(const std::string _filenam
     }
     else
     {
-        _multibody_name_map[robot_name] = importer.getMultiBodyStruct(m_dynamicsWorld);
         _robot_name = robot_name;
+        _multibody_name_map[_robot_name] = importer.getMultiBodyStruct(m_dynamicsWorld);
     }
-
-    _multibody_name_map[_robot_name] = importer.getMultiBodyStruct(m_dynamicsWorld);
-    m_dynamicsWorld->addMultiBody(_multibody_name_map.at(_robot_name)->_multibody);
-    
+    std::cout << "Robot Name ::: " << _robot_name << std::endl;
+    // _multibody_name_map[_robot_name] = importer.getMultiBodyStruct(m_dynamicsWorld);
+    m_dynamicsWorld->addMultiBody(_multibody_name_map.at(_robot_name)->_multibody,GROUP_MULTIBODY, GROUP_DYNAMIC | GROUP_STATIC);
     _multibody_name_map.at(_robot_name)->_multibody->setHasSelfCollision(_has_selfcollision); // flag for checking self-collision.
-    
-    // updating the collisionflags (testing)
+
+    // // updating the collisionflags (testing)
     _multibody_name_map.at(_robot_name)->updateTransforms();
     _multibody_name_map.at(_robot_name)->setupCollisionFlags();
-
+    
+    // set base pose and orientation.
     setRobotBasePose(_robot_name,_base_pose.x(), _base_pose.y(), _base_pose.z());
-    setRobotBaseOrientation(_robot_name,_base_rotation.x(), _base_rotation.y(), _base_rotation.z(), _base_rotation.w());
+    // setRobotBaseOrientation(_robot_name,_base_rotation.x(), _base_rotation.y(), _base_rotation.z(), _base_rotation.w());
     
     // _multibody_name_map.at(importer.getName())->_multibody->
     std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" << std::endl;
@@ -230,9 +230,12 @@ void simMultiBodyDynamicsWorld::LoadRobotFromURDFFile(const std::string _filenam
     std::cout << "Num of Links: " << _multibody_name_map.at(_robot_name)->_multibody->getNumLinks() << std::endl;
     std::cout << "----------------------------------------------------" << std::endl;   
     // setup solver params.
-    m_dynamicsWorld->getSolverInfo().m_splitImpulse = 1;
+    m_dynamicsWorld->getSolverInfo().m_splitImpulse = true;
     m_dynamicsWorld->getSolverInfo().m_erp = 0.2;
     m_dynamicsWorld->getSolverInfo().m_globalCfm = 1e-4;
+    m_dynamicsWorld->getSolverInfo().m_numIterations = 50;
+    std::cout << "----------------------------------------------------" << std::endl;
+    std::cout << "Finished setting up" << std::endl;
 }
 
 void simMultiBodyDynamicsWorld::setRobotBasePose(std::string _robotName, double _x, double _y, double _z)

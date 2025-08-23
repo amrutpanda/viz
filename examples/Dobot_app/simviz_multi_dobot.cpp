@@ -83,15 +83,15 @@ int main(int argc, char const *argv[])
     viz.initApp();
     viz.createRobotObject(robot_name,robot_file);
     // create second robot
-    viz.createRobotObject(robot_name2,robot_file,false,Eigen::Vector3d(0.4 ,1.4 ,0));
+    // viz.createRobotObject(robot_name2,robot_file,false,Eigen::Vector3d(0.4 ,1.4 ,0));
 
     viz.createBox("box1",l,b,h);
     viz.setObjectPoseAndRotation("box1",boxpos,boxrot);
     viz.setObjectColor("box1",0.4,0.5,0.7);
 
-    viz.createBox("box2",0.82,0.82,0.02);
-    viz.setObjectPoseAndRotation("box2",boxpos2,boxrot2);
-    viz.setObjectColor("box2",0.0,0.1,1.0);
+    // viz.createBox("box2",0.82,0.82,0.02);
+    // viz.setObjectPoseAndRotation("box2",boxpos2,boxrot2);
+    // viz.setObjectColor("box2",0.0,0.1,1.0);
 
     // viz.createGraphicalObject("/home/merai/Downloads/DOBOT - J6 removal_v1.2.dae","sp1",boxpos,boxrot);
 
@@ -114,7 +114,7 @@ int main(int argc, char const *argv[])
 
         // viz.updateRobotGraphics(robot_name,_q,boxpos,boxrot);
         viz.setObjectPoseAndRotation("box1",boxpos,boxrot);
-        viz.setObjectPoseAndRotation("box2",boxpos2,boxrot2);
+        // viz.setObjectPoseAndRotation("box2",boxpos2,boxrot2);
 
         viz.RenderOneFrame();
         if (!runloop)
@@ -148,8 +148,9 @@ void simulation(std::string& _robot_file)
     std::unique_ptr<simMultiBodyDynamicsWorld> sim = std::make_unique<simMultiBodyDynamicsWorld>();
     // Loading the first robot.
     sim->LoadRobotFromURDFFile(_robot_file,Eigen::Vector3d(0,0,0),Eigen::Quaterniond(0,0,0,1),true,false,"robot1");
+    // sim->LoadRobotFromURDFFile(robot_file);
     // Loading the second robot.
-    sim->LoadRobotFromURDFFile(_robot_file,Eigen::Vector3d(0.4, 1.4, 0),Eigen::Quaterniond(0,0,0,1),true,false,"robot2");
+    // sim->LoadRobotFromURDFFile(_robot_file,Eigen::Vector3d(0.4, 1.4, 0),Eigen::Quaterniond(0,0,0,1),true,false,"robot2");
     sim->setGravity(0, 0, -9.81);
     int boxid = sim->addBodyBox(l,b,h,0,boxpos,boxrot); // if mass = 0, the object will be static.
     // int spid = sim->addBodySphere(0.05,0.1,boxpos2,boxrot2);
@@ -157,11 +158,12 @@ void simulation(std::string& _robot_file)
 
     RobotObject* robot = sim->getMultiBodyObject("robot1");
     // RobotObject* robot2 = sim->getMultiBodyObject("robot2");
+    // RobotObject* robot = sim->getMultiBodyObject("cr5_robot");
     sim->printRobotJointsInfo(robot);
     Eigen::Vector<double,6> _q_init;
     _q_init << 1.6,0.3,1.6,0,-1.5,0;
     sim->resetJointPos(robot,_q_init);
-    robot->updateTransforms();
+    // robot->updateTransforms();
     
     
     // sim->resetJointPos(robot2,_q_init);
@@ -211,6 +213,7 @@ void simulation(std::string& _robot_file)
             sim->getBodyPoseAndRotation(boxid,boxpos,boxrot);
             sim->getBodyPoseAndRotation(bid,boxpos2,boxrot2);
             sim->getForceSensorOutput(fs_id,_force_[0],_moment_[0]);
+            // std::cout << _force_[0].x() << " " << _force_[0].y() << " " << _force_[0].z() << std::endl;
         }
         redis_client.executeAllWriteCallbacks();
     }

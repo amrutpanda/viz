@@ -142,7 +142,7 @@ void simulation(std::string& _robot_file)
     std::cout << "DOF: "  << robot->_jointNameIndexList.size() << std::endl;
     std::cout << "Feedback objects: " << robot->_jointFeedbackIndexList.size() << std::endl;
     // force sensor attachment.
-    int fs_id = sim->attachForceSensorToRobot(robot,3,0.1);
+    int fs_id = sim->attachForceSensorToRobot(robot,8,0.1);
     while (runloop & timer.WaitForNextLoop())
     {   
         redis_client.executeAllReadCallbacks();

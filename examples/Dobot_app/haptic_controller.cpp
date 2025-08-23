@@ -264,14 +264,14 @@ int main(int argc, char const *argv[])
             
             teleop_task->computeHapticCommand6d(_robot_proxy,_robot_proxy_rot);
 
-            Eigen::Vector3d desired_force = 0.5 * teleop_task->_Rotation_Matrix_DeviceToRobot * (_sensed_force_robot_frame) +(-10.0)* teleop_task->_current_trans_velocity_device;
+            Eigen::Vector3d desired_force = 0.5 * teleop_task->_Rotation_Matrix_DeviceToRobot * (_sensed_force_robot_frame) +(-0.0)* teleop_task->_current_trans_velocity_device;
             // Eigen::Vector3d desired_force_diff = desired_force - prev_desired_force;
 
             // if (desired_force_diff.norm() > max_force_diff)
             // {
             //     desired_force = prev_desired_force + max_force_diff * desired_force_diff/desired_force_diff.norm();
             // }
-
+        
             if (desired_force.norm() > max_force)
             {
                 desired_force = max_force * desired_force/desired_force.norm();
@@ -298,7 +298,7 @@ int main(int argc, char const *argv[])
             teleop_task->_commanded_torque_device = desired_torque; // ignoring force feedback at this moment.
 
             // Ignore force feedback
-            teleop_task->_commanded_force_device.setZero();
+            // teleop_task->_commanded_force_device.setZero();
             teleop_task->_commanded_torque_device.setZero();
             
             prev_desired_force = desired_force;
