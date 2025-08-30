@@ -2,8 +2,8 @@
 
 namespace Dynamics
 {
-    DModel::DModel(std::string _robot_file, Eigen::Vector3d& _bpose, 
-                                Eigen::Quaterniond& _brot, bool floating_base ,bool _verbose)
+    DModel::DModel(const std::string& _robot_file,const Eigen::Vector3d& _bpose, 
+                            const Eigen::Quaterniond& _brot, bool floating_base ,bool _verbose)
     {
         _rbdl_model = new Model();
         bool result = URDFReadFromFile(_robot_file.c_str(),_rbdl_model,floating_base,_verbose);
@@ -14,6 +14,7 @@ namespace Dynamics
         _q.resize(_dof);
         _dq.resize(_dof);
         _ddq.resize(_dof);
+        _tau.resize(_dof);
 
         _M.resize(_dof,_dof);
         _M_inv.resize(_dof,_dof);
@@ -39,7 +40,7 @@ namespace Dynamics
         _rbdl_model = NULL;
     }
 
-    void DModel::setGravity(Eigen::Vector3d& _g)
+    void DModel::setGravity(const Eigen::Vector3d& _g)
     {
         _rbdl_model->gravity = _g;
         _gravity = _g;
@@ -487,6 +488,51 @@ namespace Dynamics
             orientation_error = (-1/2)*(rc1.cross(rd1) + rc2.cross(rd2) + rc3.cross(rd3));
         }
         
+    }
+
+    void DModel::addLoopConstraint(const std::string& linkA, const std::string& linkB,
+                                Eigen::Affine3d& Ta, Eigen::Affine3d& Tb, const Eigen::Vector3i& aAxis, const Eigen::Vector3i& lAxis)
+    {
+        int idA = linkId(linkA);
+        int idB = linkId(linkB);
+
+        RigidBodyDynamics::Math::SpatialTransform sA = RigidBodyDynamics::Math::SpatialTransform(Ta.linear(),Ta.translation());
+        RigidBodyDynamics::Math::SpatialTransform sB = RigidBodyDynamics::Math::SpatialTransform(Tb.linear(),Tb.translation());
+        RigidBodyDynamics::Math::SpatialVector axis = RigidBodyDynamics::Math::SpatialVector(aAxis.x(), aAxis.y(), aAxis.z(), lAxis.x(),lAxis.y(),lAxis.z());
+        std::cout << "Axis: " << axis.transpose() << std::endl;
+        // RigidBodyDynamics::ConstraintSet _cs;
+        cs.AddLoopConstraint(idA,idB,sA,sB,axis,true);
+
+        // // bind the constraint to model.
+        // cs.Bind(*(_rbdl_model));
+        // save the constraint.
+        // cs.push_back(_cs);
+    }
+
+    void DModel::bindConstraint()
+    {
+        cs.Bind(*(_rbdl_model));
+    }
+
+    void DModel::integrateState(double _dt)
+    {
+        _dq += _ddq * _dt;
+        _q += _dq * _dt;
+    }
+
+    void DModel::step(double _dt)
+    {
+        // if (cs.empty())
+        //     RigidBodyDynamics::ForwardDynamics(*_rbdl_model,_q,_dq,_tau,_ddq);
+        // else
+        //     RigidBodyDynamics::ForwardDynamicsConstraintsDirect(*_rbdl_model,_q,_dq,_tau,cs[0],_ddq);
+        
+        // RigidBodyDynamics::ForwardDynamics(*_rbdl_model,_q,_dq,_tau,_ddq);
+        RigidBodyDynamics::ForwardDynamicsConstraintsDirect(*_rbdl_model,_q,_dq,_tau,cs,_ddq);
+        // RigidBodyDynamics::ForwardDynamicsConstraintsNullSpace(*_rbdl_model,_q,_dq,_tau,cs,_ddq);
+        
+        integrateState(_dt);
+        _tau.setZero();
     }
 
 } // namespace Dynamics

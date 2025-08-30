@@ -33,6 +33,7 @@ private:
     std::vector<std::pair<unsigned int, btMultiBodyJointFeedback*>> _force_sensors;
     std::vector<ForceSensor*> _ft_sensors;
 
+    btConstraintArray _constraints;
     // Define a force sensor object pointer.
     // ForceSensor* ft_sensor = nullptr;
 
@@ -86,6 +87,9 @@ public:
 
     int getNumRobots() noexcept;
     void stepSimulation(float _ts, float _fixedStep = 0.01);
+
+    void addLoopClosureConstraint(RobotObject* _robot, int linkA, int linkB,
+                                    const Eigen::Vector3d& pivotA, const Eigen::Vector3d& pivotB);
     ~simMultiBodyDynamicsWorld();
 
 };

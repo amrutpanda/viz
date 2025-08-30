@@ -32,9 +32,13 @@ namespace mviz
 
         std::cout << "Attempting to convert the urdf object to tree of mRobotLinks." << std::endl;
 
+        // depth first parsing, recursion style.
         createOgreNodesFromLinkPtr(urdf_root_link_ptr,rootNode);
 
-        std::cout << "Total joints: " << joint_name.size() << std::endl;
+        // breadth first parsing, stack style (Experimental).
+        // createOgreNodesFromLinkPtr(urdf_root_link_ptr,rootNode,true);
+
+        std::cout << "Total joints: " << joint_names.size() << std::endl;
         std::cout << "Total joints num in urdf: " << _urdf->joints_.size() << std::endl;
 
         // setRobotAxisVisible(false);
@@ -407,6 +411,124 @@ namespace mviz
         }
     }
 
+    void mRobot::createOgreNodesFromLinkPtr(urdf::Link* ulink,Ogre::SceneNode* ogNode,bool _flag)
+    {
+        std::vector<urdf::Link*> _tptr, _pptr, _cptr;
+        std::vector<int> p_ind, c_ind, t_ind;
+        std::vector<Ogre::SceneNode*> _tONptr, _pONptr, _cONptr;
+
+        int last_ind = 0, child_ind;
+        p_ind.push_back(last_ind);
+        last_ind++;
+        _pptr.push_back(ulink);
+
+        // Parse the base link - start.
+        Ogre::SceneNode* childNode = ogNode->createChildSceneNode();
+
+        _pONptr.push_back(childNode);
+        link_names.push_back(ulink->name);
+        
+        // ogreNodes.push_back(childNode);
+        // create a mRobotLink object.
+        mRobotLink* rlink = new mRobotLink();
+        object_ptrs.push_back(rlink);
+        rlink->objectName = ulink->name;
+        rlink->setSceneNode(childNode);
+
+        childNode = rlink->getSceneNode();              // this statement changed everything.
+
+        rlink->setAxis();
+        rlink->setAxisVisible(true);
+        
+        if (!_collision_flag)
+            convertVisualLinkPtrTomRobotLink(ulink,rlink);
+        else
+            convertCollisionLinkPtrTomRobotLink(ulink,rlink);
+        ParseBaseLink(rlink);
+
+        ogreNodes.push_back(childNode);
+        // Parse the base link - end.
+
+        urdf::Link* _ulink;
+        urdf::Joint* _ujoint;
+
+        while (!_pptr.empty())
+        {
+            // std::cout << _pptr.size() << std::endl;
+            for (int i = 0; i < _pptr.size(); i++)
+            {
+                // std::cout << _pptr[i]->name << " "; 
+                for (int j = 0; j < _pptr[i]->child_links.size(); j++)
+                {
+                    _ulink = _pptr[i]->child_links[j].get();
+                    _cptr.push_back(_ulink);
+
+                    c_ind.push_back(last_ind);
+                    child_ind = last_ind;
+                    // add code to parse the graphical objects from urdf link.
+                    // Ogre::SceneNode* childNode = ogNode->createChildSceneNode();
+                    Ogre::SceneNode* childNode = _pONptr[i]->createChildSceneNode();
+
+                    // _cONptr.push_back(childNode);
+
+                    std::cout << "Parent Ogre Nodes:: " << _pONptr.size() << std::endl;
+
+                    link_names.push_back(_ulink->name);
+                    
+                    ogreNodes.push_back(childNode);
+                    // create a mRobotLink object.
+                    mRobotLink* rlink = new mRobotLink();
+                    object_ptrs.push_back(rlink);
+                    rlink->objectName = _ulink->name;
+                    rlink->setSceneNode(childNode);
+
+                    childNode = rlink->getSceneNode();              // this statement changed everything.
+
+                    _cONptr.push_back(childNode);
+
+                    rlink->setAxis();
+                    rlink->setAxisVisible(true);
+                    
+                    if (!_collision_flag)
+                        convertVisualLinkPtrTomRobotLink(_ulink,rlink);
+                    else
+                        convertCollisionLinkPtrTomRobotLink(_ulink,rlink);
+                    ParseJoint(rlink,_ulink->parent_joint);
+                    // code adding ends here.
+                    std::cout << "while parsing mRobot: " << std::endl;
+                    std::cout << "( " << p_ind[i] <<" " << last_ind << " )" << "\n";
+                    last_ind++;
+
+                }
+                // std::cout << "    ";
+                // std::cout << "++++++++++++++++++" << std::endl;
+            }
+            // std::cout << "\n";
+            // std::cout << _cptr.size() << std::endl;
+            // std::cout << "++++++++++++++++++" << std::endl;
+            // swap the vectors.
+            _tptr = _cptr;
+            _cptr = _pptr;
+            _pptr = _tptr;
+
+            // swap Ogre Scenenode vectors.
+            _tONptr = _cONptr;
+            _cONptr = _pONptr;
+            _pONptr = _tONptr;
+
+            // swap ind vectors.
+            t_ind = c_ind;
+            c_ind = p_ind;
+            p_ind = t_ind;
+
+            // clear the vector containing children after making it pptr.
+            _cptr.clear();
+            _cONptr.clear();
+            c_ind.clear();
+            
+        }
+    }
+
     void mRobot::ParseJoint(mRobotLink* _rlink, urdf::JointConstSharedPtr _jptr)
     {
         std::cout << _jptr->name << std::endl;
@@ -430,7 +552,7 @@ namespace mviz
         if (_jptr->type == urdf::Joint::REVOLUTE || _jptr->type == urdf::Joint::CONTINUOUS || _jptr->type == urdf::Joint::PRISMATIC)
         {
             std::cout << "JOINT NAME: " << _jptr->name << std::endl;
-            joint_name.push_back(_jptr->name);
+            joint_names.push_back(_jptr->name);
             joint_type.push_back(_jptr->type);
             // save the pointer to joint value of the link;
             joint_value_holder.push_back(&_rlink->joint_variable);        
@@ -477,9 +599,9 @@ namespace mviz
 
     void mRobot::updateRobot(Eigen::VectorXd& robot_pos )
     {
-        assert(robot_pos.size() == joint_name.size());
+        assert(robot_pos.size() == joint_names.size());
 
-        for (int i = 0; i < joint_name.size(); i++)
+        for (int i = 0; i < joint_names.size(); i++)
         {
             *joint_value_holder[i] = robot_pos[i];
         }
@@ -548,10 +670,23 @@ namespace mviz
         }
         
     }
+
     int mRobot::getRobotNumJoints()
     {
-        return joint_name.size();
+        return joint_names.size();
     }
+
+    void mRobot::printRobotJointNames()
+    {
+        std::cout << "++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
+        std::cout << "Printing robot graphics joint names: " << std::endl;
+        for (int i = 0; i < joint_names.size(); i++)
+        {
+            std::cout << "Joint_Name: " << joint_names[i] << " , index: " << i << std::endl; 
+        }
+        std::cout << "++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
+    }
+
 
     mRobotLink* mRobot::getRobotLinkFromFrameName(std::string& _fName)
     {

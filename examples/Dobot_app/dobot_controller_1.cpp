@@ -187,8 +187,10 @@ int main(int argc, char const *argv[])
             robot_model->updateModel();
             robot_model->position(robot_pos,control_link_name,control_pos_in_link);
             robot_model->rotation(robot_rot,control_link_name);
+            // robot_model->gravityVector(_command_torques);
             // std::cout << "robot pos: " << robot_pos << std::endl;
             jointTask->computeTorque(_command_torques);
+        
         }
 
         

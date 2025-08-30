@@ -23,11 +23,13 @@ namespace Dynamics
         Eigen::Vector3d _gravity;
     public:
         
-        DModel(std::string, Eigen::Vector3d& , Eigen::Quaterniond& ,
+        DModel(const std::string&, const Eigen::Vector3d& , const Eigen::Quaterniond& ,
                 bool floating_base = false, bool _verbose = true);
         ~DModel();
 
-        void setGravity(Eigen::Vector3d& _g);
+        void setGravity(const Eigen::Vector3d& _g);
+
+        Model* getRBDLModel() {return _rbdl_model;}
 
         unsigned int linkId(const std::string& _link_name);
 
@@ -142,10 +144,20 @@ namespace Dynamics
         void orientationError(Eigen::Vector3d& orientation_error, Eigen::Matrix3d& _desired_orientation,
                                                                 Eigen::Matrix3d& _current_orientation);
 
+        RigidBodyDynamics::ConstraintSet getConstraint() {return cs;}
+        void bindConstraint();
+
+        void addLoopConstraint(const std::string& linkA, const std::string& linkB,
+                                Eigen::Affine3d& Ta, Eigen::Affine3d& Tb, const Eigen::Vector3i& aAxis,
+                                                const Eigen::Vector3i& lAxis);
+        void integrateState(double _dt);
+        void step (double _dt);
         // class attributes below.
         Eigen::VectorXd _q;
         Eigen::VectorXd _dq;
         Eigen::VectorXd _ddq;
+        // tau for forward dynamics purpose.
+        Eigen::VectorXd _tau;
         Eigen::MatrixXd _M;
         Eigen::MatrixXd _M_inv;
 
@@ -159,6 +171,10 @@ namespace Dynamics
         Eigen::Vector3d _sensed_moment_raw = Eigen::Vector3d(0,0,0);
         double _payload_mass = 0.0;  // the mass includes the force sensor mass too.
         Eigen::Vector3d _payload_COM = Eigen::Vector3d(0,0,0);
+
+        // constraint set list.
+        // std::vector< RigidBodyDynamics::ConstraintSet > cs;
+        RigidBodyDynamics::ConstraintSet cs;
     };
 
     void orientationError(Eigen::Vector3d& orientation_error, Eigen::Matrix3d& _desired_orientation,

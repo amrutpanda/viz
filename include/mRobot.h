@@ -30,7 +30,7 @@ namespace mviz
         std::string PACKAGE_PATH;
         // urdf::ModelInterfaceSharedPtr _urdf;
         std::vector <std::string> link_names;
-        std::vector <std::string> joint_name;
+        std::vector <std::string> joint_names;
         std::vector <double*> joint_value_holder;   
         std::vector <unsigned int> joint_type;
         std::vector < Ogre::SceneNode* > ogreNodes;
@@ -55,6 +55,7 @@ namespace mviz
         void convertVisualLinkPtrTomRobotLink(urdf::Link*, mRobotLink*);
         void convertCollisionLinkPtrTomRobotLink(urdf::Link*, mRobotLink*);
         void createOgreNodesFromLinkPtr(urdf::Link*,Ogre::SceneNode* );
+        void createOgreNodesFromLinkPtr(urdf::Link*,Ogre::SceneNode* , bool);
         // void createOgreNodeFromLinkConstSharedPtr(urdf::LinkConstSharedPtr, Ogre::SceneNode*);
         void ParseJoint(mRobotLink* _rlink, urdf::JointConstSharedPtr _jptr);
         void ParseVisualInfo(mRobotLink* _rlink, urdf::VisualSharedPtr _vptr);
@@ -77,6 +78,7 @@ namespace mviz
         void setRobotAxisVisible(bool _flag);
         int getRobotNumJoints();
         void flipDAEMeshes(double& angle, int axis); // Angle is in Degree
+        void printRobotJointNames();
         mRobotLink* getRobotLinkFromFrameName(std::string& _fName);
 
         ~mRobot();

@@ -10,8 +10,8 @@ ForceSensor::ForceSensor(btDynamicsWorld* m_world,mMultiBody* _robot,int _link_i
         throw std::runtime_error("Invalid link Index: " + link_ind);
     }
     // change solver setting (experimental)
-    m_dynamicsWorld->getSolverInfo().m_splitImpulse = false; // it was false.
-    m_dynamicsWorld->getSolverInfo().m_splitImpulsePenetrationThreshold = -1.0;
+    m_dynamicsWorld->getSolverInfo().m_splitImpulse = true; // it was false.
+    m_dynamicsWorld->getSolverInfo().m_splitImpulsePenetrationThreshold = -1.0; // was -1.0
     m_dynamicsWorld->getSolverInfo().m_erp = 0.2;
     m_dynamicsWorld->getSolverInfo().m_globalCfm = 1e-4;
     // get the joint feedback object.

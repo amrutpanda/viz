@@ -214,6 +214,7 @@ void simulation(std::string& _robot_file)
             sim->getBodyPoseAndRotation(bid,boxpos2,boxrot2);
             sim->getForceSensorOutput(fs_id,_force_[0],_moment_[0]);
             // std::cout << _force_[0].x() << " " << _force_[0].y() << " " << _force_[0].z() << std::endl;
+            
         }
         redis_client.executeAllWriteCallbacks();
     }

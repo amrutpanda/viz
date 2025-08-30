@@ -1,0 +1,48 @@
+<mujoco model="hand_controller">
+  <compiler angle="radian"/>
+
+  <worldbody>
+    <geom type="plane" size="10 10 0.1" pos="0 0 -2" rgba=".9 0 0 1" />
+        <light diffuse=".5 .5 .5" pos="0 0 3" dir="0 0 -1" />
+    <body name="body_link" pos="0 0 0.01">
+      <inertial pos="0 0 0.05" quat="0.49791 0.501952 -0.501894 0.49823" mass="2.5" diaginertia="0.00215505 0.0014545 0.00134495"/>
+      <joint name="base_joint" pos="0 0 0" axis="0 0 1" range="-3.14 3.14"/>
+      <geom size="0.075 0.075 0.06" pos="0 0 0.06" type="box"/>
+      <geom size="0.04 0.03 0.03" pos="0 0 0.14" type="box"/>
+      <body name="capstan_link" pos="0.04 0.03 0.15">
+        <inertial pos="0.05 0 0" quat="0.49791 0.501952 -0.501894 0.49823" mass="0.25" diaginertia="0.00215505 0.0014545 0.00134495"/>
+        <joint name="capstan_joint" pos="0 0 0" axis="0 1 0" range="-3.14 3.14"/>
+        <geom size="0.05 0.01 0.01" pos="0.05 0.01 0" type="box"/>
+        <body name="support_link" pos="0.1 0 0">
+          <inertial pos="0 -0.15 0" quat="0.49791 0.501952 -0.501894 0.49823" mass="0.25" diaginertia="0.00215505 0.0014545 0.00134495"/>
+          <joint name="support_joint" pos="0 0 0" axis="0 1 0" range="-3.14 3.14"/>
+          <geom size="0.01 0.01 0.15" pos="0 -0.01 0.15" type="box"/>
+          <body name="forearm_link" pos="0 -0.02 0.3">
+            <inertial pos="0.0200234 -0.149299 -0.0899921" quat="0.987443 0.00383494 -0.157927 -0.000421224" mass="0.5" diaginertia="0.00725418 0.0069399 0.00421492"/>
+            <joint name="backelbow_joint" pos="0 0 0" axis="0 1 0" range="-3.14 3.14"/>
+            <geom size="0.25 0.02 0.02" pos="-0.25 -0.02 0" type="box"/>
+          </body>
+        </body>
+      </body>
+      <body name="elbow_link" pos="-0.04 -0.03 0.15">
+        <inertial pos="5.69122e-05 -0.299996 -0.00115599" quat="0.49791 0.501952 -0.501894 0.49823" mass="0.5" diaginertia="0.0155601 0.014159 0.0026899"/>
+        <joint name="shoulder_joint" pos="0 0 0" axis="0 1 0" range="-3.14 3.14"/>
+        <geom size="0.02 0.02 0.15" pos="0 -0.02 0.15" type="box"/>
+      </body>
+    </body>
+  </worldbody>
+  <equality>
+        <connect name="kinematic_link" active="true" body1="forearm_link" body2="elbow_link" anchor="0 0 4" />
+<!--         <connect name="dynamic_loop" active="true" body1="forearm_link" body2="elbow_link" anchor="0 0 4" />-->
+  </equality>
+  
+<!--  <actuator>-->
+<!--    <motor joint="shoulder_joint" ctrlrange="-10 10" ctrllimited="true" gain="5"/>-->
+<!--    <motor joint="capstan_joint" ctrlrange="-10 10" ctrllimited="true" gain="5"/>-->
+<!--  </actuator>-->
+  
+  <actuator>
+    <position joint="shoulder_joint" ctrlrange="-10 10" ctrllimited="true" kp="5"/>
+    <position joint="capstan_joint" ctrlrange="-10 10" ctrllimited="true" kp="5"/>
+  </actuator>
+</mujoco>

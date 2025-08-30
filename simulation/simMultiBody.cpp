@@ -223,7 +223,6 @@ void simMultiBodyDynamicsWorld::LoadRobotFromURDFFile(const std::string _filenam
     setRobotBasePose(_robot_name,_base_pose.x(), _base_pose.y(), _base_pose.z());
     // setRobotBaseOrientation(_robot_name,_base_rotation.x(), _base_rotation.y(), _base_rotation.z(), _base_rotation.w());
     
-    // _multibody_name_map.at(importer.getName())->_multibody->
     std::cout << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" << std::endl;
     std::cout << "Robot Name: " << _robot_name << std::endl;
     std::cout << "Num of DOFs: " <<_multibody_name_map.at(_robot_name)->_multibody->getNumDofs() << std::endl;
@@ -231,9 +230,10 @@ void simMultiBodyDynamicsWorld::LoadRobotFromURDFFile(const std::string _filenam
     std::cout << "----------------------------------------------------" << std::endl;   
     // setup solver params.
     m_dynamicsWorld->getSolverInfo().m_splitImpulse = true;
+    m_dynamicsWorld->getSolverInfo().m_splitImpulsePenetrationThreshold = -1.0f;
     m_dynamicsWorld->getSolverInfo().m_erp = 0.2;
     m_dynamicsWorld->getSolverInfo().m_globalCfm = 1e-4;
-    m_dynamicsWorld->getSolverInfo().m_numIterations = 50;
+    // m_dynamicsWorld->getSolverInfo().m_numIterations = 50;
     std::cout << "----------------------------------------------------" << std::endl;
     std::cout << "Finished setting up" << std::endl;
 }
@@ -790,6 +790,29 @@ bool simMultiBodyDynamicsWorld::detectCollisionRobots(RobotObject* robot1,RobotO
         
     }
     return false;
+}
+
+
+void simMultiBodyDynamicsWorld::addLoopClosureConstraint(RobotObject* _robot, int linkA, int linkB,
+                                    const Eigen::Vector3d& _pivotA, const Eigen::Vector3d& _pivotB)
+{
+    const btVector3 pivotA = btVector3(_pivotA.x(), _pivotA.y(), _pivotA.z());
+    const btVector3 pivotB = btVector3(_pivotB.x(), _pivotB.y(), _pivotB.z());
+
+   
+    auto _p2p = new btMultiBodyPoint2Point(_robot->_multibody, linkA,_robot->_multibody, linkB,
+                                                pivotA, pivotB);
+    
+    btTransform Ta = _robot->_multibody->getLink(linkA).m_cachedWorldTransform;
+    btTransform Tb = _robot->_multibody->getLink(linkB).m_cachedWorldTransform;
+
+    btVector3 dist = Ta*pivotA - Tb*pivotB;
+    
+    printVector(dist, "dist; ");
+    
+
+    // _p2p->setMaxAppliedImpulse(DBL_MAX);
+    m_dynamicsWorld->addMultiBodyConstraint(_p2p);
 }
 
 void simMultiBodyDynamicsWorld::convertStringTobtVector3(std::string _vstr, btVector3& _v, std::string _del)
