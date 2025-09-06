@@ -1,5 +1,3 @@
-// TO-DO: include mGraphics before simMultiBody is causing some include errors.
-// Need to check on this.
 #define RBDL_USE_LOGGING
 #include <iostream>
 // #include <simMultiBody.h>
@@ -13,10 +11,9 @@
 
 std::string robot_name = "hand_controller";
 // std::string robot_file = "/home/merai/Files/C++/viz/hand_controller/urdf/hand_controller.urdf";
-std::string robot_file = "/home/merai/Downloads/000-HAND-CONTROLER-URDF_v1.2/urdf/000-HAND-CONTROLER-URDF_v1.2.urdf";
+// std::string robot_file = "/home/merai/Downloads/000-HAND-CONTROLER-URDF_v1.2/urdf/000-HAND-CONTROLER-URDF_v1.2.urdf";
 // std::string robot_file = "/home/merai/Downloads/000-HAND-CONTROLER-URDF_v1.2/urdf/000-HAND-CONTROLER-URDF_NO_GIMBAL_v1.2.urdf";
-// std::string robot_file = "/home/merai/Downloads/000-HAND-CONTROLER-URDF_v1.2/urdf/000-HAND-CONTROLER-URDF_v1.2.1.urdf";
-
+std::string robot_file = "/home/merai/Downloads/000-HAND-CONTROLER-URDF_v1.2/urdf/000-HAND-CONTROLER-URDF_v1.2.1.urdf";
 std::string _controller_running = "0";
 bool runloop = true;
 void sighandler(int signum) {runloop = false;}
@@ -72,44 +69,6 @@ int main(int argc, char const *argv[])
     return 0;
 }
 
-// void simulation(std::string& _robot_file)
-// {
-//     double loop_rate = 1000;
-
-//     std::unique_ptr<simMultiBodyDynamicsWorld> sim = std::make_unique<simMultiBodyDynamicsWorld>();
-//     sim->LoadRobotFromURDFFile(robot_file,Eigen::Vector3d(0,0,0),Eigen::Quaterniond(1,0,0,0),
-//                                     true,false,robot_name);
-//     sim->setGravity(0,0, -9.81);
-//     RobotObject* robot = sim->getMultiBodyObject(robot_name);
-//     sim->printRobotJointsInfo(robot);
-//     Eigen::VectorXd q,dq;
-//     q.resize(nDof);
-//     dq.resize(nDof);
-//     q.setZero();
-//     dq.setZero();
-    
-//     // add loop closure constraint.
-//     sim->addLoopClosureConstraint(robot,4,7,Eigen::Vector3d(0,0,0.3), Eigen::Vector3d(-0.18, -0.04,0));
-//     std::cout << "link list:: " << robot->_linkNameIndexList.at(1).second << std::endl;
-
-//     LoopTimer timer;
-//     timer.setLoopFrequency(loop_rate);
-//     timer.InitializeTimer();
-//     while (runloop & timer.WaitForNextLoop())
-//     {   
-//         sim->getRobotJointPos(robot,q);
-//         sim->getRobotJointVel(robot,dq);
-//         _q = q;
-        
-//         sim->setRobotJointTorque(robot,-0.1*dq);
-//         sim->stepSimulation(0.001);
-//     }
-//     std::cout << "simulation :" << std::endl;
-//     timer.printTimerHistory();
-//     std::cout << "sim thread exited" << std::endl;
-// }
-
-// implement rbdl simulation.
 void simulation(std::string& robot_file)
 {
     Dynamics::DModel sim_model(robot_file,Eigen::Vector3d(0,0,0), Eigen::Quaterniond(1,0,0,0));
@@ -119,8 +78,11 @@ void simulation(std::string& robot_file)
     const std::string linkA = "elbow_constraint_frame_link";
     const std::string linkB = "forearm_constraint_frame_link";
 
+
+
+
     Eigen::Affine3d Ta = Eigen::Affine3d::Identity();
-    // sim_model.transformation(Ta,linkB,Eigen::Vector3d::Zero(), Eigen::Matrix3d::Identity(),linkA);
+    sim_model.transformation(Ta,linkB,Eigen::Vector3d::Zero(), Eigen::Matrix3d::Identity(),linkA);
     // Ta.translation() = Eigen::Vector3d(0,0, 0.3);
     // Ta = Ta.inverse();
     
@@ -139,12 +101,13 @@ void simulation(std::string& robot_file)
 
     std::cout << "Constraint setup done" << std::endl;
     std::cout << "dof: " << sim_model.dof() << std::endl;
+    std::cout << "constraint pos difference: " << Ta.translation()- Tb.translation() << std::endl;
     
     // set Actuation map.
-    std::vector<bool> _actuated_vector(nDof, true);
-    // _actuated_vector[2] = false;
+    std::vector<bool> _actuated_vector(sim_model.dof(), true);
+    _actuated_vector[2] = false;
     _actuated_vector[3] = false;
-    sim_model.getConstraint().SetActuationMap(*sim_model.getRBDLModel(), _actuated_vector);
+    // sim_model.getConstraint().SetActuationMap(*sim_model.getRBDLModel(), _actuated_vector);
     std::cout << "Actuation map set" << std::endl;
 
     // perform IK
@@ -153,30 +116,34 @@ void simulation(std::string& robot_file)
     q_out.resize(nDof);
     q_init.resize(nDof);
     ConstraintSet cs = sim_model.getConstraint();
-    weights << 1, 0, 0, 0, 1, 1, 1, 0;
+    weights << 1e6, 1e6, 1e4, 1, 1, 1, 1, 1e6;
+    q_init << 0, 0, 0, 0, 0, 0, 0, 0;
 
-    // bool success;
-    // for (int i = 0; i < 100; i++)
-    // {
-    //     q_init = Eigen::VectorXd::Random(nDof);
-    //     if(CalcAssemblyQ(*sim_model.getRBDLModel(), q_init ,cs,q_out,weights))
-    //     {
-    //         std::cout << "solution found" << std::endl;
-    //         break;
-    //     }
-    //     break;
-    // }
-    
+    // q_init(2) = -1.57;
+    // weights(2) = 1e6;
+
+    // q_init(7) = -0.57;
+    // weights(7) = 1e3;
+    // q_init = sim_model._q;
+
+    if (CalcAssemblyQ(*sim_model.getRBDLModel(), q_init, cs, q_out, weights))
+    {
+        std::cout << "solution found" << std::endl;
+    }
     std::cout << "Q_out : " << q_out.transpose() << std::endl;
+    // _q = q_out;
+    // sim_model._q = q_out;
+
+
     Eigen::VectorXd _q_init ;
     _q_init.resize(nDof);
     _q_init.setZero();
-    // _q_init << 0, 0, 0, -1.57, 0, 0, 0, 0.78;
-    _q_init(1) = -1.3;
+    _q_init << 0, 0, 0, -1.57, 0, 0, 0, 0.78;
+    _q_init(1) = 1.3;
     // sim_model._q = _q_init;
     
     sim_model.updateKinematics();;
-    sim_model.updateModel();
+    // sim_model.updateModel();
 
     LoopTimer timer;
     timer.setLoopFrequency(1000);
@@ -214,6 +181,7 @@ void simulation(std::string& robot_file)
     std::cout << "Starting simulation loop" << std::endl;
     while (runloop && timer.WaitForNextLoop())
     {
+        
         // _tau(1) = -0.5 * sim_model._dq(1); 
         // _tau(nDof - 1) = - 0.1 * sim_model._dq(nDof -1);
         // sim_model._tau = - 0.1 *sim_model._dq;
@@ -228,16 +196,16 @@ void simulation(std::string& robot_file)
         // sim_model.updateModel();
         // sim_model.gravityVector(_gT);
 
-        sim_model.ConstraintGravityVector(_gT);
+        // sim_model.ConstraintGravityVector(_gT);
         _tau = _gT;
 
         // _tau(0) = 2;
-        // _tau(1) = -0.01;
+        _tau(1) = -1.1;
         // _tau(nDof-1) = 0.5;
         // _tau(3) = 0.8* _tau(3);
         sim_model._tau = _tau*1 - 0.1* sim_model._dq;
 
-        sim_model.step(0.000001);
+        sim_model.step(0.001);
         // std::cout << "q size: " << sim_model._q.transpose() << std::endl;
         // sim_model._q = sim_model._q.unaryExpr([](double angle) {return normalizeAngle(angle);});
         // sim_model._q(7) = sim_model._q(7) + 0.001;
@@ -247,7 +215,7 @@ void simulation(std::string& robot_file)
         std::cout << "q: " << sim_model._q.transpose() << std::endl;
         std::cout << "Gravity torque: \n" << _gT.transpose() << std::endl;
         // std::cout << "tau torque: \n" << _tau.transpose() << std::endl;
-        // break;
+        break;
     }
     timer.printTimerHistory();
 }

@@ -13,10 +13,7 @@
 
 std::string robot_name = "hand_controller";
 // std::string robot_file = "/home/merai/Files/C++/viz/hand_controller/urdf/hand_controller.urdf";
-std::string robot_file = "/home/merai/Downloads/000-HAND-CONTROLER-URDF_v1.2/urdf/000-HAND-CONTROLER-URDF_v1.2.urdf";
-// std::string robot_file = "/home/merai/Downloads/000-HAND-CONTROLER-URDF_v1.2/urdf/000-HAND-CONTROLER-URDF_NO_GIMBAL_v1.2.urdf";
-// std::string robot_file = "/home/merai/Downloads/000-HAND-CONTROLER-URDF_v1.2/urdf/000-HAND-CONTROLER-URDF_v1.2.1.urdf";
-
+std::string robot_file = "/home/merai/Downloads/FRANKA-INSTRUMENT-URDF-2/urdf/FRANKA-INSTRUMENT-URDF-2.urdf";
 std::string _controller_running = "0";
 bool runloop = true;
 void sighandler(int signum) {runloop = false;}
@@ -31,7 +28,7 @@ void simulation(std::string& _robot_file);
 
 
 RedisClient redis_client;
-unsigned int nDof = 8;
+unsigned int nDof = 7;
 Eigen::VectorXd _q;
 // force sensor variables.
 
@@ -45,7 +42,6 @@ int main(int argc, char const *argv[])
     // configure the _q;
     _q.resize(nDof);
     _q.setZero();
-
 
     mviz::mVisualizer viz("simviz");
     viz.attachFlagVariable(&runloop);
@@ -114,103 +110,65 @@ void simulation(std::string& robot_file)
 {
     Dynamics::DModel sim_model(robot_file,Eigen::Vector3d(0,0,0), Eigen::Quaterniond(1,0,0,0));
     sim_model.setGravity(Eigen::Vector3d(0,0,-9.81*1));
-    sim_model.updateKinematics();
+
+    // add a constraint.
+    // const std::string linkA = "elbow_frame_link1";
+    // const std::string linkB = "elbow_frame_link2";
+
+    // const std::string linkA = "elbow_link";
+    // const std::string linkB = "forearm_link";
 
     const std::string linkA = "elbow_constraint_frame_link";
     const std::string linkB = "forearm_constraint_frame_link";
 
     Eigen::Affine3d Ta = Eigen::Affine3d::Identity();
-    // sim_model.transformation(Ta,linkB,Eigen::Vector3d::Zero(), Eigen::Matrix3d::Identity(),linkA);
     // Ta.translation() = Eigen::Vector3d(0,0, 0.3);
-    // Ta = Ta.inverse();
     
 
     Eigen::Affine3d Tb = Eigen::Affine3d::Identity();
     // Tb.translation() = Eigen::Vector3d(-0.18, -0.04, 0);
 
-    sim_model.addLoopConstraint(linkA,linkB,Ta,Tb,Eigen::Vector3i(0,0,0),Eigen::Vector3i(0,0,1));
-    sim_model.addLoopConstraint(linkA,linkB,Ta,Tb,Eigen::Vector3i(0,0,0),Eigen::Vector3i(0,1,0));
-    sim_model.addLoopConstraint(linkA,linkB,Ta,Tb,Eigen::Vector3i(0,0,0),Eigen::Vector3i(1,0,0));
-    sim_model.addLoopConstraint(linkA,linkB,Ta,Tb,Eigen::Vector3i(0,0,1),Eigen::Vector3i(0,0,0));
-    sim_model.addLoopConstraint(linkA,linkB,Ta,Tb,Eigen::Vector3i(0,1,0),Eigen::Vector3i(0,0,0));
+    const Eigen::Vector3d axis = Eigen::Vector3d(1,1,1);
+
+    // sim_model.addLoopConstraint(linkA,linkB,Ta,Tb,Eigen::Vector3i(0,0,0),Eigen::Vector3i(0,0,1));
+    // sim_model.addLoopConstraint(linkA,linkB,Ta,Tb,Eigen::Vector3i(0,0,0),Eigen::Vector3i(0,1,0));
+    // sim_model.addLoopConstraint(linkA,linkB,Ta,Tb,Eigen::Vector3i(0,0,0),Eigen::Vector3i(1,0,0));
+    // sim_model.addLoopConstraint(linkA,linkB,Ta,Tb,Eigen::Vector3i(0,0,1),Eigen::Vector3i(0,0,0));
+    // sim_model.addLoopConstraint(linkA,linkB,Ta,Tb,Eigen::Vector3i(1,0,0),Eigen::Vector3i(0,0,0));
 
     // sim_model.getConstraint().Bind(*sim_model.getRBDLModel());
-    sim_model.bindConstraint();
-
+    // sim_model.bindConstraint();
     std::cout << "Constraint setup done" << std::endl;
     std::cout << "dof: " << sim_model.dof() << std::endl;
-    
-    // set Actuation map.
-    std::vector<bool> _actuated_vector(nDof, true);
-    // _actuated_vector[2] = false;
-    _actuated_vector[3] = false;
-    sim_model.getConstraint().SetActuationMap(*sim_model.getRBDLModel(), _actuated_vector);
-    std::cout << "Actuation map set" << std::endl;
-
-    // perform IK
-    Eigen::VectorXd weights,q_out, q_init;
-    weights.resize(nDof);
-    q_out.resize(nDof);
-    q_init.resize(nDof);
-    ConstraintSet cs = sim_model.getConstraint();
-    weights << 1, 0, 0, 0, 1, 1, 1, 0;
-
-    // bool success;
-    // for (int i = 0; i < 100; i++)
-    // {
-    //     q_init = Eigen::VectorXd::Random(nDof);
-    //     if(CalcAssemblyQ(*sim_model.getRBDLModel(), q_init ,cs,q_out,weights))
-    //     {
-    //         std::cout << "solution found" << std::endl;
-    //         break;
-    //     }
-    //     break;
-    // }
-    
-    std::cout << "Q_out : " << q_out.transpose() << std::endl;
-    Eigen::VectorXd _q_init ;
-    _q_init.resize(nDof);
-    _q_init.setZero();
-    // _q_init << 0, 0, 0, -1.57, 0, 0, 0, 0.78;
-    _q_init(1) = -1.3;
-    // sim_model._q = _q_init;
-    
-    sim_model.updateKinematics();;
-    sim_model.updateModel();
 
     LoopTimer timer;
     timer.setLoopFrequency(1000);
     timer.InitializeTimer();
     Eigen::VectorXd _tau = Eigen::VectorXd::Zero(nDof);
     
+    Eigen::VectorXd _q_init ;
+    _q_init.resize(nDof);
+    // _q_init << 0, 0, 0, -1.57, 0, 0, 0, 0.78;
+    // _q_init(2) = 1.4;
+    sim_model._q = _q_init;
+    
+    sim_model.updateKinematics();;
+    sim_model.updateModel();
     // RigidBodyDynamics::UpdateKinematicsCustom(*sim_model.getRBDLModel(),&_q_init,nullptr,nullptr);
     
     Eigen::Vector3d posA,posB;
-    // sim_model.position(posA,linkA,Eigen::Vector3d(0,0,0));
-    // sim_model.position(posB,linkB,Eigen::Vector3d(0,0,0));
+    // sim_model.position(posA,"elbow_link",Eigen::Vector3d(0,0,0.3));
+    // sim_model.position(posB,"forearm_link",Eigen::Vector3d(-0.18,-0.04,0));
     
     // std::cout << "posA: " << posA.transpose() << std::endl;
     // std::cout << "posB: " << posB.transpose() << std::endl;
     // std::cout << "pos difference: " << (posA - posB).transpose() << std::endl;
-
-    // Eigen::Vector3d pos;
-    // Eigen::Matrix3d rot;
-    // Eigen::Affine3d T_a;
-
-    // sim_model.transformation(pos,rot,linkB,Eigen::Vector3d::Zero(), Eigen::Matrix3d::Identity(),linkA);
-    // sim_model.transformation(T_a,linkB,Eigen::Vector3d::Zero(), Eigen::Matrix3d::Identity(),linkA);
-
-    // std::cout << "pos: " << pos.transpose() << std::endl;
-    // std::cout << "rot: " << rot << std::endl;
-    // std::cout << "T_a translation : " << T_a.translation() << std::endl;
-    // std::cout << "T_a rotation : " << T_a.linear() << std::endl;
-
+    
     // gravity vector;
     Eigen::VectorXd _gT;
     _gT.resize(nDof);
     
-
-
+    
     std::cout << "Starting simulation loop" << std::endl;
     while (runloop && timer.WaitForNextLoop())
     {
@@ -219,25 +177,18 @@ void simulation(std::string& robot_file)
         // sim_model._tau = - 0.1 *sim_model._dq;
         // _tau = sim_model._tau;
 
-        sim_model.position(posA,linkA,Eigen::Vector3d(0,0,0));
-        sim_model.position(posB,linkB,Eigen::Vector3d(0,0,0));
-        
-        std::cout << "posA: " << posA.transpose() << std::endl;
-        std::cout << "posB: " << posB.transpose() << std::endl;
-
-        // sim_model.updateModel();
-        // sim_model.gravityVector(_gT);
-
-        sim_model.ConstraintGravityVector(_gT);
+        sim_model.updateModel();
+        sim_model.gravityVector(_gT);
         _tau = _gT;
 
+        
         // _tau(0) = 2;
-        // _tau(1) = -0.01;
+        // _tau(1) = -_tau(1);
         // _tau(nDof-1) = 0.5;
         // _tau(3) = 0.8* _tau(3);
-        sim_model._tau = _tau*1 - 0.1* sim_model._dq;
+        sim_model._tau = _tau*0 - 0.0* sim_model._dq;
 
-        sim_model.step(0.000001);
+        sim_model.step(0.0001);
         // std::cout << "q size: " << sim_model._q.transpose() << std::endl;
         // sim_model._q = sim_model._q.unaryExpr([](double angle) {return normalizeAngle(angle);});
         // sim_model._q(7) = sim_model._q(7) + 0.001;
@@ -245,9 +196,8 @@ void simulation(std::string& robot_file)
         sim_model.updateKinematics();
         
         std::cout << "q: " << sim_model._q.transpose() << std::endl;
-        std::cout << "Gravity torque: \n" << _gT.transpose() << std::endl;
+        // std::cout << "Gravity torque: \n" << _gT.transpose() << std::endl;
         // std::cout << "tau torque: \n" << _tau.transpose() << std::endl;
-        // break;
     }
     timer.printTimerHistory();
 }

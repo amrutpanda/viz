@@ -170,6 +170,7 @@ namespace mviz
                     Ogre::ColourValue _color = Ogre::ColourValue(vptr->material->color.r,
                                                                 vptr->material->color.g,
                                                                 vptr->material->color.b);
+                    pmat->getTechnique(0)->getPass(0)->setLightingEnabled(true);
                     pmat->getTechnique(0)->getPass(0)->setAmbient(_color);
                     pmat->getTechnique(0)->getPass(0)->setDiffuse(vptr->material->color.r,
                                                                    vptr->material->color.g,

@@ -571,20 +571,25 @@ namespace mviz
         // set newlight.
 
         Ogre::Light* light = scnMgr->createLight("MainLight1", Ogre::Light::LightTypes::LT_POINT);
+        
+        // Ogre::Light* light = scnMgr->createLight("MainLight1", Ogre::Light::LightTypes::LT_DIRECTIONAL);
+
         Ogre::SceneNode* lightNode = scnMgr->getRootSceneNode()->createChildSceneNode();
         lightNode->attachObject(light);
-        lightNode->setPosition(0, 0, 1000);
+        lightNode->setPosition(10, 10, 1000);
+        lightNode->setDirection(-1, -1, -1);
 
         // another light node.
-        // Ogre::Light* light2 = scnMgr->createLight("MainLight2");
-        // Ogre::SceneNode* lightNode2 = scnMgr->getRootSceneNode()->createChildSceneNode();
-        // lightNode2->attachObject(light2);
+        Ogre::Light* light2 = scnMgr->createLight("MainLight2");
+        Ogre::SceneNode* lightNode2 = scnMgr->getRootSceneNode()->createChildSceneNode();
+        lightNode2->attachObject(light2);
 
-        // lightNode2->setPosition(1000, 100, 500);
+        lightNode2->setPosition(-100, -10, -500);
+        lightNode->setDirection(0, 0, 1);
         // another light node end.
 
         // Ogre setup skydome;
-        scnMgr->setSkyDome(true,"Examples/CloudySky", 5, 8);
+        // scnMgr->setSkyDome(true,"Examples/CloudySky", 5, 8);
 
         //! [camera]
         camNode = scnMgr->getRootSceneNode()->createChildSceneNode();

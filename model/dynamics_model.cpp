@@ -115,19 +115,19 @@ namespace Dynamics
         std::string _base = base_frame;
 
         int linkInd = linkId(_link_name);
-        int baseInd = linkId(_base);
-        
+    
         if (base_frame.empty())
         {
-            _T_link_to_base.translation() = CalcBaseToBodyCoordinates(*_rbdl_model,_q,linkInd,pos_in_link,false);
+            _T_link_to_base.translation() = CalcBodyToBaseCoordinates(*_rbdl_model,_q,linkInd,pos_in_link,false);
             _T_link_to_base.linear() = CalcBodyWorldOrientation(*_rbdl_model,_q,linkInd,false).transpose() * rot_in_link;
         }
         else
         {
-            _T_link_to_base.translation() = CalcBaseToBodyCoordinates(*_rbdl_model,_q,linkInd,pos_in_link,false);
+            int baseInd = linkId(_base);
+            _T_link_to_base.translation() = CalcBodyToBaseCoordinates(*_rbdl_model,_q,linkInd,pos_in_link,false);
             _T_link_to_base.linear() = CalcBodyWorldOrientation(*_rbdl_model,_q,linkInd,false).transpose() * rot_in_link;
 
-            _T_bframe_to_base.translation() = CalcBaseToBodyCoordinates(*_rbdl_model,_q,baseInd,
+            _T_bframe_to_base.translation() = CalcBodyToBaseCoordinates(*_rbdl_model,_q,baseInd,
                                                                 Eigen::Vector3d::Zero(),false);
             _T_bframe_to_base.linear() = CalcBodyWorldOrientation(*_rbdl_model,_q,baseInd,false).transpose() * rot_in_link;
         }
@@ -136,6 +136,39 @@ namespace Dynamics
         _pos = _T.translation();
         _rot = _T.linear();
         
+    }
+
+    void DModel::transformation(Eigen::Affine3d& T, const std::string& link_name,
+                                const Vector3d& pos_in_link, const Matrix3d& rot_in_link, const std::string& base_frame )
+    {
+        Eigen::Affine3d _T_link_to_base;
+        Eigen::Affine3d _T_bframe_to_base;
+
+        _T_link_to_base.setIdentity();
+        _T_bframe_to_base.setIdentity();
+
+        std::string _link_name = link_name;
+        std::string _base = base_frame;
+
+        int linkInd = linkId(_link_name);
+    
+        if (base_frame.empty())
+        {
+            _T_link_to_base.translation() = CalcBodyToBaseCoordinates(*_rbdl_model,_q,linkInd,pos_in_link,false);
+            _T_link_to_base.linear() = CalcBodyWorldOrientation(*_rbdl_model,_q,linkInd,false).transpose() * rot_in_link;
+        }
+        else
+        {
+            int baseInd = linkId(_base);
+            _T_link_to_base.translation() = CalcBodyToBaseCoordinates(*_rbdl_model,_q,linkInd,pos_in_link,false);
+            _T_link_to_base.linear() = CalcBodyWorldOrientation(*_rbdl_model,_q,linkInd,false).transpose() * rot_in_link;
+
+            _T_bframe_to_base.translation() = CalcBodyToBaseCoordinates(*_rbdl_model,_q,baseInd,
+                                                                Eigen::Vector3d::Zero(),false);
+            _T_bframe_to_base.linear() = CalcBodyWorldOrientation(*_rbdl_model,_q,baseInd,false).transpose() * rot_in_link;
+        }
+
+        T = _T_bframe_to_base.inverse() * _T_link_to_base;
     }
 
     void DModel::position(Eigen::Vector3d& _pos, const std::string& link_name, const Eigen::Vector3d& pos_in_link)
@@ -287,25 +320,63 @@ namespace Dynamics
         _aaccel = _T_world.linear() * a_tmp.head(3);
     }
 
-    void DModel::gravityVector(Eigen::VectorXd& g)
+    void DModel::gravityVector(Eigen::VectorXd& _g)
     {
-        Eigen::Vector3d _gravity = _rbdl_model->gravity;
+        // Eigen::Vector3d _gravity = _rbdl_model->gravity;
 
-        if (g.size() != _dof)
-            g.resize(_dof);
-        g.setZero();
+        // if (g.size() != _dof)
+        //     g.resize(_dof);
+        // g.setZero();
 
-        int body_id = 0;
-        Eigen::MatrixXd Jv;
-        Jv.resize(3,_dof);
-        Jv.setZero();
-        for (auto it : _rbdl_model->mBodies)
-        {
-            double mass = it.mMass;
-            CalcPointJacobian(*_rbdl_model,_q,body_id,it.mCenterOfMass,Jv,false);
-            g = g + Jv.transpose() * _T_world.linear().transpose() *(- mass * _gravity);
-            body_id++;
+        // int body_id = 0;
+        // Eigen::MatrixXd Jv;
+        // Jv.resize(3,_dof);
+        // Jv.setZero();
+        // for (auto it : _rbdl_model->mBodies)
+        // {
+        //     double mass = it.mMass;
+        //     CalcPointJacobian(*_rbdl_model,_q,body_id,it.mCenterOfMass,Jv,false);
+        //     g = g + Jv.transpose() * _T_world.linear().transpose() *(- mass * _gravity);
+        //     body_id++;
+        // }
+
+        Eigen::VectorXd dq,ddq;
+        dq.resize(_dq.size());
+        ddq.resize(_dq.size());
+
+        dq.setZero();
+        ddq.setZero();
+
+        InverseDynamics(*_rbdl_model,_q,dq,ddq,_g);
+    }
+
+    void DModel::ConstraintGravityVector(Eigen::VectorXd& _g)
+    {
+        _g.resize(_q.size());
+        Eigen::VectorXd dq,ddq_ctrls,ddq_desired, tau;
+        dq.resize(_dq.size());
+        ddq_ctrls.resize(_dq.size());
+        ddq_desired.resize(_dq.size());
+        tau.resize(_dq.size());
+
+        dq.setZero();
+        ddq_ctrls.setZero();
+        tau.setZero();
+        // ddq_desired.setZero();
+        bool isCompatible = isConstrainedSystemFullyActuated(*_rbdl_model,_q,_dq,cs);
+        std::cout << "Compatible: " << isCompatible << std::endl;
+        std::cout << "dq size: " << dq.size() << std::endl;
+        std::cout << "constraints: " << cs.bound << std::endl;
+        try
+        {     
+            // InverseDynamicsConstraintsRelaxed(*_rbdl_model,_q,dq,ddq_ctrls,cs,ddq_desired,_g,false);
+            InverseDynamicsConstraints(*_rbdl_model,_q,dq,ddq_ctrls,cs,ddq_desired,tau,false); 
         }
+        catch(const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+        }
+        
     }
 
     void DModel::coriolisForces(Eigen::VectorXd& c)
@@ -502,7 +573,6 @@ namespace Dynamics
         std::cout << "Axis: " << axis.transpose() << std::endl;
         // RigidBodyDynamics::ConstraintSet _cs;
         cs.AddLoopConstraint(idA,idB,sA,sB,axis,true);
-
         // // bind the constraint to model.
         // cs.Bind(*(_rbdl_model));
         // save the constraint.
@@ -518,6 +588,7 @@ namespace Dynamics
     {
         _dq += _ddq * _dt;
         _q += _dq * _dt;
+        // std::cout << "pos: " << _q.transpose() << std::endl;
     }
 
     void DModel::step(double _dt)
@@ -528,6 +599,7 @@ namespace Dynamics
         //     RigidBodyDynamics::ForwardDynamicsConstraintsDirect(*_rbdl_model,_q,_dq,_tau,cs[0],_ddq);
         
         // RigidBodyDynamics::ForwardDynamics(*_rbdl_model,_q,_dq,_tau,_ddq);
+        
         RigidBodyDynamics::ForwardDynamicsConstraintsDirect(*_rbdl_model,_q,_dq,_tau,cs,_ddq);
         // RigidBodyDynamics::ForwardDynamicsConstraintsNullSpace(*_rbdl_model,_q,_dq,_tau,cs,_ddq);
         

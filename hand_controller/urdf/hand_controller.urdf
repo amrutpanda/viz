@@ -147,7 +147,7 @@
 
   <link name="elbow_link">
     <inertial>
-        <origin xyz="0.0 -0.15 0" rpy="0 0 0" />
+        <origin xyz="0.0 0 0.15" rpy="0 0 0" />
         <mass value="0.25"/>
          <inertia
             ixx="0.0014545"
@@ -215,6 +215,7 @@
     <limit lower="-3.14" upper="3.14" effort="0" velocity="0" />
   </joint>
 
+
   <link name="forearm_link">
     <inertial>
         <origin xyz="-0.25 0 0" rpy="0 0 0" />
@@ -251,17 +252,6 @@
   </joint> 
 
   <link name="forearm_frame_link">
-    <!-- <inertial>
-        <origin xyz="0.0 -0.15 0" rpy="0 0 0" />
-        <mass value="0.25"/>
-         <inertia
-            ixx="0.0014545"
-            ixy="4.2968E-08"
-            ixz="-1.8199E-07"
-            iyy="0.001345"
-            iyz="-6.243E-06"
-            izz="0.002155" />
-    </inertial> -->
   </link>
   
   <joint name="forearm_joint" type="fixed">
@@ -270,7 +260,7 @@
     <origin xyz="-0.5 -0.02 0.02" rpy="0 0 0" />
   </joint>
 
-  <link name="elbow_frame_link1">
+  <link name="elbow_constraint_frame_link">
     <inertial>
         <origin xyz="0.0 -0.15 0" rpy="0 0 0" />
         <mass value="0.25"/>
@@ -286,11 +276,11 @@
   
   <joint name="elbow_frame_joint1" type="fixed">
     <parent link="elbow_link" />
-    <child  link="elbow_frame_link1" />
+    <child  link="elbow_constraint_frame_link" />
     <origin xyz="0 0 0.3" rpy="0 0 0" />
   </joint>
 
-  <link name="elbow_frame_link2">
+  <link name="forearm_constraint_frame_link">
     <inertial>
         <origin xyz="0.0 -0.15 0" rpy="0 0 0" />
         <mass value="0.25"/>
@@ -306,9 +296,10 @@
   
   <joint name="elbow_frame_joint2" type="fixed">
     <parent link="forearm_link" />
-    <child  link="elbow_frame_link2" />
+    <child  link="forearm_constraint_frame_link" />
     <origin xyz="-0.18 -0.04 0" rpy="0 0 0" />
   </joint>
+  
 <!-- ======================= Gimbal links and joints ======================= -->
   <link name="wrist_link1">
     <inertial>

@@ -62,6 +62,8 @@ namespace Dynamics
         */
         void gravityVector(Eigen::VectorXd& g, Eigen::VectorXd& gravity);
 
+        void ConstraintGravityVector(Eigen::VectorXd& g);
+
         void coriolisForces(Eigen::VectorXd& c);
 
         void coriolisPlusGravityForces(Eigen::VectorXd& h);
@@ -83,6 +85,11 @@ namespace Dynamics
 
 
         void transformation(Eigen::Vector3d& _pos, Eigen::Matrix3d& _rot,
+                        const std::string& link_name,
+                        const Vector3d& pos_in_link = Eigen::Vector3d::Zero(),
+                        const Matrix3d& rot_in_link = Eigen::Matrix3d::Identity(),
+                        const std::string& base_frame = "");
+        void transformation(Eigen::Affine3d& T,
                         const std::string& link_name,
                         const Vector3d& pos_in_link = Eigen::Vector3d::Zero(),
                         const Matrix3d& rot_in_link = Eigen::Matrix3d::Identity(),
