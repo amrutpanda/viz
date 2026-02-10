@@ -25,8 +25,8 @@ int main(int argc, char const *argv[])
     // viz.createGraphicalObject("/home/asp/Files/sai2/OpenSai/core/sai2-model/urdf_models/iiwa7/meshes/link0.obj","link5",
     //                 Eigen::Vector3d(0,0,4), Eigen::Quaterniond(0,0,0,0.5),Eigen::Vector3d(1,1,1) );
     
-    // viz.createRobotObject(robot_name,"../src/kuka.urdf");
-    viz.createRobotObject(robot_name,"/home/amrut/Files/resources/TCP-IP-ROS-6AXis/dobot_description/urdf/cr12_robot.urdf");
+    viz.createRobotObject(robot_name,"../src/kuka.urdf");
+    // viz.createRobotObject(robot_name,"/home/amrut/Files/resources/TCP-IP-ROS-6AXis/dobot_description/urdf/cr12_robot.urdf");
     // viz.createRobotObject(robot_name,"/home/asp/Files/resources/urdf_files_dataset/urdf_files/robotics-toolbox/val_description/model/robots/valkyrie_sim.urdf",true);
     // viz.createRobotObject(robot_name,"/home/asp/Files/resources/urdf_files_dataset/urdf_files/matlab/franka_description/robots/frankaEmikaPanda.urdf");
     // viz.createRobotObject(robot_name,"/home/asp/Files/resources/urdf_files_dataset/urdf_files/oems/anymal_anybotics/anymal_b_simple_description/urdf/anymal.urdf");

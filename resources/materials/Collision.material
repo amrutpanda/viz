@@ -4,10 +4,11 @@ material Collision
 	{
 		pass
 		{
-			ambient vertexcolour
-			//ambient 0.5 0.5 0.5 
+			//ambient vertexcolour
+			ambient 0.5 0.5 0.5 
 			diffuse 0.5 0.5 0.5 0.9
-			lighting on
+			//lighting on
+			lighting off
 			scene_blend alpha_blend
 		}
 	}

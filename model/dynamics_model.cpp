@@ -322,6 +322,8 @@ namespace Dynamics
 
     void DModel::gravityVector(Eigen::VectorXd& _g)
     {
+        // The method adopted here is jacobian based gravity vector determination.
+        // TO-DO: Need to check why it failed.
         // Eigen::Vector3d _gravity = _rbdl_model->gravity;
 
         // if (g.size() != _dof)
@@ -339,7 +341,8 @@ namespace Dynamics
         //     g = g + Jv.transpose() * _T_world.linear().transpose() *(- mass * _gravity);
         //     body_id++;
         // }
-
+        
+        // this method uses Inverse dynamics with dq and ddq as zero to compute gravity vector.
         Eigen::VectorXd dq,ddq;
         dq.resize(_dq.size());
         ddq.resize(_dq.size());
@@ -348,35 +351,6 @@ namespace Dynamics
         ddq.setZero();
 
         InverseDynamics(*_rbdl_model,_q,dq,ddq,_g);
-    }
-
-    void DModel::ConstraintGravityVector(Eigen::VectorXd& _g)
-    {
-        _g.resize(_q.size());
-        Eigen::VectorXd dq,ddq_ctrls,ddq_desired, tau;
-        dq.resize(_dq.size());
-        ddq_ctrls.resize(_dq.size());
-        ddq_desired.resize(_dq.size());
-        tau.resize(_dq.size());
-
-        dq.setZero();
-        ddq_ctrls.setZero();
-        tau.setZero();
-        // ddq_desired.setZero();
-        bool isCompatible = isConstrainedSystemFullyActuated(*_rbdl_model,_q,_dq,cs);
-        std::cout << "Compatible: " << isCompatible << std::endl;
-        std::cout << "dq size: " << dq.size() << std::endl;
-        std::cout << "constraints: " << cs.bound << std::endl;
-        try
-        {     
-            // InverseDynamicsConstraintsRelaxed(*_rbdl_model,_q,dq,ddq_ctrls,cs,ddq_desired,_g,false);
-            InverseDynamicsConstraints(*_rbdl_model,_q,dq,ddq_ctrls,cs,ddq_desired,tau,false); 
-        }
-        catch(const std::exception& e)
-        {
-            std::cerr << e.what() << '\n';
-        }
-        
     }
 
     void DModel::coriolisForces(Eigen::VectorXd& c)
@@ -403,7 +377,7 @@ namespace Dynamics
 
         CalcPointJacobian6D(*_rbdl_model,_q,linkId(_link_name),pos_in_link,J_tmp,false);
         // RBDL model computes Jw in first 3 rows and Jv on the bottom part. Swapping needed.
-        J << J_tmp.block(3,0,6,_dof) , J_tmp.block(0,0,3,_dof);
+        J << J_tmp.block(3,0,3,_dof) , J_tmp.block(0,0,3,_dof);
     }
 
     /**
@@ -532,7 +506,7 @@ namespace Dynamics
     }
 
 
-     void orientationError(Eigen::Vector3d& orientation_error, Eigen::Matrix3d& _desired_orientation,
+    void DModel::orientationError(Eigen::Vector3d& orientation_error, Eigen::Matrix3d& _desired_orientation,
                                                                 Eigen::Matrix3d& _current_orientation)
     {
         //check for valid rotation.
@@ -561,29 +535,6 @@ namespace Dynamics
         
     }
 
-    void DModel::addLoopConstraint(const std::string& linkA, const std::string& linkB,
-                                Eigen::Affine3d& Ta, Eigen::Affine3d& Tb, const Eigen::Vector3i& aAxis, const Eigen::Vector3i& lAxis)
-    {
-        int idA = linkId(linkA);
-        int idB = linkId(linkB);
-
-        RigidBodyDynamics::Math::SpatialTransform sA = RigidBodyDynamics::Math::SpatialTransform(Ta.linear(),Ta.translation());
-        RigidBodyDynamics::Math::SpatialTransform sB = RigidBodyDynamics::Math::SpatialTransform(Tb.linear(),Tb.translation());
-        RigidBodyDynamics::Math::SpatialVector axis = RigidBodyDynamics::Math::SpatialVector(aAxis.x(), aAxis.y(), aAxis.z(), lAxis.x(),lAxis.y(),lAxis.z());
-        std::cout << "Axis: " << axis.transpose() << std::endl;
-        // RigidBodyDynamics::ConstraintSet _cs;
-        cs.AddLoopConstraint(idA,idB,sA,sB,axis,true);
-        // // bind the constraint to model.
-        // cs.Bind(*(_rbdl_model));
-        // save the constraint.
-        // cs.push_back(_cs);
-    }
-
-    void DModel::bindConstraint()
-    {
-        cs.Bind(*(_rbdl_model));
-    }
-
     void DModel::integrateState(double _dt)
     {
         _dq += _ddq * _dt;
@@ -598,13 +549,38 @@ namespace Dynamics
         // else
         //     RigidBodyDynamics::ForwardDynamicsConstraintsDirect(*_rbdl_model,_q,_dq,_tau,cs[0],_ddq);
         
-        // RigidBodyDynamics::ForwardDynamics(*_rbdl_model,_q,_dq,_tau,_ddq);
-        
-        RigidBodyDynamics::ForwardDynamicsConstraintsDirect(*_rbdl_model,_q,_dq,_tau,cs,_ddq);
-        // RigidBodyDynamics::ForwardDynamicsConstraintsNullSpace(*_rbdl_model,_q,_dq,_tau,cs,_ddq);
-        
+        RigidBodyDynamics::ForwardDynamics(*_rbdl_model,_q,_dq,_tau,_ddq);
         integrateState(_dt);
         _tau.setZero();
+    }
+
+    void orientationError(Eigen::Vector3d& orientation_error, Eigen::Matrix3d& _desired_orientation,
+                                                                Eigen::Matrix3d& _current_orientation)
+    {
+        //check for valid rotation.
+        Eigen::Matrix3d Q1 = _desired_orientation*_desired_orientation.transpose() - Eigen::Matrix3d::Identity();
+        Eigen::Matrix3d Q2 = _current_orientation*_current_orientation.transpose() - Eigen::Matrix3d::Identity();
+
+        if (Q1.norm() >0.001 || Q2.norm() > 0.001)
+        {
+            std::cout << "Desired Orientation: " << _desired_orientation << std::endl;
+            std::cout << "Current Orientation: " <<_current_orientation << std::endl;
+            std::cout << "Q1 norm: " << Q1.norm() << std::endl;
+            std::cout << "Q2 norm: " << Q2.norm() << std::endl;
+            throw std::invalid_argument("Invalid rotation matrices. DModel orientation error\n");
+            return; 
+        }
+        else
+        {
+            Eigen::Vector3d rc1 = _current_orientation.block<3,1>(0,0);
+            Eigen::Vector3d rc2 = _current_orientation.block<3,1>(0,1);
+            Eigen::Vector3d rc3 = _current_orientation.block<3,1>(0,2);
+            Eigen::Vector3d rd1 = _desired_orientation.block<3,1>(0,0);
+            Eigen::Vector3d rd2 = _desired_orientation.block<3,1>(0,1);
+            Eigen::Vector3d rd3 = _desired_orientation.block<3,1>(0,2);
+            orientation_error = (-1/2)*(rc1.cross(rd1) + rc2.cross(rd2) + rc3.cross(rd3));
+        }
+        
     }
 
 } // namespace Dynamics

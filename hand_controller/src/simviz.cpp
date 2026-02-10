@@ -1,21 +1,21 @@
-// TO-DO: include mGraphics before simMultiBody is causing some include errors.
-// Need to check on this.
-#define RBDL_USE_LOGGING
 #include <iostream>
-// #include <simMultiBody.h>
+#include <simMultiBody.h>
 #include <mGraphics.h>
 #include <LoopTimer.h>
 #include <redisclient.h>
 
-#include <dynamics_model.h>
+#include "hc_redis_keys.h"
 
+#include "ParallelRobot.h"
 // std::string ROBOT_JOINT_KEY = "robot::q";
 
+
+bool _simulation = true;
+
 std::string robot_name = "hand_controller";
-// std::string robot_file = "/home/merai/Files/C++/viz/hand_controller/urdf/hand_controller.urdf";
-std::string robot_file = "/home/merai/Downloads/000-HAND-CONTROLER-URDF_v1.2/urdf/000-HAND-CONTROLER-URDF_v1.2.urdf";
-// std::string robot_file = "/home/merai/Downloads/000-HAND-CONTROLER-URDF_v1.2/urdf/000-HAND-CONTROLER-URDF_NO_GIMBAL_v1.2.urdf";
-// std::string robot_file = "/home/merai/Downloads/000-HAND-CONTROLER-URDF_v1.2/urdf/000-HAND-CONTROLER-URDF_v1.2.1.urdf";
+// std::string robot_file = "/home/merai/Files/C++/viz/hand_controller/urdf/hand_controller_elbow_hinge_v1.1.urdf";
+// std::string robot_file = "/home/merai/Files/C++/viz/hand_controller/urdf/hand_controller_elbow_hinge.urdf";
+std::string robot_file = "/home/merai/Downloads/005-HAND-CONTROLER-URDF/urdf/005-HAND-CONTROLER-URDF_v1.0.urdf";
 
 std::string _controller_running = "0";
 bool runloop = true;
@@ -31,27 +31,35 @@ void simulation(std::string& _robot_file);
 
 
 RedisClient redis_client;
-unsigned int nDof = 8;
-Eigen::VectorXd _q;
+unsigned int nDof = 9;
+Eigen::VectorXd _q,_q_prev, _delq;
+Eigen::Vector3d xp;
 // force sensor variables.
 
 
 int main(int argc, char const *argv[])
 {
     signal(SIGINT,sighandler);
-
-    redis_client.connect();
-
     // configure the _q;
     _q.resize(nDof);
     _q.setZero();
 
+    _q_prev.resize(nDof);
+    _q_prev.setZero();
 
-    mviz::mVisualizer viz("simviz");
+    _delq.resize(nDof);
+    _delq.setZero();
+
+    Eigen::Quaterniond quat;
+    quat.setIdentity();
+
+    mviz::mVisualizer viz("simviz_hc");
     viz.attachFlagVariable(&runloop);
     viz.initApp();
     viz.createRobotObject(robot_name,robot_file);
     viz.getRobotObject(robot_name)->printRobotJointNames();
+    
+    viz.createSphere("sp1",0.02);
 
     std::thread sim_thread(simulation,std::ref(robot_file));
 
@@ -61,10 +69,29 @@ int main(int argc, char const *argv[])
 
     while (runloop & timer.WaitForNextLoop())
     {
+        viz.setObjectPoseAndRotation("sp1",xp,quat);
         viz.updateRobotGraphics(robot_name,_q);
         viz.RenderOneFrame();
         if (!runloop)
             std::cout << "runloop flag is false. Exiting..." << std::endl;
+        
+        if (!_simulation)
+        {
+            _delq = _q - _q_prev;
+            _q(2) =  _q(2) + (_delq(1) - _delq(nDof -2));
+            _q(nDof - 1) = _q(nDof - 1) + (_delq(nDof -2) - _delq(1));
+            _q_prev = _q;
+        }
+
+        // double _dq1 = 0.00002;
+        // double _dq2 = 0.00002;
+        // _q(1) = _q(1) + _dq1;
+        // _q(6) = _q(6) + _dq2;
+        // _q(7) = _q(7) +  (_dq1 - _dq2);
+        // _q(2) = _q(2) + (_dq2 - _dq1);
+
+        // _q(nDof -1) = (M_PI + (M_PI_2 + _q(1)) - ( M_PI + _q(nDof - 2)) - M_PI_2);
+        // _q(2) = (M_PI + _q(nDof - 2)) -( M_PI_2 + _q(1));
     }
     std::cout << "Visualization" << std::endl;
     timer.printTimerHistory();
@@ -72,182 +99,85 @@ int main(int argc, char const *argv[])
     return 0;
 }
 
-// void simulation(std::string& _robot_file)
-// {
-//     double loop_rate = 1000;
 
-//     std::unique_ptr<simMultiBodyDynamicsWorld> sim = std::make_unique<simMultiBodyDynamicsWorld>();
-//     sim->LoadRobotFromURDFFile(robot_file,Eigen::Vector3d(0,0,0),Eigen::Quaterniond(1,0,0,0),
-//                                     true,false,robot_name);
-//     sim->setGravity(0,0, -9.81);
-//     RobotObject* robot = sim->getMultiBodyObject(robot_name);
-//     sim->printRobotJointsInfo(robot);
-//     Eigen::VectorXd q,dq;
-//     q.resize(nDof);
-//     dq.resize(nDof);
-//     q.setZero();
-//     dq.setZero();
-    
-//     // add loop closure constraint.
-//     sim->addLoopClosureConstraint(robot,4,7,Eigen::Vector3d(0,0,0.3), Eigen::Vector3d(-0.18, -0.04,0));
-//     std::cout << "link list:: " << robot->_linkNameIndexList.at(1).second << std::endl;
-
-//     LoopTimer timer;
-//     timer.setLoopFrequency(loop_rate);
-//     timer.InitializeTimer();
-//     while (runloop & timer.WaitForNextLoop())
-//     {   
-//         sim->getRobotJointPos(robot,q);
-//         sim->getRobotJointVel(robot,dq);
-//         _q = q;
-        
-//         sim->setRobotJointTorque(robot,-0.1*dq);
-//         sim->stepSimulation(0.001);
-//     }
-//     std::cout << "simulation :" << std::endl;
-//     timer.printTimerHistory();
-//     std::cout << "sim thread exited" << std::endl;
-// }
-
-// implement rbdl simulation.
 void simulation(std::string& robot_file)
 {
-    Dynamics::DModel sim_model(robot_file,Eigen::Vector3d(0,0,0), Eigen::Quaterniond(1,0,0,0));
+    ParallelRobot sim_model(robot_file,Eigen::Vector3d(0,0,0), Eigen::Quaterniond(1,0,0,0));
     sim_model.setGravity(Eigen::Vector3d(0,0,-9.81*1));
     sim_model.updateKinematics();
+    // set dof.
+    nDof = sim_model.dof();
 
-    const std::string linkA = "elbow_constraint_frame_link";
-    const std::string linkB = "forearm_constraint_frame_link";
+    Eigen::VectorXd command_torque;
+    command_torque.resize(nDof);
+    command_torque.setZero();
 
-    Eigen::Affine3d Ta = Eigen::Affine3d::Identity();
-    // sim_model.transformation(Ta,linkB,Eigen::Vector3d::Zero(), Eigen::Matrix3d::Identity(),linkA);
-    // Ta.translation() = Eigen::Vector3d(0,0, 0.3);
-    // Ta = Ta.inverse();
-    
 
-    Eigen::Affine3d Tb = Eigen::Affine3d::Identity();
-    // Tb.translation() = Eigen::Vector3d(-0.18, -0.04, 0);
-
-    sim_model.addLoopConstraint(linkA,linkB,Ta,Tb,Eigen::Vector3i(0,0,0),Eigen::Vector3i(0,0,1));
-    sim_model.addLoopConstraint(linkA,linkB,Ta,Tb,Eigen::Vector3i(0,0,0),Eigen::Vector3i(0,1,0));
-    sim_model.addLoopConstraint(linkA,linkB,Ta,Tb,Eigen::Vector3i(0,0,0),Eigen::Vector3i(1,0,0));
-    sim_model.addLoopConstraint(linkA,linkB,Ta,Tb,Eigen::Vector3i(0,0,1),Eigen::Vector3i(0,0,0));
-    sim_model.addLoopConstraint(linkA,linkB,Ta,Tb,Eigen::Vector3i(0,1,0),Eigen::Vector3i(0,0,0));
-
-    // sim_model.getConstraint().Bind(*sim_model.getRBDLModel());
-    sim_model.bindConstraint();
-
-    std::cout << "Constraint setup done" << std::endl;
-    std::cout << "dof: " << sim_model.dof() << std::endl;
-    
-    // set Actuation map.
-    std::vector<bool> _actuated_vector(nDof, true);
-    // _actuated_vector[2] = false;
-    _actuated_vector[3] = false;
-    sim_model.getConstraint().SetActuationMap(*sim_model.getRBDLModel(), _actuated_vector);
-    std::cout << "Actuation map set" << std::endl;
-
-    // perform IK
-    Eigen::VectorXd weights,q_out, q_init;
-    weights.resize(nDof);
-    q_out.resize(nDof);
-    q_init.resize(nDof);
-    ConstraintSet cs = sim_model.getConstraint();
-    weights << 1, 0, 0, 0, 1, 1, 1, 0;
-
-    // bool success;
-    // for (int i = 0; i < 100; i++)
-    // {
-    //     q_init = Eigen::VectorXd::Random(nDof);
-    //     if(CalcAssemblyQ(*sim_model.getRBDLModel(), q_init ,cs,q_out,weights))
-    //     {
-    //         std::cout << "solution found" << std::endl;
-    //         break;
-    //     }
-    //     break;
-    // }
-    
-    std::cout << "Q_out : " << q_out.transpose() << std::endl;
-    Eigen::VectorXd _q_init ;
+    Eigen::VectorXd _q_init, _dq_init;
     _q_init.resize(nDof);
     _q_init.setZero();
+
+    _dq_init.resize(nDof - 2);
+    _dq_init.setZero();
+
+    Eigen::Vector3d x = Eigen::Vector3d::Zero();
+    sim_model.position(x,"gripper_link");
+
+    // Eigen::MatrixXd J = Eigen::MatrixXd::Zero(3,nDof -2);
+    Eigen::MatrixXd J = Eigen::MatrixXd::Zero(6,nDof -2);
+
+    Eigen::VectorXd G = Eigen::VectorXd::Zero(nDof - 2);
+    Eigen::MatrixXd M = Eigen::MatrixXd::Zero(nDof - 2, nDof - 2);
+
+    Eigen::VectorXd F = Eigen::VectorXd::Zero(6);
+    // Eigen::VectorXd F = Eigen::Vector3d::Zero();
+
+    std::cout << "HI" << std::endl;
+    _dq_init << 0.0000, 0.000102, 0.0000, 0.0000, 0.0000, 0.0000,0.0001;
+    //  _dq_init << 0.000, 0.0000, 0.0000, -0.0000, 0.000,0.000;
     // _q_init << 0, 0, 0, -1.57, 0, 0, 0, 0.78;
-    _q_init(1) = -1.3;
+    // _q_init(1) = -1.3;
     // sim_model._q = _q_init;
-    
-    sim_model.updateKinematics();;
-    sim_model.updateModel();
+    std::cout << "Hoo" << std::endl;
 
     LoopTimer timer;
     timer.setLoopFrequency(1000);
     timer.InitializeTimer();
-    Eigen::VectorXd _tau = Eigen::VectorXd::Zero(nDof);
-    
-    // RigidBodyDynamics::UpdateKinematicsCustom(*sim_model.getRBDLModel(),&_q_init,nullptr,nullptr);
-    
-    Eigen::Vector3d posA,posB;
-    // sim_model.position(posA,linkA,Eigen::Vector3d(0,0,0));
-    // sim_model.position(posB,linkB,Eigen::Vector3d(0,0,0));
-    
-    // std::cout << "posA: " << posA.transpose() << std::endl;
-    // std::cout << "posB: " << posB.transpose() << std::endl;
-    // std::cout << "pos difference: " << (posA - posB).transpose() << std::endl;
 
-    // Eigen::Vector3d pos;
-    // Eigen::Matrix3d rot;
-    // Eigen::Affine3d T_a;
-
-    // sim_model.transformation(pos,rot,linkB,Eigen::Vector3d::Zero(), Eigen::Matrix3d::Identity(),linkA);
-    // sim_model.transformation(T_a,linkB,Eigen::Vector3d::Zero(), Eigen::Matrix3d::Identity(),linkA);
-
-    // std::cout << "pos: " << pos.transpose() << std::endl;
-    // std::cout << "rot: " << rot << std::endl;
-    // std::cout << "T_a translation : " << T_a.translation() << std::endl;
-    // std::cout << "T_a rotation : " << T_a.linear() << std::endl;
-
-    // gravity vector;
-    Eigen::VectorXd _gT;
-    _gT.resize(nDof);
-    
-
-
-    std::cout << "Starting simulation loop" << std::endl;
+    std::cout << "Starting fsimulation loop" << std::endl;
     while (runloop && timer.WaitForNextLoop())
     {
-        // _tau(1) = -0.5 * sim_model._dq(1); 
-        // _tau(nDof - 1) = - 0.1 * sim_model._dq(nDof -1);
-        // sim_model._tau = - 0.1 *sim_model._dq;
-        // _tau = sim_model._tau;
+        // sim_model._qr = sim_model._qr + _dq_init ;
+        // sim_model._qr(1) = sim_model._qr(1) + 0.001;
+        sim_model.UpdateParallelRobotKinematics();
 
-        sim_model.position(posA,linkA,Eigen::Vector3d(0,0,0));
-        sim_model.position(posB,linkB,Eigen::Vector3d(0,0,0));
-        
-        std::cout << "posA: " << posA.transpose() << std::endl;
-        std::cout << "posB: " << posB.transpose() << std::endl;
+        // sim_model.getJacobian(J,"gripper_link");
 
-        // sim_model.updateModel();
-        // sim_model.gravityVector(_gT);
+        // sim_model.getJacobian6D(J,"gripper_link");
 
-        sim_model.ConstraintGravityVector(_gT);
-        _tau = _gT;
+        // x = x + J * _dq_init;
 
-        // _tau(0) = 2;
-        // _tau(1) = -0.01;
-        // _tau(nDof-1) = 0.5;
-        // _tau(3) = 0.8* _tau(3);
-        sim_model._tau = _tau*1 - 0.1* sim_model._dq;
+        // x = x + (J* _dq_init).head(3);
 
-        sim_model.step(0.000001);
-        // std::cout << "q size: " << sim_model._q.transpose() << std::endl;
-        // sim_model._q = sim_model._q.unaryExpr([](double angle) {return normalizeAngle(angle);});
-        // sim_model._q(7) = sim_model._q(7) + 0.001;
+        // xp = x;
+       
+        // if (x(2) < 0.6)
+        //     F(2) = 0.1;
+        // else
+        //     F.setZero();
+
+        // command_torque = J.transpose() * F;
+        // std::cout << "cmd torque: " << command_torque.transpose() << std::endl; 
+        sim_model.getGravityVector(G);
+        // sim_model.computeMassMatrix(M);
+        // sim_model.ComputeMassMatrix(M);
+        // sim_model.computeMassMatrixandGravityVector(M,G);
+        std::cout << "G: \n" << G.transpose() << std::endl;
+        Eigen::VectorXd _tor_damping = 0.0 * Eigen::VectorXd::Ones(nDof - 2);
+        sim_model.forward_step(1.0* G, 0.01);
+
         _q = sim_model._q;
-        sim_model.updateKinematics();
-        
-        std::cout << "q: " << sim_model._q.transpose() << std::endl;
-        std::cout << "Gravity torque: \n" << _gT.transpose() << std::endl;
-        // std::cout << "tau torque: \n" << _tau.transpose() << std::endl;
-        // break;
     }
+    std::cout << "simulation" << std::endl;
     timer.printTimerHistory();
 }

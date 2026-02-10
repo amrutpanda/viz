@@ -565,27 +565,25 @@ namespace mviz
         shadergen->addSceneManager(scnMgr);
 
         // set ambient light.
-        scnMgr->setAmbientLight(Ogre::ColourValue(0.9, 0.5, 0.5));
+        scnMgr->setAmbientLight(Ogre::ColourValue(0.4,0.4,0.5));
         // scnMgr->setAmbientLight(Ogre::ColourValue(1.0, 1.0, 1.0));
 
         // set newlight.
 
-        Ogre::Light* light = scnMgr->createLight("MainLight1", Ogre::Light::LightTypes::LT_POINT);
-        
+        Ogre::Light* light = scnMgr->createLight("MainLight1", Ogre::Light::LightTypes::LT_POINT); 
         // Ogre::Light* light = scnMgr->createLight("MainLight1", Ogre::Light::LightTypes::LT_DIRECTIONAL);
 
         Ogre::SceneNode* lightNode = scnMgr->getRootSceneNode()->createChildSceneNode();
         lightNode->attachObject(light);
-        lightNode->setPosition(10, 10, 1000);
-        lightNode->setDirection(-1, -1, -1);
+        lightNode->setPosition(0, 0, 100);
+        lightNode->setDirection(0, 0, 1);
 
         // another light node.
         Ogre::Light* light2 = scnMgr->createLight("MainLight2");
         Ogre::SceneNode* lightNode2 = scnMgr->getRootSceneNode()->createChildSceneNode();
         lightNode2->attachObject(light2);
-
-        lightNode2->setPosition(-100, -10, -500);
-        lightNode->setDirection(0, 0, 1);
+        lightNode2->setPosition(0.5, -10, 0.5);
+        lightNode2->lookAt(Ogre::Vector3(0, 0, 0.5 ),Ogre::Node::TS_WORLD);
         // another light node end.
 
         // Ogre setup skydome;
@@ -638,6 +636,20 @@ namespace mviz
 
     }
 
+    void mGraphics::moveCameraTo(const Eigen::Vector3d& _cpos)
+    {
+        camNode->setPosition(Ogre::Vector3(_cpos.x(),_cpos.y(),_cpos.z()));
+    }
+
+    void mGraphics::moveCameraLookAt(const Eigen::Vector3d& _cLookAt)
+    {
+        camNode->lookAt(Ogre::Vector3(_cLookAt.x(), _cLookAt.y(), _cLookAt.z()),Ogre::Node::TS_WORLD);
+    }
+
+    void mGraphics::setWindowBackgroundColor(const Eigen::Vector3d& _bgColor)
+    {
+        vp->setBackgroundColour(Ogre::ColourValue(_bgColor.x(), _bgColor.y(), _bgColor.z()));
+    }
 
     bool mGraphics::RenderOneFrame()
     {
@@ -902,7 +914,7 @@ namespace mviz
             // std::cout << "Decoding the obj file to mesh" << std::endl;
             m->getUserObjectBindings().setUserAny("_AssimpLoaderOptions", opts.options);
             codec->decode(Ogre::Root::openFileStream(opts.source), m.get());
-            
+        
         }
         else
         {
@@ -914,8 +926,8 @@ namespace mviz
 
         // MeshName = basename + "." + ext;
         MeshName = opts.source;
-
     }
+
 
     void creatAxisMesh(Ogre::SceneManager* _scnMgr, std::string& _name)
     {
@@ -991,11 +1003,11 @@ namespace mviz
     
     bool mVisualizer::ImguiRenderOneFrame()
     {
-        auto flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove
-                        | ImGuiWindowFlags_NoTitleBar;
+        auto flags = ImGuiWindowFlags_AlwaysAutoResize 
+                        | ImGuiWindowFlags_NoTitleBar ;
 
         overlay->NewFrame();
-        ImGui::SetNextWindowSize(ImVec2(300,10));
+        ImGui::SetNextWindowSize(ImVec2(300,100));
         ImGui::SetNextWindowBgAlpha(0.1);
         ImGui::Begin("Frame Rate ",NULL,flags);
         ImGui::Text("Frame Rate: %f",frame_rate);
@@ -1010,6 +1022,7 @@ namespace mviz
             }
             ImGui::EndMainMenuBar();
         }
+        ImGui::Button("clickme");
         ImGui::End();
         frame_rate = 1000/(timer.getMilliseconds() - prev_time);
         // std::cout << "time: " << frame_rate << std::endl;

@@ -136,8 +136,9 @@ namespace mviz{
         mRobot* getRobotObject(std::string _rname);
         // mRobot related functions.
 
-
-        
+        void moveCameraTo(const Eigen::Vector3d& _cpos);
+        void moveCameraLookAt(const Eigen::Vector3d& _cLookAt = Eigen::Vector3d::Zero());
+        void setWindowBackgroundColor(const Eigen::Vector3d& _bgColor);
     };
 
 
@@ -189,5 +190,6 @@ namespace mviz{
         // void setup();
     };
     
+
 
 } // namespace mviz;

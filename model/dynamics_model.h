@@ -62,7 +62,7 @@ namespace Dynamics
         */
         void gravityVector(Eigen::VectorXd& g, Eigen::VectorXd& gravity);
 
-        void ConstraintGravityVector(Eigen::VectorXd& g);
+        // void ConstraintGravityVector(Eigen::VectorXd& g);
 
         void coriolisForces(Eigen::VectorXd& c);
 
@@ -151,12 +151,12 @@ namespace Dynamics
         void orientationError(Eigen::Vector3d& orientation_error, Eigen::Matrix3d& _desired_orientation,
                                                                 Eigen::Matrix3d& _current_orientation);
 
-        RigidBodyDynamics::ConstraintSet getConstraint() {return cs;}
-        void bindConstraint();
+        // RigidBodyDynamics::ConstraintSet getConstraint() {return cs;}
+        // void bindConstraint();
 
-        void addLoopConstraint(const std::string& linkA, const std::string& linkB,
-                                Eigen::Affine3d& Ta, Eigen::Affine3d& Tb, const Eigen::Vector3i& aAxis,
-                                                const Eigen::Vector3i& lAxis);
+        // void addLoopConstraint(const std::string& linkA, const std::string& linkB,
+        //                         Eigen::Affine3d& Ta, Eigen::Affine3d& Tb, const Eigen::Vector3i& aAxis,
+        //                                         const Eigen::Vector3i& lAxis);
         void integrateState(double _dt);
         void step (double _dt);
         // class attributes below.

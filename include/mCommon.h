@@ -39,6 +39,7 @@ namespace mviz
     void convertOgreQuatToEigen(Ogre::Quaternion& _ogQuat, Eigen::Quaterniond& _eQuat);
 
 
+
     // testing.
     void say_hello();
 } // namespace mviz

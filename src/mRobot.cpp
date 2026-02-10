@@ -35,7 +35,7 @@ namespace mviz
         // depth first parsing, recursion style.
         createOgreNodesFromLinkPtr(urdf_root_link_ptr,rootNode);
 
-        // breadth first parsing, stack style (Experimental).
+        // breadth first parsing, stack style (Experimental) for simMultibody.
         // createOgreNodesFromLinkPtr(urdf_root_link_ptr,rootNode,true);
 
         std::cout << "Total joints: " << joint_names.size() << std::endl;
@@ -171,10 +171,11 @@ namespace mviz
                                                                 vptr->material->color.g,
                                                                 vptr->material->color.b);
                     pmat->getTechnique(0)->getPass(0)->setLightingEnabled(true);
-                    pmat->getTechnique(0)->getPass(0)->setAmbient(_color);
+                    // pmat->getTechnique(0)->getPass(0)->setAmbient(_color);
                     pmat->getTechnique(0)->getPass(0)->setDiffuse(vptr->material->color.r,
                                                                    vptr->material->color.g,
                                                                 vptr->material->color.b,0.9);
+
                     // pmat->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SceneBlendType::SBT_TRANSPARENT_COLOUR);
                     // pmat->getTechnique(0)->getPass(0)->setSceneBlendingOperation(Ogre::SceneBlendOperation::SBO_ADD);
                     pmat->getTechnique(0)->getPass(0)->setSceneBlending(Ogre::SBF_SOURCE_ALPHA,Ogre::SBF_ONE_MINUS_SOURCE_ALPHA);

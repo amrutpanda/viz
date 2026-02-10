@@ -21,6 +21,7 @@ target_link_libraries(robot_controller ${LINK_LIBRARIES})
 # target_link_libraries(haptic_controller ${LINK_LIBRARIES})
 
 add_subdirectory(Dobot_app)
+add_subdirectory(remoteApp)
 
 # add_executable(jogging_controller ${CMAKE_CURRENT_LIST_DIR}/Keyboard_jogging/jogging_controller.cpp)
 # target_link_libraries(jogging_controller ${LINK_LIBRARIES})
